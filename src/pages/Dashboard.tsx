@@ -7,10 +7,13 @@ import StatCards from '@/components/dashboard/StatCards';
 import QuickAccessGrid from '@/components/dashboard/QuickAccessGrid';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import UserProfile from '@/components/dashboard/UserProfile';
+import LoadingScreen from '@/components/ui/loading-screen';
+import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -38,6 +41,26 @@ const Dashboard = () => {
     };
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
   const activity = getRecentActivity();
   const stats = getStoreStats();
 
@@ -46,22 +69,38 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <DashboardHeader userName={user.email?.split('@')[0] || 'Kullanıcı'} />
+    <>
+      {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
       
-      <StatCards stats={stats} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <QuickAccessGrid />
-        <ActivityFeed activities={activity} />
-      </div>
-      
-      <UserProfile 
-        email={user.email || ''} 
-        createdAt={user.created_at} 
-        onSignOut={signOut} 
-      />
-    </div>
+      <motion.div 
+        className="container mx-auto px-4 py-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <DashboardHeader userName={user.email?.split('@')[0] || 'Kullanıcı'} />
+        
+        <motion.div variants={itemVariants}>
+          <StatCards stats={stats} />
+        </motion.div>
+        
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          variants={itemVariants}
+        >
+          <QuickAccessGrid />
+          <ActivityFeed activities={activity} />
+        </motion.div>
+        
+        <motion.div variants={itemVariants}>
+          <UserProfile 
+            email={user.email || ''} 
+            createdAt={user.created_at} 
+            onSignOut={signOut} 
+          />
+        </motion.div>
+      </motion.div>
+    </>
   );
 };
 
