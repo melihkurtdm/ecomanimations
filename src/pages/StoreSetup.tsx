@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,6 +71,30 @@ const StoreSetup = () => {
 
   const handleComplete = () => {
     navigate('/dashboard');
+  };
+
+  const goToAddProducts = () => {
+    navigate('/dashboard/store');
+    toast({
+      title: "Ürün Ekle Sayfası",
+      description: "Mağazanıza ürün ekleyebilirsiniz.",
+    });
+  };
+
+  const goToCustomizeTheme = () => {
+    navigate('/dashboard/theme-customization');
+    toast({
+      title: "Tema Özelleştirme",
+      description: "Mağazanızın temasını özelleştirebilirsiniz.",
+    });
+  };
+
+  const goToViewStore = () => {
+    navigate('/dashboard/store');
+    toast({
+      title: "Mağazanızı Görüntüleyin",
+      description: "Mağazanızı görüntüleyebilir ve düzenleyebilirsiniz.",
+    });
   };
 
   if (isLoading) {
@@ -179,19 +204,19 @@ const StoreSetup = () => {
           <CardContent>
             <div className="flex flex-col items-center space-y-6 p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/store')}>
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToAddProducts}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <LayoutGrid className="h-8 w-8 text-brand-purple mb-2" />
                     <h3 className="font-medium text-center">Ürün Ekle</h3>
                   </CardContent>
                 </Card>
-                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/theme-customization')}>
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToCustomizeTheme}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <Palette className="h-8 w-8 text-brand-purple mb-2" />
                     <h3 className="font-medium text-center">Temayı Özelleştir</h3>
                   </CardContent>
                 </Card>
-                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/store')}>
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToViewStore}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <Store className="h-8 w-8 text-brand-purple mb-2" />
                     <h3 className="font-medium text-center">Mağazayı Görüntüle</h3>

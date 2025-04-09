@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Palette, Store } from 'lucide-react';
+import { Palette, Store, Settings } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -16,6 +17,30 @@ const Dashboard = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  const handleNavigateStore = () => {
+    navigate('/dashboard/store');
+    toast({
+      title: "Mağaza Sayfası",
+      description: "Mağazanızı yönetebilirsiniz.",
+    });
+  };
+
+  const handleNavigateTheme = () => {
+    navigate('/dashboard/theme-customization');
+    toast({
+      title: "Tema Özelleştirme",
+      description: "Mağazanızın temasını özelleştirebilirsiniz.",
+    });
+  };
+
+  const handleCreateStore = () => {
+    navigate('/dashboard/store-setup');
+    toast({
+      title: "Mağaza Oluşturma",
+      description: "Yeni bir mağaza oluşturabilirsiniz.",
+    });
+  };
 
   if (!user) {
     return null; // Will redirect via useEffect
@@ -60,7 +85,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <Button 
                   className="w-full mt-4"
-                  onClick={() => navigate('/dashboard/store')}
+                  onClick={handleNavigateStore}
                 >
                   <Store className="h-4 w-4 mr-2" />
                   Mağazaya Git
@@ -70,7 +95,7 @@ const Dashboard = () => {
                 <Button 
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigate('/purchase')}
+                  onClick={handleCreateStore}
                 >
                   Yeni Mağaza Oluştur
                 </Button>
@@ -98,7 +123,7 @@ const Dashboard = () => {
                 <Button 
                   variant="default" 
                   className="w-full"
-                  onClick={() => navigate('/dashboard/theme-customization')}
+                  onClick={handleNavigateTheme}
                 >
                   <Palette className="h-4 w-4 mr-2" />
                   Özelleştir

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Store, Palette } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,6 +25,22 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleNavigateStore = () => {
+    navigate('/dashboard/store');
+    toast({
+      title: "Mağaza Sayfası",
+      description: "Mağazanızı yönetebilirsiniz.",
+    });
+  };
+
+  const handleNavigateTheme = () => {
+    navigate('/dashboard/theme-customization');
+    toast({
+      title: "Tema Özelleştirme",
+      description: "Mağazanızın temasını özelleştirebilirsiniz.",
+    });
+  };
 
   return (
     <header
@@ -49,7 +66,7 @@ const Navbar = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate('/dashboard/store')}
+                  onClick={handleNavigateStore}
                   className="flex items-center"
                 >
                   <Store className="h-4 w-4 mr-2" />
@@ -58,7 +75,7 @@ const Navbar = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => navigate('/dashboard/theme-customization')}
+                  onClick={handleNavigateTheme}
                   className="flex items-center"
                 >
                   <Palette className="h-4 w-4 mr-2" />
@@ -125,7 +142,7 @@ const Navbar = () => {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => {
-                    navigate('/dashboard/store');
+                    handleNavigateStore();
                     setMobileMenuOpen(false);
                   }}
                   className="flex items-center w-full justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50"
@@ -137,7 +154,7 @@ const Navbar = () => {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => {
-                    navigate('/dashboard/theme-customization');
+                    handleNavigateTheme();
                     setMobileMenuOpen(false);
                   }}
                   className="flex items-center w-full justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50"
