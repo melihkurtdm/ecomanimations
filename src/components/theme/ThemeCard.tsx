@@ -19,6 +19,12 @@ export interface ThemeItem {
   category: string;
   previewUrl?: string;
   designStyle?: string;
+  layout?: string;
+  customStyles?: {
+    cardBorderRadius?: string;
+    buttonStyle?: string;
+    headerStyle?: string;
+  };
 }
 
 interface ThemeCardProps {
@@ -41,6 +47,11 @@ const itemVariants = {
 };
 
 const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPreview }) => {
+  // Tema özel stillerini al veya varsayılanları kullan
+  const borderRadius = theme.customStyles?.cardBorderRadius || '0.5rem';
+  const buttonStyle = theme.customStyles?.buttonStyle || '';
+  const headerStyle = theme.customStyles?.headerStyle || '';
+  
   return (
     <motion.div 
       variants={itemVariants}
@@ -54,6 +65,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
         }`}
         style={{ 
           borderColor: isSelected ? theme.color : undefined,
+          borderRadius: borderRadius
         }}
         onClick={() => onSelect(theme.id)}
       >
@@ -117,7 +129,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           </div>
         </div>
         
-        <CardHeader className="pb-2">
+        <CardHeader className={`pb-2 ${headerStyle}`}>
           <CardTitle className="flex items-center justify-between">
             <span>{theme.name}</span>
             <span className="h-4 w-4 rounded-full" style={{ backgroundColor: theme.color }}></span>
@@ -142,7 +154,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           {isSelected && (
             <Button 
               variant="secondary" 
-              className="w-full transition-all duration-300"
+              className={`w-full transition-all duration-300 ${buttonStyle}`}
               style={{ backgroundColor: `${theme.color}20`, color: theme.color, borderColor: `${theme.color}30` }}
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -154,7 +166,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
             <Button 
               variant="outline" 
               size="sm"
-              className="w-full text-gray-600"
+              className={`w-full text-gray-600 ${buttonStyle}`}
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(theme.previewUrl, '_blank');

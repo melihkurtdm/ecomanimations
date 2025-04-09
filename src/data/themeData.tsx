@@ -14,7 +14,13 @@ export const themeData: ThemeItem[] = [
     badge: "Popüler",
     category: "all",
     previewUrl: "https://modern-store-template.com",
-    designStyle: "minimal"
+    designStyle: "minimal",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0.5rem",
+      buttonStyle: "font-medium",
+      headerStyle: "bg-gradient-to-r from-purple-50 to-white"
+    }
   },
   {
     id: "luxury",
@@ -26,7 +32,13 @@ export const themeData: ThemeItem[] = [
     badge: "Premium",
     category: "fashion",
     previewUrl: "https://luxury-boutique-template.com",
-    designStyle: "elegant"
+    designStyle: "elegant",
+    layout: "masonry",
+    customStyles: {
+      cardBorderRadius: "0.75rem",
+      buttonStyle: "font-serif italic",
+      headerStyle: "bg-gradient-to-r from-blue-50 to-white"
+    }
   },
   {
     id: "popup",
@@ -37,7 +49,13 @@ export const themeData: ThemeItem[] = [
     color: "#A78BFA",
     category: "promo",
     previewUrl: "https://popup-store-template.com",
-    designStyle: "dynamic"
+    designStyle: "dynamic",
+    layout: "list",
+    customStyles: {
+      cardBorderRadius: "1rem",
+      buttonStyle: "uppercase tracking-wider text-xs",
+      headerStyle: "bg-gradient-to-r from-violet-50 to-white"
+    }
   },
   {
     id: "catalog",
@@ -49,7 +67,13 @@ export const themeData: ThemeItem[] = [
     badge: "Önerilen",
     category: "catalog",
     previewUrl: "https://large-catalog-template.com",
-    designStyle: "organized"
+    designStyle: "organized",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0.25rem",
+      buttonStyle: "font-medium",
+      headerStyle: "bg-gradient-to-r from-sky-50 to-white"
+    }
   },
   {
     id: "fashion",
@@ -60,7 +84,13 @@ export const themeData: ThemeItem[] = [
     color: "#8B5CF6",
     category: "fashion",
     previewUrl: "https://fashion-boutique-template.com",
-    designStyle: "trendy"
+    designStyle: "trendy",
+    layout: "lookbook",
+    customStyles: {
+      cardBorderRadius: "1.5rem",
+      buttonStyle: "font-light tracking-wide",
+      headerStyle: "bg-gradient-to-r from-purple-50 to-pink-50"
+    }
   },
   {
     id: "minimal",
@@ -71,7 +101,13 @@ export const themeData: ThemeItem[] = [
     color: "#F472B6",
     category: "all",
     previewUrl: "https://minimal-store-template.com",
-    designStyle: "clean"
+    designStyle: "clean",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0rem",
+      buttonStyle: "uppercase text-xs tracking-widest",
+      headerStyle: "border-b border-pink-100"
+    }
   },
   {
     id: "vintage",
@@ -82,7 +118,13 @@ export const themeData: ThemeItem[] = [
     color: "#F59E0B",
     category: "fashion",
     previewUrl: "https://vintage-boutique-template.com",
-    designStyle: "classic"
+    designStyle: "classic",
+    layout: "magazine",
+    customStyles: {
+      cardBorderRadius: "0.5rem 2rem 0.5rem 2rem",
+      buttonStyle: "font-serif",
+      headerStyle: "bg-amber-50"
+    }
   },
   {
     id: "darkmode",
@@ -93,7 +135,13 @@ export const themeData: ThemeItem[] = [
     color: "#1F2937",
     category: "all",
     previewUrl: "https://dark-mode-template.com",
-    designStyle: "modern"
+    designStyle: "modern",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0.75rem",
+      buttonStyle: "bg-gray-900 text-white hover:bg-gray-800",
+      headerStyle: "bg-gray-900 text-white"
+    }
   },
   {
     id: "handmade",
@@ -104,7 +152,13 @@ export const themeData: ThemeItem[] = [
     color: "#D97706",
     category: "catalog",
     previewUrl: "https://handmade-store-template.com",
-    designStyle: "organic"
+    designStyle: "organic",
+    layout: "masonry",
+    customStyles: {
+      cardBorderRadius: "0.25rem",
+      buttonStyle: "border-2 border-amber-600",
+      headerStyle: "border-b-2 border-amber-200"
+    }
   },
   {
     id: "tech",
@@ -115,7 +169,13 @@ export const themeData: ThemeItem[] = [
     color: "#0EA5E9",
     category: "catalog",
     previewUrl: "https://tech-store-template.com",
-    designStyle: "technical"
+    designStyle: "technical",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0.5rem",
+      buttonStyle: "bg-gradient-to-r from-sky-500 to-blue-500 text-white",
+      headerStyle: "bg-gradient-to-r from-sky-50 to-white"
+    }
   }
 ];
 

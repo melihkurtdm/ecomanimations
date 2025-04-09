@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,8 +9,11 @@ import ThemeHeader from '@/components/theme/ThemeHeader';
 import ThemeCustomizationForm from '@/components/theme/ThemeCustomizationForm';
 import ThemePreview from '@/components/theme/ThemePreview';
 import PublishThemeDialog from '@/components/theme/PublishThemeDialog';
+import ThemeDragDropBuilder from '@/components/theme/ThemeDragDropBuilder';
 import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
+import { Globe, Palette, Layers } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { themeData } from '@/data/themeData';
 
 const currentTheme = {
   id: "modern",
@@ -67,6 +71,7 @@ const ThemeCustomization = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [previewAnimation, setPreviewAnimation] = useState(false);
+  const [editorMode, setEditorMode] = useState<"customize" | "builder">("customize");
   
   const form = useForm({
     defaultValues: {
@@ -261,6 +266,9 @@ const ThemeCustomization = () => {
     exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
   };
 
+  // Seçili tema bilgilerini al
+  const selectedThemeData = themeData.find(t => t.id === currentTheme.id) || themeData[0];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <ThemeHeader 
@@ -271,7 +279,28 @@ const ThemeCustomization = () => {
         onTogglePreview={() => setPreviewMode(!previewMode)}
       />
       
-      <div className="flex items-center justify-end mb-4 space-x-2">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex">
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger 
+              className="flex items-center"
+              onClick={() => setEditorMode("customize")}
+              data-state={editorMode === "customize" ? "active" : "inactive"}
+            >
+              <Palette className="h-4 w-4 mr-2" />
+              Görünüm Ayarları
+            </TabsTrigger>
+            <TabsTrigger 
+              className="flex items-center"
+              onClick={() => setEditorMode("builder")}
+              data-state={editorMode === "builder" ? "active" : "inactive"}
+            >
+              <Layers className="h-4 w-4 mr-2" />
+              Sayfa Düzenleyici
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
         <Button 
           variant="outline" 
           onClick={handleGoToPublish}
@@ -292,50 +321,57 @@ const ThemeCustomization = () => {
         />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div 
-          className={`lg:col-span-1 ${previewMode ? 'hidden lg:block' : ''}`}
-          variants={animationVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          <ThemeCustomizationForm 
-            themeSettings={themeSettings}
-            previewAnimation={previewAnimation}
-            activeTab={activeTab}
-            isSaved={isSaved}
-            isDirty={isDirty}
-            fontOptions={fontOptions}
-            colorSchemes={colorSchemes}
-            onTabChange={setActiveTab}
-            onColorChange={handleColorChange}
-            onFontChange={updateFontSetting}
-            onBorderRadiusChange={handleBorderRadiusChange}
-            onSpacingChange={handleSpacingChange}
-            onSchemeSelect={updateColorScheme}
-            onSaveChanges={handleSaveChanges}
-            onResetDefaults={resetToDefaults}
-          />
-        </motion.div>
-        
-        <motion.div 
-          className={`${previewMode ? 'lg:col-span-3' : 'lg:col-span-2'}`}
-          variants={animationVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          transition={{ delay: 0.2 }}
-        >
-          <ThemePreview 
-            themeSettings={themeSettings}
-            previewAnimation={previewAnimation}
-            isSaved={isSaved}
-            isPublished={isPublished}
-            onRefreshPreview={() => setPreviewAnimation(true)}
-          />
-        </motion.div>
-      </div>
+      {editorMode === "customize" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div 
+            className={`lg:col-span-1 ${previewMode ? 'hidden lg:block' : ''}`}
+            variants={animationVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <ThemeCustomizationForm 
+              themeSettings={themeSettings}
+              previewAnimation={previewAnimation}
+              activeTab={activeTab}
+              isSaved={isSaved}
+              isDirty={isDirty}
+              fontOptions={fontOptions}
+              colorSchemes={colorSchemes}
+              onTabChange={setActiveTab}
+              onColorChange={handleColorChange}
+              onFontChange={updateFontSetting}
+              onBorderRadiusChange={handleBorderRadiusChange}
+              onSpacingChange={handleSpacingChange}
+              onSchemeSelect={updateColorScheme}
+              onSaveChanges={handleSaveChanges}
+              onResetDefaults={resetToDefaults}
+            />
+          </motion.div>
+          
+          <motion.div 
+            className={`${previewMode ? 'lg:col-span-3' : 'lg:col-span-2'}`}
+            variants={animationVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ delay: 0.2 }}
+          >
+            <ThemePreview 
+              themeSettings={themeSettings}
+              previewAnimation={previewAnimation}
+              isSaved={isSaved}
+              isPublished={isPublished}
+              onRefreshPreview={() => setPreviewAnimation(true)}
+            />
+          </motion.div>
+        </div>
+      ) : (
+        <ThemeDragDropBuilder 
+          themeId={currentTheme.id} 
+          themeColor={themeSettings.colors.primary} 
+        />
+      )}
     </div>
   );
 };
