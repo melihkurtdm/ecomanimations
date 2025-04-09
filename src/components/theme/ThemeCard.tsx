@@ -47,7 +47,7 @@ const itemVariants = {
 };
 
 const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPreview }) => {
-  // Tema özel stillerini al veya varsayılanları kullan
+  // Get theme custom styles or use defaults
   const borderRadius = theme.customStyles?.cardBorderRadius || '0.5rem';
   const buttonStyle = theme.customStyles?.buttonStyle || '';
   const headerStyle = theme.customStyles?.headerStyle || '';
