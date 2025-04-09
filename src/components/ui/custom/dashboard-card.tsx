@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Card, CardProps } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface DashboardCardProps extends CardProps {
+interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverEffect?: boolean;
   borderColor?: string;
   children: React.ReactNode;
