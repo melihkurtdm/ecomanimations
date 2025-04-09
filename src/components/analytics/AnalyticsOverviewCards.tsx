@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Users, Eye, Clock, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { AnalyticsData } from '@/types/analytics';
+import { ArrowDown, ArrowUp, Users, Clock, BarChart3, MousePointer2 } from 'lucide-react';
 
 interface AnalyticsOverviewCardsProps {
   data: AnalyticsData;
@@ -10,73 +9,122 @@ interface AnalyticsOverviewCardsProps {
 
 const AnalyticsOverviewCards: React.FC<AnalyticsOverviewCardsProps> = ({ data }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex items-center bg-green-50 text-green-600 text-xs font-medium px-2 py-1 rounded-full">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>12.5%</span>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Total Visitors Card */}
+      <div className="bg-white border rounded-lg p-5 transition-shadow hover:shadow-md">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500 mb-1">Ziyaretçiler</p>
+            <h2 className="text-2xl font-bold">{data.totalVisitors.toLocaleString()}</h2>
+            
+            <div className="flex items-center mt-2">
+              <div className="bg-green-50 text-green-700 px-2 py-0.5 rounded text-xs font-medium flex items-center">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                12.5%
+              </div>
+              <span className="text-xs text-gray-500 ml-2">Önceki döneme göre</span>
             </div>
           </div>
-          <h3 className="mt-3 text-2xl font-bold">{data.uniqueVisitors.toLocaleString()}</h3>
-          <p className="text-sm text-gray-500">Ziyaretçi</p>
-        </CardContent>
-      </Card>
+          
+          <div className="bg-purple-100 p-2 rounded-lg">
+            <Users className="h-5 w-5 text-purple-600" />
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">Tekil Ziyaretçi:</span>
+            <span className="font-medium">{data.uniqueVisitors.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
       
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-              <Eye className="h-5 w-5 text-purple-600" />
-            </div>
-            <div className="flex items-center bg-green-50 text-green-600 text-xs font-medium px-2 py-1 rounded-full">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>8.3%</span>
+      {/* Page Views Card */}
+      <div className="bg-white border rounded-lg p-5 transition-shadow hover:shadow-md">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500 mb-1">Sayfa Görüntüleme</p>
+            <h2 className="text-2xl font-bold">{data.totalPageViews.toLocaleString()}</h2>
+            
+            <div className="flex items-center mt-2">
+              <div className="bg-green-50 text-green-700 px-2 py-0.5 rounded text-xs font-medium flex items-center">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                8.3%
+              </div>
+              <span className="text-xs text-gray-500 ml-2">Önceki döneme göre</span>
             </div>
           </div>
-          <h3 className="mt-3 text-2xl font-bold">{data.totalPageViews.toLocaleString()}</h3>
-          <p className="text-sm text-gray-500">Sayfa Görüntüleme</p>
-        </CardContent>
-      </Card>
+          
+          <div className="bg-blue-100 p-2 rounded-lg">
+            <MousePointer2 className="h-5 w-5 text-blue-600" />
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">Ziyaretçi Başına Sayfa:</span>
+            <span className="font-medium">{(data.totalPageViews / data.totalVisitors).toFixed(1)}</span>
+          </div>
+        </div>
+      </div>
       
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-amber-600" />
-            </div>
-            <div className="flex items-center bg-green-50 text-green-600 text-xs font-medium px-2 py-1 rounded-full">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              <span>5.2%</span>
+      {/* Average Session Time Card */}
+      <div className="bg-white border rounded-lg p-5 transition-shadow hover:shadow-md">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500 mb-1">Ortalama Oturum Süresi</p>
+            <h2 className="text-2xl font-bold">{data.averageSessionTime}</h2>
+            
+            <div className="flex items-center mt-2">
+              <div className="bg-green-50 text-green-700 px-2 py-0.5 rounded text-xs font-medium flex items-center">
+                <ArrowUp className="h-3 w-3 mr-1" />
+                5.2%
+              </div>
+              <span className="text-xs text-gray-500 ml-2">Önceki döneme göre</span>
             </div>
           </div>
-          <h3 className="mt-3 text-2xl font-bold">{data.averageSessionTime}</h3>
-          <p className="text-sm text-gray-500">Ortalama Oturum</p>
-        </CardContent>
-      </Card>
+          
+          <div className="bg-green-100 p-2 rounded-lg">
+            <Clock className="h-5 w-5 text-green-600" />
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">Hedef Süre:</span>
+            <span className="font-medium">3m 30s</span>
+          </div>
+        </div>
+      </div>
       
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-              <svg className="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-              </svg>
-            </div>
-            <div className="flex items-center bg-red-50 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
-              <ArrowDownRight className="h-3 w-3 mr-1" />
-              <span>2.8%</span>
+      {/* Bounce Rate Card */}
+      <div className="bg-white border rounded-lg p-5 transition-shadow hover:shadow-md">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500 mb-1">Hemen Çıkma Oranı</p>
+            <h2 className="text-2xl font-bold">{data.bounceRate}%</h2>
+            
+            <div className="flex items-center mt-2">
+              <div className="bg-red-50 text-red-700 px-2 py-0.5 rounded text-xs font-medium flex items-center">
+                <ArrowDown className="h-3 w-3 mr-1" />
+                2.1%
+              </div>
+              <span className="text-xs text-gray-500 ml-2">Önceki döneme göre</span>
             </div>
           </div>
-          <h3 className="mt-3 text-2xl font-bold">{data.bounceRate.toFixed(1)}%</h3>
-          <p className="text-sm text-gray-500">Hemen Çıkma Oranı</p>
-        </CardContent>
-      </Card>
+          
+          <div className="bg-orange-100 p-2 rounded-lg">
+            <BarChart3 className="h-5 w-5 text-orange-600" />
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">Hedef Oran:</span>
+            <span className="font-medium">{'<'} 40%</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

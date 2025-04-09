@@ -1,118 +1,69 @@
 
 import { AnalyticsData } from '@/types/analytics';
 
-// Gerçek bir uygulamada bu veriler API'den gelecektir
-export const fetchAnalyticsData = async (period: 'day' | 'week' | 'month' | 'year'): Promise<AnalyticsData> => {
-  // Simüle edilmiş bir gecikme
-  await new Promise(resolve => setTimeout(resolve, 1000));
+type Period = '7d' | '30d' | '90d' | 'year';
 
-  // Örnek veri - gerçek bir uygulamada API'den gelecektir
-  return {
-    totalVisitors: period === 'day' ? 125 : period === 'week' ? 842 : period === 'month' ? 3254 : 28756,
-    uniqueVisitors: period === 'day' ? 98 : period === 'week' ? 623 : period === 'month' ? 2187 : 18934,
-    totalPageViews: period === 'day' ? 348 : period === 'week' ? 2467 : period === 'month' ? 9845 : 87234,
-    averageSessionTime: period === 'day' ? '2m 34s' : period === 'week' ? '2m 58s' : period === 'month' ? '3m 12s' : '3m 24s',
-    bounceRate: period === 'day' ? 35.4 : period === 'week' ? 32.7 : period === 'month' ? 28.9 : 25.6,
+// Bu servis normalde gerçek bir API'ye istek atarak verileri alır
+// Şu anda mock veri döndürüyoruz
+export const getAnalyticsData = async (period: Period): Promise<AnalyticsData> => {
+  // Gerçek uygulama için burada bir API çağrısı olacak
+  // Örnek: return await fetch(`/api/analytics?period=${period}`).then(res => res.json());
+  
+  // Gecikme simülasyonu
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  // Mock veri
+  const mockData: AnalyticsData = {
+    totalVisitors: period === '7d' ? 1423 : period === '30d' ? 5842 : period === '90d' ? 15789 : 32456,
+    uniqueVisitors: period === '7d' ? 954 : period === '30d' ? 3517 : period === '90d' ? 10234 : 21345,
+    totalPageViews: period === '7d' ? 4532 : period === '30d' ? 18245 : period === '90d' ? 52436 : 105678,
+    averageSessionTime: period === '7d' ? "2m 45s" : period === '30d' ? "3m 12s" : period === '90d' ? "2m 58s" : "3m 05s",
+    bounceRate: period === '7d' ? 42 : period === '30d' ? 38 : period === '90d' ? 35 : 37,
+    
     topPages: [
-      { page: 'Ana Sayfa', count: period === 'day' ? 143 : period === 'week' ? 987 : period === 'month' ? 3876 : 34567, bounceRate: 24.5 },
-      { page: 'Ürünler', count: period === 'day' ? 98 : period === 'week' ? 754 : period === 'month' ? 2987 : 26754, bounceRate: 18.2 },
-      { page: 'Hakkımızda', count: period === 'day' ? 54 : period === 'week' ? 423 : period === 'month' ? 1876 : 15432, bounceRate: 42.8 },
-      { page: 'İletişim', count: period === 'day' ? 38 : period === 'week' ? 245 : period === 'month' ? 985 : 8765, bounceRate: 38.6 },
-      { page: 'Blog', count: period === 'day' ? 15 : period === 'week' ? 134 : period === 'month' ? 567 : 4532, bounceRate: 45.2 }
+      { page: "Ana Sayfa", count: period === '7d' ? 856 : period === '30d' ? 3245 : period === '90d' ? 8965 : 18436, bounceRate: 32 },
+      { page: "Ürünler", count: period === '7d' ? 645 : period === '30d' ? 2567 : period === '90d' ? 6789 : 13567, bounceRate: 28 },
+      { page: "Hakkımızda", count: period === '7d' ? 234 : period === '30d' ? 921 : period === '90d' ? 2345 : 4532, bounceRate: 45 },
+      { page: "İletişim", count: period === '7d' ? 187 : period === '30d' ? 756 : period === '90d' ? 1987 : 3876, bounceRate: 38 },
+      { page: "Blog", count: period === '7d' ? 123 : period === '30d' ? 546 : period === '90d' ? 1456 : 2875, bounceRate: 52 }
     ],
+    
     deviceStats: {
-      mobile: period === 'day' ? 68 : period === 'week' ? 472 : period === 'month' ? 1854 : 16435,
-      desktop: period === 'day' ? 42 : period === 'week' ? 284 : period === 'month' ? 1142 : 9876,
-      tablet: period === 'day' ? 15 : period === 'week' ? 86 : period === 'month' ? 258 : 2445
+      mobile: period === '7d' ? 65 : period === '30d' ? 62 : period === '90d' ? 64 : 63,
+      desktop: period === '7d' ? 30 : period === '30d' ? 32 : period === '90d' ? 31 : 32,
+      tablet: period === '7d' ? 5 : period === '30d' ? 6 : period === '90d' ? 5 : 5
     },
+    
     topLocations: [
-      { country: 'Türkiye', count: period === 'day' ? 87 : period === 'week' ? 623 : period === 'month' ? 2456 : 22345, percentage: 68.5 },
-      { country: 'Almanya', count: period === 'day' ? 15 : period === 'week' ? 98 : period === 'month' ? 354 : 2987, percentage: 12.4 },
-      { country: 'ABD', count: period === 'day' ? 8 : period === 'week' ? 56 : period === 'month' ? 178 : 1564, percentage: 6.8 },
-      { country: 'İngiltere', count: period === 'day' ? 7 : period === 'week' ? 42 : period === 'month' ? 145 : 1123, percentage: 4.9 },
-      { country: 'Diğer', count: period === 'day' ? 8 : period === 'week' ? 23 : period === 'month' ? 121 : 743, percentage: 7.4 }
+      { country: "Türkiye", count: period === '7d' ? 954 : period === '30d' ? 3865 : period === '90d' ? 10435 : 21345, percentage: 67 },
+      { country: "Almanya", count: period === '7d' ? 187 : period === '30d' ? 756 : period === '90d' ? 1987 : 4234, percentage: 13 },
+      { country: "ABD", count: period === '7d' ? 142 : period === '30d' ? 584 : period === '90d' ? 1579 : 3245, percentage: 10 },
+      { country: "İngiltere", count: period === '7d' ? 86 : period === '30d' ? 351 : period === '90d' ? 947 : 1932, percentage: 6 },
+      { country: "Diğer", count: period === '7d' ? 54 : period === '30d' ? 286 : period === '90d' ? 841 : 1700, percentage: 4 }
     ],
-    timeStats: generateTimeStats(period),
+    
+    timeStats: [
+      { date: "1 Oca", visitors: period === '7d' ? 0 : period === '30d' ? 0 : 145, pageViews: period === '7d' ? 0 : period === '30d' ? 0 : 432 },
+      { date: "15 Oca", visitors: period === '7d' ? 0 : period === '30d' ? 0 : 178, pageViews: period === '7d' ? 0 : period === '30d' ? 0 : 567 },
+      { date: "1 Şub", visitors: period === '7d' ? 0 : period === '30d' ? 0 : 210, pageViews: period === '7d' ? 0 : period === '30d' ? 0 : 689 },
+      { date: "15 Şub", visitors: period === '7d' ? 0 : period === '30d' ? 0 : 195, pageViews: period === '7d' ? 0 : period === '30d' ? 0 : 621 },
+      { date: "1 Mar", visitors: period === '7d' ? 0 : period === '30d' ? 124 : 232, pageViews: period === '7d' ? 0 : period === '30d' ? 398 : 734 },
+      { date: "15 Mar", visitors: period === '7d' ? 0 : period === '30d' ? 156 : 268, pageViews: period === '7d' ? 0 : period === '30d' ? 487 : 843 },
+      { date: "1 Nis", visitors: period === '7d' ? 145 : period === '30d' ? 198 : 312, pageViews: period === '7d' ? 432 : period === '30d' ? 623 : 987 },
+      { date: "5 Nis", visitors: period === '7d' ? 167 : period === '30d' ? 220 : 335, pageViews: period === '7d' ? 521 : period === '30d' ? 712 : 1076 },
+      { date: "10 Nis", visitors: period === '7d' ? 189 : period === '30d' ? 245 : 356, pageViews: period === '7d' ? 567 : period === '30d' ? 765 : 1145 },
+      { date: "15 Nis", visitors: period === '7d' ? 212 : period === '30d' ? 278 : 389, pageViews: period === '7d' ? 654 : period === '30d' ? 854 : 1234 },
+      { date: "20 Nis", visitors: period === '7d' ? 241 : period === '30d' ? 310 : 418, pageViews: period === '7d' ? 732 : period === '30d' ? 932 : 1332 },
+    ],
+    
     conversionStats: {
-      visits: period === 'day' ? 125 : period === 'week' ? 842 : period === 'month' ? 3254 : 28756,
-      addToCart: period === 'day' ? 42 : period === 'week' ? 346 : period === 'month' ? 1423 : 12567,
-      checkouts: period === 'day' ? 18 : period === 'week' ? 154 : period === 'month' ? 687 : 6234,
-      purchases: period === 'day' ? 12 : period === 'week' ? 98 : period === 'month' ? 456 : 4123,
-      conversionRate: period === 'day' ? 9.6 : period === 'week' ? 11.3 : period === 'month' ? 14.1 : 14.8
+      visits: period === '7d' ? 1423 : period === '30d' ? 5842 : period === '90d' ? 15789 : 32456,
+      addToCart: period === '7d' ? 325 : period === '30d' ? 1345 : period === '90d' ? 3657 : 7543, 
+      checkouts: period === '7d' ? 187 : period === '30d' ? 756 : period === '90d' ? 1987 : 4123,
+      purchases: period === '7d' ? 124 : period === '30d' ? 498 : period === '90d' ? 1345 : 2756,
+      conversionRate: period === '7d' ? 8.7 : period === '30d' ? 8.5 : period === '90d' ? 8.5 : 8.5
     }
   };
+  
+  return mockData;
 };
-
-// Zaman bazlı istatistikler için yardımcı fonksiyon
-function generateTimeStats(period: 'day' | 'week' | 'month' | 'year'): { date: string; visitors: number; pageViews: number }[] {
-  const result = [];
-  const now = new Date();
-  let steps: number;
-  let format: string;
-  let interval: number;
-
-  switch (period) {
-    case 'day':
-      steps = 24; // 24 saat
-      format = 'HH:00';
-      interval = 1; // 1 saat
-      break;
-    case 'week':
-      steps = 7; // 7 gün
-      format = 'EEE';
-      interval = 1; // 1 gün
-      break;
-    case 'month':
-      steps = 30; // 30 gün
-      format = 'dd MMM';
-      interval = 1; // 1 gün
-      break;
-    case 'year':
-      steps = 12; // 12 ay
-      format = 'MMM';
-      interval = 1; // 1 ay
-      break;
-    default:
-      steps = 7;
-      format = 'EEE';
-      interval = 1;
-  }
-
-  for (let i = 0; i < steps; i++) {
-    const date = new Date();
-    switch (period) {
-      case 'day':
-        date.setHours(date.getHours() - (steps - i - 1));
-        break;
-      case 'week':
-      case 'month':
-        date.setDate(date.getDate() - (steps - i - 1));
-        break;
-      case 'year':
-        date.setMonth(date.getMonth() - (steps - i - 1));
-        break;
-    }
-
-    const formattedDate = period === 'day' ? `${date.getHours()}:00` : 
-                          period === 'week' ? ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'][date.getDay()] :
-                          period === 'month' ? `${date.getDate()} ${['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][date.getMonth()]}` :
-                          ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][date.getMonth()];
-
-    // Bazı rastgele veriler üretelim (gerçekçi görünmesi için)
-    const baseVisitor = period === 'day' ? 5 : period === 'week' ? 20 : period === 'month' ? 30 : 400;
-    const variationVisitor = period === 'day' ? 10 : period === 'week' ? 40 : period === 'month' ? 100 : 800;
-    const basePageViews = period === 'day' ? 15 : period === 'week' ? 60 : period === 'month' ? 90 : 1200;
-    const variationPageViews = period === 'day' ? 30 : period === 'week' ? 120 : period === 'month' ? 300 : 2400;
-
-    const visitors = Math.floor(baseVisitor + Math.random() * variationVisitor);
-    const pageViews = Math.floor(basePageViews + Math.random() * variationPageViews);
-
-    result.push({
-      date: formattedDate,
-      visitors,
-      pageViews
-    });
-  }
-
-  return result;
-}
