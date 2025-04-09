@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, CheckCircle, Palette } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Palette, Settings } from 'lucide-react';
 
 const themeData = [
   {
@@ -81,6 +81,18 @@ const ThemeSelection = () => {
     }
   };
 
+  const handleCustomize = () => {
+    if (selectedTheme) {
+      navigate('/dashboard/theme-customization');
+    } else {
+      toast({
+        title: "Tema seçilmedi",
+        description: "Özelleştirmek için önce bir tema seçmelisiniz.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>;
   }
@@ -136,7 +148,17 @@ const ThemeSelection = () => {
         ))}
       </div>
       
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button 
+          variant="outline"
+          size="lg" 
+          onClick={handleCustomize}
+          disabled={!selectedTheme}
+        >
+          <Settings className="mr-2 h-5 w-5" />
+          Bu Temayı Özelleştir
+        </Button>
+        
         <Button 
           size="lg" 
           onClick={handleContinue}

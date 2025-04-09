@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Palette } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -75,13 +76,23 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-2">
               <p>20'den fazla profesyonel tema arasından seçim yapın.</p>
-              <Button 
-                variant="outline" 
-                className="w-full mt-4"
-                onClick={() => navigate('/dashboard/theme-selection')}
-              >
-                Temaları Keşfet
-              </Button>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/dashboard/theme-selection')}
+                >
+                  Tema Seç
+                </Button>
+                <Button 
+                  variant="default" 
+                  className="w-full"
+                  onClick={() => navigate('/dashboard/theme-customization')}
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Özelleştir
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

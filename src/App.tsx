@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import PurchasePage from "./pages/PurchasePage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import ThemeSelection from "./pages/ThemeSelection";
+import ThemeCustomization from "./pages/ThemeCustomization";
 import StoreSetup from "./pages/StoreSetup";
 import Store from "./pages/Store";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/store" element={<Store />} />
+            <Route path="/dashboard/theme-customization" element={<ThemeCustomization />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
             <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />

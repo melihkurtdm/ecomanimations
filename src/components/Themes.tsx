@@ -1,7 +1,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Palette } from "lucide-react";
 
 const themeData = [
   {
@@ -37,6 +39,8 @@ const themeData = [
 ];
 
 const Themes = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -48,6 +52,22 @@ const Themes = () => {
 
   const prevSlide = () => {
     setCurrentSlide(prev => (prev === 0 ? maxSlides : prev - 1));
+  };
+
+  const handleViewTheme = (index: number) => {
+    if (user) {
+      navigate('/dashboard/theme-selection');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleCustomizeTheme = () => {
+    if (user) {
+      navigate('/dashboard/theme-customization');
+    } else {
+      navigate('/auth');
+    }
   };
 
   useEffect(() => {
@@ -97,6 +117,17 @@ const Themes = () => {
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Markanıza uygun çeşitli temalar arasından seçim yapın ve tamamen özelleştirin
           </p>
+          
+          {user && (
+            <Button 
+              variant="outline" 
+              className="mt-6"
+              onClick={handleCustomizeTheme}
+            >
+              <Palette className="h-4 w-4 mr-2" />
+              Tema Özelleştirme Sayfasına Git
+            </Button>
+          )}
         </div>
 
         <div className="relative">
@@ -155,7 +186,13 @@ const Themes = () => {
                           </div>
                         ))}
                       </div>
-                      <Button variant="outline" className="mt-6 w-full">Görüntüle</Button>
+                      <Button 
+                        variant="outline" 
+                        className="mt-6 w-full"
+                        onClick={() => handleViewTheme(index)}
+                      >
+                        Görüntüle
+                      </Button>
                     </div>
                   </div>
                 </div>
