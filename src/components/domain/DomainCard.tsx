@@ -15,9 +15,11 @@ import {
   Star, 
   ExternalLink, 
   RotateCw, 
-  Trash2
+  Trash2,
+  RefreshCcw
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DomainCardProps {
   domain: string;
@@ -38,6 +40,50 @@ const DomainCard: React.FC<DomainCardProps> = ({
   onMakePrimary,
   onDelete
 }) => {
+  const { toast } = useToast();
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleVerifyDomain = async () => {
+    try {
+      setIsVerifying(true);
+      // Perform the actual verification process
+      await onVerify();
+      
+      toast({
+        title: "Domain doğrulama başarılı",
+        description: "Alan adınız başarıyla doğrulandı.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Doğrulama hatası",
+        description: "Alan adınız doğrulanırken bir hata oluştu. Lütfen DNS ayarlarınızı kontrol edin.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleExternalVisit = () => {
+    // Check if domain is actually accessible
+    const url = `https://${domain}`;
+    
+    // Try to fetch the domain first to check if it's available
+    fetch(url, { mode: 'no-cors' })
+      .then(() => {
+        window.open(url, '_blank');
+      })
+      .catch((error) => {
+        console.error("Domain ziyaret edilemiyor:", error);
+        toast({
+          title: "Alan adı erişilebilir değil",
+          description: "Bu alan adına henüz erişilemiyor. DNS ayarlarınızın yayılması 24-48 saat sürebilir.",
+          variant: "destructive",
+        });
+      });
+  };
+
   const getStatusBadge = () => {
     switch (status) {
       case 'verified':
@@ -98,9 +144,18 @@ const DomainCard: React.FC<DomainCardProps> = ({
           
           <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
             {status === 'pending' && (
-              <Button size="sm" variant="outline" onClick={onVerify}>
-                <RotateCw className="h-4 w-4 mr-1" />
-                Doğrula
+              <Button size="sm" variant="outline" onClick={handleVerifyDomain} disabled={isVerifying}>
+                {isVerifying ? (
+                  <>
+                    <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                    Doğrulanıyor...
+                  </>
+                ) : (
+                  <>
+                    <RotateCw className="h-4 w-4 mr-1" />
+                    Doğrula
+                  </>
+                )}
               </Button>
             )}
             
@@ -111,7 +166,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               </Button>
             )}
             
-            <Button size="sm" variant="outline" className="text-blue-600" onClick={() => window.open(`https://${domain}`, '_blank')}>
+            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit}>
               <ExternalLink className="h-4 w-4 mr-1" />
               Ziyaret Et
             </Button>
@@ -140,6 +195,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               <Clock className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
               <div>
                 <p>Alan adınız DNS doğrulamasını bekliyor. Lütfen DNS ayarlarınızı kontrol edin.</p>
+                <p className="mt-1">CNAME kaydı olarak <span className="font-mono bg-amber-100 px-1 rounded">routes.storehub.app</span> değerini ekleyin.</p>
               </div>
             </div>
           </div>

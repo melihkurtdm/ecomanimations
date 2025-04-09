@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { ArrowLeft, Globe, Copy, CheckCircle, ExternalLink, Shield, AlertTriangle, X } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
+import { supabase } from '@/integrations/supabase/client';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,21 +39,6 @@ const itemVariants = {
   }
 };
 
-// Örnek domain verileri
-const domains = [
-  {
-    id: 1,
-    domain: 'magaza1.example.com',
-    status: 'verified' as 'verified',
-    primary: true,
-    createdAt: '2023-08-15',
-    lastChecked: '2023-09-01'
-  }
-];
-
-// Örnek subdomain
-const subdomain = 'magaza1.storehub.app';
-
 const DomainManagement = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -65,11 +51,29 @@ const DomainManagement = () => {
   const [forceSSL, setForceSSL] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  const [domains, setDomains] = useState([
+    {
+      id: 1,
+      domain: 'magaza1.example.com',
+      status: 'verified' as 'verified',
+      primary: true,
+      createdAt: '2023-08-15',
+      lastChecked: '2023-09-01'
+    }
+  ]);
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  const subdomain = 'magaza1.storehub.app';
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    // Here you would load the user's domains from a database
+    // For demo, we're using the static data above
+  }, [user, navigate]);
 
   const handleAddDomain = () => {
     if (!newDomain) {
@@ -90,18 +94,40 @@ const DomainManagement = () => {
       return;
     }
 
+    if (domains.some(d => d.domain === newDomain)) {
+      toast({
+        title: "Alan adı zaten mevcut",
+        description: "Bu alan adı zaten eklenmiş.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setVerifying(true);
 
-    // Doğrulama simülasyonu
+    // In real app, you would save the domain to database here
     setTimeout(() => {
+      // Add new domain to the list
+      const newDomainObj = {
+        id: Date.now(),
+        domain: newDomain,
+        status: 'pending' as 'pending',
+        primary: domains.length === 0, // First domain is primary by default
+        createdAt: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+        lastChecked: new Date().toISOString().split('T')[0]
+      };
+      
+      setDomains(prev => [...prev, newDomainObj]);
+      
       setVerifying(false);
+      setNewDomain('');
+      setIsAddingDomain(false);
+      
       toast({
         title: "Alan adı eklendi",
         description: `${newDomain} alan adı eklendi. DNS doğrulaması gerekiyor.`,
       });
-      setNewDomain('');
-      setIsAddingDomain(false);
-    }, 2000);
+    }, 1000);
   };
 
   const handleVerifyDomain = (domain: string) => {
@@ -110,8 +136,17 @@ const DomainManagement = () => {
       description: `${domain} alan adı doğrulanıyor...`,
     });
 
-    // Doğrulama simülasyonu
+    // Here you would actually check the DNS records
+    // For demo purposes, we'll simulate a successful verification after delay
     setTimeout(() => {
+      setDomains(prev => 
+        prev.map(d => 
+          d.domain === domain 
+            ? { ...d, status: 'verified' as 'verified', lastChecked: new Date().toISOString().split('T')[0] } 
+            : d
+        )
+      );
+      
       toast({
         title: "Alan adı doğrulandı",
         description: `${domain} alan adı başarıyla doğrulandı.`,
@@ -120,6 +155,10 @@ const DomainManagement = () => {
   };
 
   const handleMakePrimary = (domain: string) => {
+    setDomains(prev => 
+      prev.map(d => ({ ...d, primary: d.domain === domain }))
+    );
+    
     toast({
       title: "Birincil alan adı ayarlandı",
       description: `${domain} artık birincil alan adınız.`,
@@ -127,6 +166,19 @@ const DomainManagement = () => {
   };
 
   const handleDeleteDomain = (domain: string) => {
+    const isPrimary = domains.find(d => d.domain === domain)?.primary;
+
+    if (isPrimary) {
+      toast({
+        title: "Birincil alan adı silinemez",
+        description: "Birincil alan adınızı silmek için önce başka bir alan adını birincil yapın.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDomains(prev => prev.filter(d => d.domain !== domain));
+    
     toast({
       title: "Alan adı silindi",
       description: `${domain} alan adı silindi.`,
@@ -138,6 +190,10 @@ const DomainManagement = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <motion.div 
