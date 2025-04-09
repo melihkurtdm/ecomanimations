@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,7 +48,6 @@ const DomainManagement = () => {
       return;
     }
     
-    // Check if domain already exists
     if (domains.some(d => d.domain === newDomain)) {
       toast({
         title: "Alan adı zaten mevcut",
@@ -62,8 +60,6 @@ const DomainManagement = () => {
     setIsAddingDomain(true);
     
     try {
-      // Burada gerçek bir API'ye istek gönderilebilir
-      // Simüle ediyoruz
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const newDomainObject: Domain = {
@@ -95,11 +91,8 @@ const DomainManagement = () => {
 
   const handleVerifyDomain = async (domainId: number) => {
     try {
-      // Burada gerçek bir doğrulama işlemi yapılabilir
-      // Simüle ediyoruz
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // %50 şansla başarılı veya başarısız
       const isSuccessful = Math.random() > 0.5;
       
       if (isSuccessful) {
@@ -121,7 +114,6 @@ const DomainManagement = () => {
 
   const handleRefreshDomain = async (domainId: number) => {
     try {
-      // Burada gerçek bir yenileme işlemi yapılabilir
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setDomains(prev => 
@@ -141,7 +133,6 @@ const DomainManagement = () => {
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
     try {
-      // Burada tüm alan adlarını yenileyebilirsiniz
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setDomains(prev => 
@@ -181,7 +172,6 @@ const DomainManagement = () => {
   };
 
   const handleDeleteDomain = (domainId: number) => {
-    // Birincil alan adını silmeye çalışıyorsa uyarı ver
     const domainToDelete = domains.find(d => d.id === domainId);
     if (domainToDelete?.primary) {
       toast({
