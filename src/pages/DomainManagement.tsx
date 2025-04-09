@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -39,6 +40,18 @@ const itemVariants = {
   }
 };
 
+// Define the domain type
+type DomainStatus = 'verified' | 'pending' | 'error';
+
+interface Domain {
+  id: number;
+  domain: string;
+  status: DomainStatus;
+  primary: boolean;
+  createdAt: string;
+  lastChecked: string;
+}
+
 const DomainManagement = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -52,11 +65,11 @@ const DomainManagement = () => {
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  const [domains, setDomains] = useState([
+  const [domains, setDomains] = useState<Domain[]>([
     {
       id: 1,
       domain: 'magaza1.example.com',
-      status: 'verified' as 'verified',
+      status: 'verified',
       primary: true,
       createdAt: '2023-08-15',
       lastChecked: '2023-09-01'
@@ -108,10 +121,10 @@ const DomainManagement = () => {
     // In real app, you would save the domain to database here
     setTimeout(() => {
       // Add new domain to the list
-      const newDomainObj = {
+      const newDomainObj: Domain = {
         id: Date.now(),
         domain: newDomain,
-        status: 'pending' as 'pending',
+        status: 'pending',
         primary: domains.length === 0, // First domain is primary by default
         createdAt: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
         lastChecked: new Date().toISOString().split('T')[0]
@@ -142,7 +155,7 @@ const DomainManagement = () => {
       setDomains(prev => 
         prev.map(d => 
           d.domain === domain 
-            ? { ...d, status: 'verified' as 'verified', lastChecked: new Date().toISOString().split('T')[0] } 
+            ? { ...d, status: 'verified' as DomainStatus, lastChecked: new Date().toISOString().split('T')[0] } 
             : d
         )
       );
