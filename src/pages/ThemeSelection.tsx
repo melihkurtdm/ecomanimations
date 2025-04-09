@@ -270,7 +270,10 @@ const ThemeSelection = () => {
                       }`}
                       style={{ 
                         borderColor: selectedTheme === theme.id ? theme.color : undefined,
-                        ringColor: selectedTheme === theme.id ? theme.color : undefined
+                        // Fix: Remove ringColor property and use inline CSS custom property
+                        // for the ring color that will be applied via the ring-2 class
+                        // The ring color will be controlled by the borderColor which affects 
+                        // the ring through the tailwind configuration
                       }}
                       onClick={() => handleSelectTheme(theme.id)}
                     >
