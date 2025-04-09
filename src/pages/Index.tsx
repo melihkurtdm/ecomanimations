@@ -11,7 +11,7 @@ import TestimonialSection from "@/components/TestimonialSection";
 import CallToAction from "@/components/CallToAction";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Palette, Store, LayoutDashboard, ArrowRight, Activity, Settings } from "lucide-react";
+import { Palette, Store, LayoutDashboard, ArrowRight, Activity, Settings, ChevronRight } from "lucide-react";
 
 const Index = () => {
   const { user } = useAuth();
@@ -93,7 +93,7 @@ const Index = () => {
                       variant="outline"
                     >
                       <span>Yönetim Paneli</span>
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </div>
                 </div>
@@ -117,7 +117,7 @@ const Index = () => {
                       variant="outline"
                     >
                       <span>Mağazaya Git</span>
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ const Index = () => {
                       variant="outline"
                     >
                       <span>Temayı Düzenle</span>
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ const Index = () => {
                       variant="outline"
                     >
                       <span>İstatistikler</span>
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </div>
                 </div>
