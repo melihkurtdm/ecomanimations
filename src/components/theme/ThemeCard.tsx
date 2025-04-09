@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, ArrowUpRight, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export interface ThemeItem {
   id: string;
@@ -23,6 +25,7 @@ interface ThemeCardProps {
   theme: ThemeItem;
   isSelected: boolean;
   onSelect: (themeId: string) => void;
+  onPreview?: (themeId: string) => void;
 }
 
 const itemVariants = {
@@ -37,7 +40,7 @@ const itemVariants = {
   }
 };
 
-const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) => {
+const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPreview }) => {
   return (
     <motion.div 
       variants={itemVariants}
@@ -54,15 +57,17 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
         }}
         onClick={() => onSelect(theme.id)}
       >
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden group">
           <img 
             src={theme.imageSrc} 
             alt={theme.name} 
-            className="w-full h-48 object-cover transition-transform duration-500 hover:scale-105" 
+            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" 
           />
+          
+          {/* Theme badge */}
           {theme.badge && (
             <Badge 
-              className="absolute top-3 right-3"
+              className="absolute top-3 right-3 z-10"
               style={{ 
                 backgroundColor: theme.color,
                 borderColor: theme.color
@@ -71,9 +76,11 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
               {theme.badge}
             </Badge>
           )}
+          
+          {/* Selected indicator */}
           {isSelected && (
             <motion.div 
-              className="absolute top-3 left-3 bg-white bg-opacity-90 text-brand-purple rounded-full p-1.5 shadow-lg"
+              className="absolute top-3 left-3 bg-white bg-opacity-90 text-brand-purple rounded-full p-1.5 shadow-lg z-10"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
@@ -81,7 +88,35 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
               <CheckCircle className="h-5 w-5" style={{ color: theme.color }} />
             </motion.div>
           )}
+          
+          {/* Preview overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            {onPreview && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      className="bg-white text-gray-800 hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPreview(theme.id);
+                      }}
+                    >
+                      <Eye className="mr-1 h-4 w-4" />
+                      Önizle
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Temayı önizle</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
+        
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center justify-between">
             <span>{theme.name}</span>
@@ -89,6 +124,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
           </CardTitle>
           <CardDescription>{theme.description}</CardDescription>
         </CardHeader>
+        
         <CardContent>
           <div className="space-y-2">
             {theme.features.map((feature, index) => (
@@ -101,6 +137,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
             ))}
           </div>
         </CardContent>
+        
         <CardFooter className="pt-0">
           {isSelected && (
             <Button 
@@ -110,6 +147,21 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect }) =>
             >
               <Sparkles className="mr-2 h-4 w-4" />
               Seçildi
+            </Button>
+          )}
+          
+          {!isSelected && theme.previewUrl && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="w-full text-gray-600"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(theme.previewUrl, '_blank');
+              }}
+            >
+              <ArrowUpRight className="mr-2 h-4 w-4" />
+              Demo
             </Button>
           )}
         </CardFooter>

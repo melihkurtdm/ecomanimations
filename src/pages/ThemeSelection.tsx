@@ -13,7 +13,9 @@ import {
   GripHorizontal, 
   Paintbrush, 
   Layers,
-  EyeIcon
+  EyeIcon,
+  CheckCircle,
+  ArrowRight
 } from 'lucide-react';
 import ThemeCard from '@/components/theme/ThemeCard';
 import ThemeCategories from '@/components/theme/ThemeCategories';
@@ -25,6 +27,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,6 +63,8 @@ const ThemeSelection = () => {
   const [domainDialogOpen, setDomainDialogOpen] = useState(false);
   const [domain, setDomain] = useState('');
   const [confirmPublishDialog, setConfirmPublishDialog] = useState(false);
+  const [publishingProgress, setPublishingProgress] = useState(0);
+  const [isPublishing, setIsPublishing] = useState(false);
   
   const filteredThemes = activeCategory === "all" 
     ? themeData 
@@ -134,17 +139,32 @@ const ThemeSelection = () => {
   };
 
   const handleConfirmPublish = () => {
+    setIsPublishing(true);
+    
+    // Yayınlama ilerleme durumunu simüle et
+    const interval = setInterval(() => {
+      setPublishingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          
+          // Yayınlama tamamlandığında
+          setTimeout(() => {
+            setConfirmPublishDialog(false);
+            navigate('/dashboard/store-setup');
+          }, 500);
+          
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 200);
+    
     toast({
       title: "Tema yayınlanıyor",
       description: domain 
         ? `${themeData.find(t => t.id === selectedTheme)?.name} teması ${domain} adresinde yayınlanıyor...` 
         : `${themeData.find(t => t.id === selectedTheme)?.name} teması yayınlanıyor...`,
     });
-    
-    setTimeout(() => {
-      setConfirmPublishDialog(false);
-      navigate('/dashboard/store-setup');
-    }, 1500);
   };
 
   const handleCustomize = () => {
@@ -240,14 +260,17 @@ const ThemeSelection = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {filteredThemes.map((theme) => (
-                  <ThemeCard 
-                    key={theme.id}
-                    theme={theme}
-                    isSelected={selectedTheme === theme.id}
-                    onSelect={handleSelectTheme}
-                  />
-                ))}
+                <AnimatePresence mode="wait">
+                  {filteredThemes.map((theme) => (
+                    <ThemeCard 
+                      key={theme.id}
+                      theme={theme}
+                      isSelected={selectedTheme === theme.id}
+                      onSelect={handleSelectTheme}
+                      onPreview={() => setShowPreview(theme.id)}
+                    />
+                  ))}
+                </AnimatePresence>
               </motion.div>
             </TabsContent>
           ))}
@@ -338,51 +361,101 @@ const ThemeSelection = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="flex items-center justify-center py-6">
-              <div className="relative">
-                <svg className="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-            </div>
-            
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  <Layers className="h-3 w-3 mr-1" />
-                  Tema
-                </Badge>
-                <span className="text-sm">
-                  {selectedTheme && themeData.find(t => t.id === selectedTheme)?.name}
-                </span>
-              </div>
-              
-              {domain && (
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    <Globe className="h-3 w-3 mr-1" />
-                    Domain
-                  </Badge>
-                  <span className="text-sm">{domain}</span>
+            {isPublishing ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-4">
+                  <Progress value={publishingProgress} className="w-full mb-2" />
+                  <p className="text-sm text-gray-500">{publishingProgress}% Tamamlandı</p>
                 </div>
-              )}
-            </div>
-            
-            <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-700 flex items-start space-x-2">
-              <EyeIcon className="h-5 w-5 text-amber-500 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Siteniz Hazırlandıktan Sonra</p>
-                <p className="mt-1">
-                  Kurulum tamamlandığında size "Sürükle & Bırak" düzenleyici açılacak ve mağazanızı özelleştirebileceksiniz.
-                </p>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2 text-sm">
+                    <CheckCircle className={`h-4 w-4 ${publishingProgress >= 20 ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={publishingProgress >= 20 ? '' : 'text-gray-400'}>Tema ayarları yapılandırılıyor</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <CheckCircle className={`h-4 w-4 ${publishingProgress >= 40 ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={publishingProgress >= 40 ? '' : 'text-gray-400'}>Sayfa bileşenleri hazırlanıyor</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <CheckCircle className={`h-4 w-4 ${publishingProgress >= 60 ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={publishingProgress >= 60 ? '' : 'text-gray-400'}>Sürükle & Bırak düzenleyici kuruluyor</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <CheckCircle className={`h-4 w-4 ${publishingProgress >= 80 ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={publishingProgress >= 80 ? '' : 'text-gray-400'}>{domain ? 'Alan adı yapılandırılıyor' : 'Deneme alanı oluşturuluyor'}</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <CheckCircle className={`h-4 w-4 ${publishingProgress >= 100 ? 'text-green-500' : 'text-gray-300'}`} />
+                    <span className={publishingProgress >= 100 ? '' : 'text-gray-400'}>Yayına hazırlanıyor</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-center py-6">
+                  <div className="relative">
+                    <svg className="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <Layers className="h-3 w-3 mr-1" />
+                      Tema
+                    </Badge>
+                    <span className="text-sm">
+                      {selectedTheme && themeData.find(t => t.id === selectedTheme)?.name}
+                    </span>
+                  </div>
+                  
+                  {domain && (
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Globe className="h-3 w-3 mr-1" />
+                        Domain
+                      </Badge>
+                      <span className="text-sm">{domain}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-700 flex items-start space-x-2">
+                  <EyeIcon className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Siteniz Hazırlandıktan Sonra</p>
+                    <p className="mt-1">
+                      Kurulum tamamlandığında size "Sürükle & Bırak" düzenleyici açılacak ve mağazanızı özelleştirebileceksiniz.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           
           <DialogFooter>
-            <Button type="button" onClick={handleConfirmPublish}>
-              Devam Et
+            <Button 
+              type="button" 
+              onClick={handleConfirmPublish}
+              disabled={isPublishing}
+              className="gap-2"
+            >
+              {isPublishing ? (
+                <>Yayınlanıyor...</>
+              ) : (
+                <>
+                  Devam Et
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
