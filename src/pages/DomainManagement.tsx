@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -44,7 +43,7 @@ const domains = [
   {
     id: 1,
     domain: 'magaza1.example.com',
-    status: 'verified',
+    status: 'verified' as 'verified',
     primary: true,
     createdAt: '2023-08-15',
     lastChecked: '2023-09-01'
@@ -105,7 +104,7 @@ const DomainManagement = () => {
     }, 2000);
   };
 
-  const handleVerifyDomain = (domain) => {
+  const handleVerifyDomain = (domain: string) => {
     toast({
       title: "Alan adı doğrulanıyor",
       description: `${domain} alan adı doğrulanıyor...`,
@@ -120,14 +119,14 @@ const DomainManagement = () => {
     }, 2000);
   };
 
-  const handleMakePrimary = (domain) => {
+  const handleMakePrimary = (domain: string) => {
     toast({
       title: "Birincil alan adı ayarlandı",
       description: `${domain} artık birincil alan adınız.`,
     });
   };
 
-  const handleDeleteDomain = (domain) => {
+  const handleDeleteDomain = (domain: string) => {
     toast({
       title: "Alan adı silindi",
       description: `${domain} alan adı silindi.`,
