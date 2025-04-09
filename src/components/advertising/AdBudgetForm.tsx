@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,13 +9,37 @@ import { Switch } from '@/components/ui/switch';
 import { Info, DollarSign, Calendar } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const AdBudgetForm = () => {
+interface AdBudgetFormProps {
+  onBudgetChange?: (budget: number) => void;
+  onSettingsChange?: (settings: {
+    duration: string;
+    currency: string;
+    automaticBidding: boolean;
+  }) => void;
+}
+
+const AdBudgetForm: React.FC<AdBudgetFormProps> = ({ 
+  onBudgetChange, 
+  onSettingsChange 
+}) => {
   const [dailyBudget, setDailyBudget] = useState<number>(50);
   const [campaign, setCampaign] = useState({
     duration: '30',
     currency: 'TRY',
     automaticBidding: true
   });
+
+  useEffect(() => {
+    if (onBudgetChange) {
+      onBudgetChange(dailyBudget);
+    }
+  }, [dailyBudget, onBudgetChange]);
+
+  useEffect(() => {
+    if (onSettingsChange) {
+      onSettingsChange(campaign);
+    }
+  }, [campaign, onSettingsChange]);
 
   const handleDailyBudgetChange = (value: number[]) => {
     setDailyBudget(value[0]);

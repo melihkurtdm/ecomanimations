@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -19,7 +19,11 @@ interface AdCreative {
   description: string;
 }
 
-const AdCreativeUploader = () => {
+interface AdCreativeUploaderProps {
+  onCreativesChange?: (creatives: AdCreative[]) => void;
+}
+
+const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({ onCreativesChange }) => {
   const [activeTab, setActiveTab] = useState('images');
   const [creatives, setCreatives] = useState<AdCreative[]>([
     {
@@ -32,6 +36,12 @@ const AdCreativeUploader = () => {
     }
   ]);
   const [currentCreativeIndex, setCurrentCreativeIndex] = useState(0);
+
+  useEffect(() => {
+    if (onCreativesChange) {
+      onCreativesChange(creatives);
+    }
+  }, [creatives, onCreativesChange]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

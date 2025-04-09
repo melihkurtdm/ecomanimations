@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Facebook, Instagram, Search, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,10 @@ interface AdPlatform {
   description: string;
   badge?: string;
   badgeColor?: string;
+}
+
+interface AdPlatformSelectorProps {
+  onSelectionChange?: (platforms: string[]) => void;
 }
 
 const platforms: AdPlatform[] = [
@@ -39,8 +43,14 @@ const platforms: AdPlatform[] = [
   },
 ];
 
-const AdPlatformSelector = () => {
+const AdPlatformSelector: React.FC<AdPlatformSelectorProps> = ({ onSelectionChange }) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['google']);
+
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedPlatforms);
+    }
+  }, [selectedPlatforms, onSelectionChange]);
 
   const togglePlatform = (platformId: string) => {
     setSelectedPlatforms(prev => 
