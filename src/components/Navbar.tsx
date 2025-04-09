@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,7 +31,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center">
-            <a href="#" className="text-2xl font-bold gradient-text">E-Paket</a>
+            <Link to="/" className="text-2xl font-bold gradient-text">E-Paket</Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -40,9 +42,8 @@ const Navbar = () => {
             <a href="#contact" className="text-gray-600 hover:text-brand-purple transition-colors">İletişim</a>
           </nav>
 
-          <div className="hidden md:flex space-x-4">
-            <Button variant="outline">Giriş Yap</Button>
-            <Button>Ücretsiz Dene</Button>
+          <div className="hidden md:flex">
+            <UserMenu />
           </div>
 
           {/* Mobile menu button */}
@@ -94,8 +95,7 @@ const Navbar = () => {
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-5 space-x-3">
-              <Button variant="outline" className="w-full">Giriş Yap</Button>
-              <Button className="w-full">Ücretsiz Dene</Button>
+              <UserMenu />
             </div>
           </div>
         </div>
