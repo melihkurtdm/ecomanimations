@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Globe, Archive, EyeOff, AlertTriangle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface ThemePublishFormProps {
   isPublished: boolean;
@@ -29,12 +30,54 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
     indexable: true,
     maintenance: false
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSettingChange = (key: string, value: any) => {
     setPublishSettings(prev => ({
       ...prev,
       [key]: value
     }));
+  };
+
+  const handlePublish = () => {
+    setIsLoading(true);
+    
+    // Yayınlama işlemi simülasyonu
+    setTimeout(() => {
+      setIsLoading(false);
+      onPublish();
+      
+      toast({
+        title: "Tema başarıyla yayınlandı",
+        description: publishSettings.customDomain 
+          ? `Temanız ${publishSettings.customDomain} adresinde yayında.` 
+          : "Temanız başarıyla yayınlandı.",
+      });
+    }, 1500);
+  };
+
+  const handleUnpublish = () => {
+    setIsLoading(true);
+    
+    // Yayından kaldırma işlemi simülasyonu
+    setTimeout(() => {
+      setIsLoading(false);
+      onUnpublish();
+      
+      toast({
+        title: "Tema yayından kaldırıldı",
+        description: "Temanız artık ziyaretçilere kapalı.",
+      });
+    }, 1000);
+  };
+
+  const handlePreviewLink = () => {
+    const domain = publishSettings.customDomain || 'tema-onizleme.lovable.app';
+    
+    toast({
+      title: "Önizleme bağlantısı oluşturuldu",
+      description: `Temanızı ${domain}/preview adresinden önizleyebilirsiniz.`,
+    });
   };
 
   return (
@@ -73,7 +116,8 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
             <Switch 
               id="publish-switch" 
               checked={isPublished}
-              onCheckedChange={(checked) => checked ? onPublish() : onUnpublish()}
+              onCheckedChange={(checked) => checked ? handlePublish() : handleUnpublish()}
+              disabled={isLoading}
             />
           </div>
           
@@ -84,6 +128,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
             <Select 
               value={publishSettings.visibility} 
               onValueChange={(value) => handleSettingChange('visibility', value)}
+              disabled={isLoading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Görünürlük seçin" />
@@ -100,6 +145,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
                 type="password" 
                 placeholder="Mağaza şifresi belirleyin" 
                 className="mt-2"
+                disabled={isLoading}
               />
             )}
           </div>
@@ -110,6 +156,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
               placeholder="örn: magazam.com" 
               value={publishSettings.customDomain}
               onChange={(e) => handleSettingChange('customDomain', e.target.value)}
+              disabled={isLoading}
             />
             <p className="text-xs text-gray-500">
               Premium hesaplar için özel alan adı bağlama özelliği sunuyoruz.
@@ -126,6 +173,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
                 id="https-switch" 
                 checked={publishSettings.useHttps}
                 onCheckedChange={(checked) => handleSettingChange('useHttps', checked)}
+                disabled={isLoading}
               />
             </div>
             
@@ -138,6 +186,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
                 id="indexable-switch" 
                 checked={publishSettings.indexable}
                 onCheckedChange={(checked) => handleSettingChange('indexable', checked)}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -151,6 +200,7 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
               id="maintenance-switch" 
               checked={publishSettings.maintenance}
               onCheckedChange={(checked) => handleSettingChange('maintenance', checked)}
+              disabled={isLoading}
             />
           </div>
           
@@ -168,9 +218,15 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
           <Button 
             variant={isPublished ? "outline" : "default"} 
             className="flex-1"
-            onClick={isPublished ? onUnpublish : onPublish}
+            onClick={isPublished ? handleUnpublish : handlePublish}
+            disabled={isLoading}
           >
-            {isPublished ? (
+            {isLoading ? (
+              <>
+                <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
+                {isPublished ? "Yayından Kaldırılıyor..." : "Yayınlanıyor..."}
+              </>
+            ) : isPublished ? (
               <>
                 <Archive className="mr-2 h-4 w-4" />
                 Yayından Kaldır
@@ -183,7 +239,12 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
             )}
           </Button>
           
-          <Button variant="outline" className="flex-1">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={handlePreviewLink}
+            disabled={isLoading}
+          >
             <EyeOff className="mr-2 h-4 w-4" />
             Önizleme Bağlantısı Oluştur
           </Button>

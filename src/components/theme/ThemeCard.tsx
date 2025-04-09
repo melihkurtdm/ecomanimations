@@ -65,7 +65,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
         }`}
         style={{ 
           borderColor: isSelected ? theme.color : undefined,
-          borderRadius: borderRadius
+          borderRadius
         }}
         onClick={() => onSelect(theme.id)}
       >
