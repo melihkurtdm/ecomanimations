@@ -15,7 +15,8 @@ import {
   Layers,
   EyeIcon,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Palette
 } from 'lucide-react';
 import ThemeCard from '@/components/theme/ThemeCard';
 import ThemeCategories from '@/components/theme/ThemeCategories';
