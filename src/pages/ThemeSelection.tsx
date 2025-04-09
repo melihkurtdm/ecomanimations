@@ -65,6 +65,7 @@ const ThemeSelection = () => {
   const [confirmPublishDialog, setConfirmPublishDialog] = useState(false);
   const [publishingProgress, setPublishingProgress] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showToolTip, setShowToolTip] = useState(false);
   
   const filteredThemes = activeCategory === "all" 
     ? themeData 
@@ -80,6 +81,17 @@ const ThemeSelection = () => {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
+
+  // Yeni temayı seçtiğimizde tooltip göster
+  useEffect(() => {
+    if (selectedTheme) {
+      setShowToolTip(true);
+      const timer = setTimeout(() => {
+        setShowToolTip(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedTheme]);
 
   const handleSelectTheme = (themeId: string) => {
     setSelectedTheme(themeId);
@@ -170,6 +182,12 @@ const ThemeSelection = () => {
   const handleCustomize = () => {
     if (selectedTheme) {
       navigate('/dashboard/theme-customization');
+      
+      // Doğrudan düzenleyici moduna geçişi teşvik eden bir toast göster
+      toast({
+        title: "Tema Düzenleyici Açılıyor",
+        description: "Sürükle & Bırak özelliğini kullanmak için 'Sayfa Düzenleyici' sekmesine tıklayın.",
+      });
     } else {
       toast({
         title: "Tema seçilmedi",
@@ -231,24 +249,52 @@ const ThemeSelection = () => {
               </Button>
               
               <TooltipProvider>
-                <Tooltip>
+                <Tooltip open={showToolTip}>
                   <TooltipTrigger asChild>
                     <Button 
                       size="sm"
                       variant="outline"
                       onClick={handleCustomize}
                       disabled={!selectedTheme}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 relative"
                     >
                       <Paintbrush className="h-4 w-4" />
                       <span className="hidden md:inline">Düzenle</span>
+                      {selectedTheme && (
+                        <motion.div 
+                          className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ repeat: Infinity, duration: 1 }}
+                        />
+                      )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Temayı özelleştir</p>
+                  <TooltipContent className="p-2 max-w-xs bg-black text-white">
+                    <p className="text-sm">Sürükle & Bırak özelliğini kullanmak için tema düzenleyiciye gidin!</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              
+              {selectedTheme && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCustomize}
+                        className="flex items-center gap-2 border-dashed border-indigo-300"
+                      >
+                        <Layers className="h-4 w-4" />
+                        <span className="hidden md:inline">Sürükle & Bırak</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Sürükle & Bırak düzenleyiciyi açın</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
           
@@ -460,6 +506,37 @@ const ThemeSelection = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Temalar arasındaki farkları vurgulayan bir bilgi kutusu */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+        className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100"
+      >
+        <h3 className="font-medium text-blue-800 flex items-center">
+          <GripHorizontal className="h-5 w-5 mr-2 text-blue-600" />
+          Tema Özelleştirme İpuçları
+        </h3>
+        <p className="text-sm text-blue-700 mt-2">
+          Her temanın kendine özgü tasarım özellikleri vardır. Tema seçtikten sonra, "Düzenle" butonuna tıklayarak tema özelleştirme sayfasına gidin. 
+          Orada "Sayfa Düzenleyici" sekmesine tıklayarak sürükle-bırak özelliğini kullanabilirsiniz.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+          <div className="bg-white p-2 rounded text-xs text-blue-800 flex items-center">
+            <Palette className="h-4 w-4 mr-1 text-blue-600" />
+            Renk şemalarını değiştirin
+          </div>
+          <div className="bg-white p-2 rounded text-xs text-blue-800 flex items-center">
+            <Layers className="h-4 w-4 mr-1 text-blue-600" />
+            Sürükle & bırak ile öğeleri düzenleyin
+          </div>
+          <div className="bg-white p-2 rounded text-xs text-blue-800 flex items-center">
+            <GripHorizontal className="h-4 w-4 mr-1 text-blue-600" />
+            Bileşenleri ekleyin ve kaldırın
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };

@@ -144,6 +144,24 @@ const Themes = () => {
     }
   };
 
+  // Her tema için benzersiz stiller oluşturalım
+  const getUniqueThemeCardStyle = (themeId: string) => {
+    switch(themeId) {
+      case 'modern':
+        return "bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg";
+      case 'luxury':
+        return "bg-white rounded-none overflow-hidden shadow-lg hover:shadow-xl border-b-4";
+      case 'popup':
+        return "bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md border-l-4";
+      case 'catalog':
+        return "bg-white rounded-md overflow-hidden shadow-md hover:shadow-lg border-2";
+      case 'fashion':
+        return "bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl";
+      default:
+        return "bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg";
+    }
+  };
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -253,10 +271,15 @@ const Themes = () => {
                   onMouseLeave={() => setIsHovered(null)}
                 >
                   <motion.div 
-                    className="theme-card bg-white rounded-xl overflow-hidden h-full shadow-md hover:shadow-lg transition-all duration-300"
+                    className={`theme-card h-full ${getUniqueThemeCardStyle(theme.id)}`}
                     whileHover={{ 
                       y: -10, 
                       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                    }}
+                    style={{ 
+                      borderColor: theme.color,
+                      borderBottomColor: theme.id === 'luxury' ? theme.color : undefined,
+                      borderLeftColor: theme.id === 'popup' ? theme.color : undefined
                     }}
                   >
                     <div className="relative h-48 w-full overflow-hidden">
@@ -285,7 +308,7 @@ const Themes = () => {
                             <Button 
                               size="sm" 
                               variant="secondary" 
-                              className="bg-white/90 hover:bg-white shadow-lg"
+                              className={`bg-white/90 hover:bg-white shadow-lg ${theme.id === 'luxury' ? 'rounded-none' : theme.id === 'fashion' ? 'rounded-full' : ''}`}
                               onClick={() => handleViewTheme(index)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
@@ -301,25 +324,25 @@ const Themes = () => {
                         {theme.features.map((feature, fIndex) => (
                           <motion.div 
                             key={fIndex} 
-                            className="flex items-center"
+                            className={`flex items-center ${theme.id === 'luxury' ? 'border-b pb-1' : ''}`}
                             initial={{ x: -10, opacity: 0 }}
                             whileInView={{ x: 0, opacity: 1 }}
                             transition={{ delay: fIndex * 0.1 }}
                             viewport={{ once: true }}
                           >
-                            <div className="h-5 w-5 rounded-full" style={{ backgroundColor: `${theme.color}20` }}>
+                            <div className={`h-5 w-5 ${theme.id === 'fashion' ? 'rounded-none' : 'rounded-full'}`} style={{ backgroundColor: `${theme.color}20` }}>
                               <div className="h-5 w-5 flex items-center justify-center">
                                 <Check className="h-3 w-3" style={{ color: theme.color }} />
                               </div>
                             </div>
-                            <span className="text-sm text-gray-700 ml-2">{feature}</span>
+                            <span className={`text-sm text-gray-700 ml-2 ${theme.id === 'luxury' ? 'font-medium' : ''}`}>{feature}</span>
                           </motion.div>
                         ))}
                       </div>
                       <div className="flex space-x-2 mt-6">
                         <Button 
                           variant="outline" 
-                          className="flex-1 group"
+                          className={`flex-1 group ${theme.id === 'luxury' ? 'rounded-none' : theme.id === 'fashion' ? 'rounded-full' : ''}`}
                           onClick={() => handleViewTheme(index)}
                         >
                           <Eye className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
@@ -327,7 +350,7 @@ const Themes = () => {
                         </Button>
                         {user && (
                           <Button 
-                            className="flex-1 group"
+                            className={`flex-1 group ${theme.id === 'luxury' ? 'rounded-none' : theme.id === 'fashion' ? 'rounded-full' : ''}`}
                             style={{ 
                               backgroundColor: theme.color,
                               borderColor: theme.color

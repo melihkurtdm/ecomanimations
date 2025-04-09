@@ -52,6 +52,57 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
   const buttonStyle = theme.customStyles?.buttonStyle || '';
   const headerStyle = theme.customStyles?.headerStyle || '';
   
+  // Her tema için farklı bir görünüm sağlamak için tema id'sine göre farklı stiller oluşturalım
+  const getUniqueThemeStyles = () => {
+    switch (theme.id) {
+      case 'modern':
+        return {
+          cardStyle: 'border-t-4 shadow-sm hover:shadow-md',
+          borderTopColor: theme.color,
+          btnClass: 'rounded-full',
+          badgeStyle: 'rounded-full'
+        };
+      case 'luxury':
+        return {
+          cardStyle: 'shadow-md border-0 hover:shadow-xl',
+          borderTopColor: 'transparent',
+          btnClass: 'rounded-none border-b-2',
+          badgeStyle: 'rounded-none'
+        };
+      case 'popup':
+        return {
+          cardStyle: 'border-l-4 shadow-md hover:shadow-lg',
+          borderTopColor: 'transparent',
+          borderLeftColor: theme.color,
+          btnClass: 'rounded-full',
+          badgeStyle: 'rounded-full'
+        };
+      case 'catalog':
+        return {
+          cardStyle: 'border-2 shadow-none hover:shadow-sm',
+          borderTopColor: 'transparent',
+          btnClass: 'rounded-sm',
+          badgeStyle: 'rounded-sm'
+        };
+      case 'fashion':
+        return {
+          cardStyle: 'border-0 shadow-lg hover:shadow-xl',
+          borderTopColor: 'transparent',
+          btnClass: 'rounded-none font-light',
+          badgeStyle: 'rounded-full px-4'
+        };
+      default:
+        return {
+          cardStyle: '',
+          borderTopColor: 'transparent',
+          btnClass: '',
+          badgeStyle: ''
+        };
+    }
+  };
+  
+  const themeStyles = getUniqueThemeStyles();
+  
   return (
     <motion.div 
       variants={itemVariants}
@@ -62,10 +113,12 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           isSelected 
             ? 'ring-2 ring-offset-2 shadow-lg' 
             : 'hover:shadow-md'
-        }`}
+        } ${themeStyles.cardStyle}`}
         style={{ 
           borderColor: isSelected ? theme.color : undefined,
-          borderRadius
+          borderRadius,
+          borderTopColor: themeStyles.borderTopColor,
+          borderLeftColor: themeStyles.borderLeftColor,
         }}
         onClick={() => onSelect(theme.id)}
       >
@@ -79,7 +132,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           {/* Theme badge */}
           {theme.badge && (
             <Badge 
-              className="absolute top-3 right-3 z-10"
+              className={`absolute top-3 right-3 z-10 ${themeStyles.badgeStyle}`}
               style={{ 
                 backgroundColor: theme.color,
                 borderColor: theme.color
@@ -110,7 +163,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
                     <Button 
                       size="sm" 
                       variant="secondary"
-                      className="bg-white text-gray-800 hover:bg-gray-100"
+                      className={`bg-white text-gray-800 hover:bg-gray-100 ${themeStyles.btnClass}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         onPreview(theme.id);
@@ -140,11 +193,17 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
         <CardContent>
           <div className="space-y-2">
             {theme.features.map((feature, index) => (
-              <div key={index} className="flex items-center">
-                <div className="h-4 w-4 rounded-full flex items-center justify-center mr-2" style={{ backgroundColor: `${theme.color}20` }}>
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.color }}></div>
+              <div key={index} className={`flex items-center ${theme.id === 'luxury' ? 'border-b pb-1' : ''}`}>
+                <div 
+                  className={`h-4 w-4 ${theme.id === 'fashion' ? 'rounded-none' : 'rounded-full'} flex items-center justify-center mr-2`} 
+                  style={{ backgroundColor: `${theme.color}20` }}
+                >
+                  <div 
+                    className={`h-2 w-2 ${theme.id === 'fashion' ? 'rounded-none' : 'rounded-full'}`} 
+                    style={{ backgroundColor: theme.color }}
+                  ></div>
                 </div>
-                <span className="text-sm text-gray-700">{feature}</span>
+                <span className={`text-sm text-gray-700 ${theme.id === 'luxury' ? 'font-medium' : ''}`}>{feature}</span>
               </div>
             ))}
           </div>
@@ -154,7 +213,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           {isSelected && (
             <Button 
               variant="secondary" 
-              className={`w-full transition-all duration-300 ${buttonStyle}`}
+              className={`w-full transition-all duration-300 ${buttonStyle} ${themeStyles.btnClass}`}
               style={{ backgroundColor: `${theme.color}20`, color: theme.color, borderColor: `${theme.color}30` }}
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -166,7 +225,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
             <Button 
               variant="outline" 
               size="sm"
-              className={`w-full text-gray-600 ${buttonStyle}`}
+              className={`w-full text-gray-600 ${buttonStyle} ${themeStyles.btnClass}`}
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(theme.previewUrl, '_blank');
