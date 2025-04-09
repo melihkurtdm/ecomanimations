@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, Store, Palette, LayoutDashboard } from "lucide-react";
+import { Menu, X, Store, Palette, LayoutDashboard, Users } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
@@ -57,6 +57,14 @@ const Navbar = () => {
     toast({
       title: "Dashboard",
       description: "Dashboard sayfasına yönlendirildiniz.",
+    });
+  };
+
+  const handleNavigateCustomers = () => {
+    navigate('/dashboard/customers');
+    toast({
+      title: "Müşteri Yönetimi",
+      description: "Müşterilerinizi yönetebilirsiniz.",
     });
   };
 
@@ -125,6 +133,15 @@ const Navbar = () => {
                           >
                             <Store className="h-4 w-4 mr-2" />
                             <span>Mağazam</span>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={handleNavigateCustomers}
+                            className="flex items-center justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50 w-full"
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            <span>Müşteriler</span>
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -238,6 +255,20 @@ const Navbar = () => {
                     >
                       <Store className="h-4 w-4 mr-2" />
                       Mağazam
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={menuItemVariants} initial="hidden" animate="visible" transition={{ delay: 0.55 }}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        handleNavigateCustomers();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Müşteriler
                     </Button>
                   </motion.div>
                   <motion.div variants={menuItemVariants} initial="hidden" animate="visible" transition={{ delay: 0.6 }}>
