@@ -18,10 +18,11 @@ import Stats from "./pages/Stats";
 import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
 import DomainManagement from "./pages/DomainManagement";
+import ThemePublish from "./pages/ThemePublish";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -33,16 +34,17 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/settings" element={<Settings />} />
-              <Route path="/dashboard/store" element={<Store />} />
-              <Route path="/dashboard/theme-customization" element={<ThemeCustomization />} />
-              <Route path="/dashboard/stats" element={<Stats />} />
               <Route path="/dashboard/customers" element={<Customers />} />
+              <Route path="/dashboard/store" element={<Store />} />
+              <Route path="/dashboard/stats" element={<Stats />} />
+              <Route path="/dashboard/settings" element={<Settings />} />
+              <Route path="/dashboard/domain-management" element={<DomainManagement />} />
+              <Route path="/dashboard/store-setup" element={<StoreSetup />} />
+              <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />
+              <Route path="/dashboard/theme-customization" element={<ThemeCustomization />} />
+              <Route path="/dashboard/theme-publish" element={<ThemePublish />} />
               <Route path="/purchase" element={<PurchasePage />} />
               <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
-              <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />
-              <Route path="/dashboard/store-setup" element={<StoreSetup />} />
-              <Route path="/dashboard/domain-management" element={<DomainManagement />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
@@ -50,6 +52,6 @@ const App = () => {
       </AuthProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

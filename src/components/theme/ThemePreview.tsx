@@ -1,9 +1,9 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Bookmark, CheckCircle2 } from 'lucide-react';
+import ThemeDeviceSelector, { DeviceType } from './ThemeDeviceSelector';
 
 interface ThemeSettings {
   colors: {
@@ -40,6 +40,33 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
   isPublished,
   onRefreshPreview
 }) => {
+  const [activeDevice, setActiveDevice] = useState<DeviceType>('desktop');
+  const [isRotated, setIsRotated] = useState(false);
+
+  const getPreviewWidth = () => {
+    switch (activeDevice) {
+      case 'mobile':
+        return isRotated ? '568px' : '320px';
+      case 'tablet':
+        return isRotated ? '1024px' : '768px';
+      case 'desktop':
+      default:
+        return '100%';
+    }
+  };
+
+  const getPreviewHeight = () => {
+    switch (activeDevice) {
+      case 'mobile':
+        return isRotated ? '320px' : '568px';
+      case 'tablet':
+        return isRotated ? '768px' : '1024px';
+      case 'desktop':
+      default:
+        return 'auto';
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -55,165 +82,184 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
         </Button>
       </CardHeader>
       <CardContent>
-        <motion.div 
-          className="border border-gray-200 rounded-lg overflow-hidden shadow-lg"
-          style={{ fontFamily: themeSettings.fonts.body }}
-          animate={previewAnimation ? { y: [0, -5, 0], transition: { duration: 0.5 } } : {}}
+        <ThemeDeviceSelector 
+          activeDevice={activeDevice}
+          onDeviceChange={setActiveDevice}
+          onRotate={() => setIsRotated(!isRotated)}
+          isRotated={isRotated}
+        />
+
+        <div 
+          className="overflow-hidden flex items-center justify-center border border-gray-200 rounded-lg shadow-lg"
+          style={{ height: activeDevice !== 'desktop' ? '500px' : 'auto' }}
         >
           <motion.div 
-            className="p-4 flex justify-between items-center"
+            className="border border-gray-200 rounded-lg overflow-hidden shadow-lg transition-all"
             style={{ 
-              backgroundColor: themeSettings.colors.background,
-              color: themeSettings.colors.text,
-              borderBottom: `1px solid ${themeSettings.colors.secondary}`,
+              fontFamily: themeSettings.fonts.body,
+              width: getPreviewWidth(),
+              height: getPreviewHeight(),
+              maxWidth: '100%',
+              maxHeight: activeDevice !== 'desktop' ? '100%' : 'auto',
+              transform: activeDevice !== 'desktop' && isRotated ? 'rotate(90deg)' : 'none',
             }}
-          >
-            <div className="text-xl font-bold" style={{ fontFamily: themeSettings.fonts.heading }}>
-              <span style={{ color: themeSettings.colors.primary }}>Mağaza</span> Adı
-            </div>
-            <div className="flex space-x-2">
-              <motion.button 
-                className="px-2 py-1 text-sm"
-                style={{ 
-                  backgroundColor: themeSettings.colors.primary, 
-                  color: "#FFFFFF",
-                  borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.5}rem`,
-                  fontFamily: themeSettings.fonts.button
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Giriş
-              </motion.button>
-            </div>
-          </motion.div>
-          
-          <motion.div 
-            className="p-6"
-            style={{ 
-              backgroundColor: themeSettings.colors.background,
-              color: themeSettings.colors.text,
-              padding: themeSettings.spacing.section
-            }}
+            animate={previewAnimation ? { y: [0, -5, 0], transition: { duration: 0.5 } } : {}}
           >
             <motion.div 
-              className="text-center mb-8"
-              style={{ marginBottom: themeSettings.spacing.section }}
-              animate={previewAnimation ? { 
-                scale: [1, 1.01, 1],
-                transition: { duration: 0.7, delay: 0.2 } 
-              } : {}}
-            >
-              <motion.h1 
-                className="text-3xl font-bold mb-2"
-                style={{ 
-                  fontFamily: themeSettings.fonts.heading,
-                  color: themeSettings.colors.primary
-                }}
-              >
-                Mağazamıza Hoş Geldiniz
-              </motion.h1>
-              <p className="mb-4">En kaliteli ürünler ve en iyi fiyatlar için doğru yerdesiniz.</p>
-              <motion.button 
-                className="px-6 py-2 font-medium"
-                style={{ 
-                  backgroundColor: themeSettings.colors.accent, 
-                  color: "#FFFFFF",
-                  borderRadius: `${parseFloat(themeSettings.borderRadius)}rem`,
-                  fontFamily: themeSettings.fonts.button
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Alışverişe Başla
-              </motion.button>
-            </motion.div>
-            
-            <h2 
-              className="text-xl font-bold mb-4"
+              className="p-4 flex justify-between items-center"
               style={{ 
-                fontFamily: themeSettings.fonts.heading,
-                marginBottom: themeSettings.spacing.element
+                backgroundColor: themeSettings.colors.background,
+                color: themeSettings.colors.text,
+                borderBottom: `1px solid ${themeSettings.colors.secondary}`,
               }}
             >
-              Öne Çıkan Ürünler
-            </h2>
-            <div 
-              className="grid grid-cols-3 gap-4"
-              style={{ gap: themeSettings.spacing.element }}
-            >
-              {[1, 2, 3].map((item) => (
-                <motion.div 
-                  key={item}
-                  className="border p-4"
+              <div className="text-xl font-bold" style={{ fontFamily: themeSettings.fonts.heading }}>
+                <span style={{ color: themeSettings.colors.primary }}>Mağaza</span> Adı
+              </div>
+              <div className="flex space-x-2">
+                <motion.button 
+                  className="px-2 py-1 text-sm"
                   style={{ 
-                    borderColor: themeSettings.colors.secondary,
+                    backgroundColor: themeSettings.colors.primary, 
+                    color: "#FFFFFF",
                     borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.5}rem`,
-                    padding: themeSettings.spacing.element
+                    fontFamily: themeSettings.fonts.button
                   }}
-                  whileHover={{ y: -5, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                  transition={{ duration: 0.2 }}
-                  animate={previewAnimation ? { 
-                    y: [0, -5, 0],
-                    transition: { duration: 0.5, delay: 0.3 + (item * 0.1) } 
-                  } : {}}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <div 
-                    className="bg-gray-200 mb-2"
+                  Giriş
+                </motion.button>
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="p-6"
+              style={{ 
+                backgroundColor: themeSettings.colors.background,
+                color: themeSettings.colors.text,
+                padding: themeSettings.spacing.section
+              }}
+            >
+              <motion.div 
+                className="text-center mb-8"
+                style={{ marginBottom: themeSettings.spacing.section }}
+                animate={previewAnimation ? { 
+                  scale: [1, 1.01, 1],
+                  transition: { duration: 0.7, delay: 0.2 } 
+                } : {}}
+              >
+                <motion.h1 
+                  className="text-3xl font-bold mb-2"
+                  style={{ 
+                    fontFamily: themeSettings.fonts.heading,
+                    color: themeSettings.colors.primary
+                  }}
+                >
+                  Mağazamıza Hoş Geldiniz
+                </motion.h1>
+                <p className="mb-4">En kaliteli ürünler ve en iyi fiyatlar için doğru yerdesiniz.</p>
+                <motion.button 
+                  className="px-6 py-2 font-medium"
+                  style={{ 
+                    backgroundColor: themeSettings.colors.accent, 
+                    color: "#FFFFFF",
+                    borderRadius: `${parseFloat(themeSettings.borderRadius)}rem`,
+                    fontFamily: themeSettings.fonts.button
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Alışverişe Başla
+                </motion.button>
+              </motion.div>
+              
+              <h2 
+                className="text-xl font-bold mb-4"
+                style={{ 
+                  fontFamily: themeSettings.fonts.heading,
+                  marginBottom: themeSettings.spacing.element
+                }}
+              >
+                Öne Çıkan Ürünler
+              </h2>
+              <div 
+                className="grid grid-cols-3 gap-4"
+                style={{ gap: themeSettings.spacing.element }}
+              >
+                {[1, 2, 3].map((item) => (
+                  <motion.div 
+                    key={item}
+                    className="border p-4"
                     style={{ 
-                      height: "100px", 
-                      borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.25}rem` 
+                      borderColor: themeSettings.colors.secondary,
+                      borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.5}rem`,
+                      padding: themeSettings.spacing.element
                     }}
-                  />
-                  <h3 
-                    className="font-medium"
-                    style={{ fontFamily: themeSettings.fonts.heading }}
+                    whileHover={{ y: -5, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                    transition={{ duration: 0.2 }}
+                    animate={previewAnimation ? { 
+                      y: [0, -5, 0],
+                      transition: { duration: 0.5, delay: 0.3 + (item * 0.1) } 
+                    } : {}}
                   >
-                    Ürün {item}
-                  </h3>
-                  <p 
-                    className="text-sm mb-2"
-                    style={{ marginBottom: themeSettings.spacing.element }}
-                  >
-                    Ürün açıklaması burada yer alacak.
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <span 
-                      className="font-bold"
-                      style={{ color: themeSettings.colors.primary }}
-                    >
-                      ₺149.99
-                    </span>
-                    <motion.button 
-                      className="px-2 py-1 text-xs"
+                    <div 
+                      className="bg-gray-200 mb-2"
                       style={{ 
-                        backgroundColor: themeSettings.colors.secondary, 
-                        color: "#FFFFFF",
-                        borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.25}rem`,
-                        fontFamily: themeSettings.fonts.button
+                        height: "100px", 
+                        borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.25}rem` 
                       }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
+                    />
+                    <h3 
+                      className="font-medium"
+                      style={{ fontFamily: themeSettings.fonts.heading }}
                     >
-                      Sepete Ekle
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                      Ürün {item}
+                    </h3>
+                    <p 
+                      className="text-sm mb-2"
+                      style={{ marginBottom: themeSettings.spacing.element }}
+                    >
+                      Ürün açıklaması burada yer alacak.
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span 
+                        className="font-bold"
+                        style={{ color: themeSettings.colors.primary }}
+                      >
+                        ₺149.99
+                      </span>
+                      <motion.button 
+                        className="px-2 py-1 text-xs"
+                        style={{ 
+                          backgroundColor: themeSettings.colors.secondary, 
+                          color: "#FFFFFF",
+                          borderRadius: `${parseFloat(themeSettings.borderRadius) * 0.25}rem`,
+                          fontFamily: themeSettings.fonts.button
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Sepete Ekle
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="p-4 text-center text-sm"
+              style={{ 
+                backgroundColor: themeSettings.colors.primary,
+                color: "#FFFFFF",
+                padding: themeSettings.spacing.element
+              }}
+            >
+              © 2025 Mağaza Adı. Tüm hakları saklıdır.
+            </motion.div>
           </motion.div>
-          
-          <motion.div 
-            className="p-4 text-center text-sm"
-            style={{ 
-              backgroundColor: themeSettings.colors.primary,
-              color: "#FFFFFF",
-              padding: themeSettings.spacing.element
-            }}
-          >
-            © 2025 Mağaza Adı. Tüm hakları saklıdır.
-          </motion.div>
-        </motion.div>
+        </div>
 
         {isSaved && !isPublished && (
           <motion.div 

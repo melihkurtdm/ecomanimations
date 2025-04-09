@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +8,8 @@ import ThemeHeader from '@/components/theme/ThemeHeader';
 import ThemeCustomizationForm from '@/components/theme/ThemeCustomizationForm';
 import ThemePreview from '@/components/theme/ThemePreview';
 import PublishThemeDialog from '@/components/theme/PublishThemeDialog';
+import { Button } from '@/components/ui/button';
+import { Globe } from 'lucide-react';
 
 const currentTheme = {
   id: "modern",
@@ -238,6 +239,18 @@ const ThemeCustomization = () => {
     form.setValue(`spacing.${key}`, value);
   };
 
+  const handleGoToPublish = () => {
+    if (!isSaved) {
+      toast({
+        title: "Önce değişikliklerinizi kaydedin",
+        description: "Yayınlama sayfasına gitmeden önce değişikliklerinizi kaydetmelisiniz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate('/dashboard/theme-publish');
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>;
   }
@@ -258,7 +271,17 @@ const ThemeCustomization = () => {
         onTogglePreview={() => setPreviewMode(!previewMode)}
       />
       
-      <div className="flex items-center justify-end mb-4">
+      <div className="flex items-center justify-end mb-4 space-x-2">
+        <Button 
+          variant="outline" 
+          onClick={handleGoToPublish}
+          disabled={!isSaved}
+          className="flex items-center gap-2"
+        >
+          <Globe className="h-4 w-4" />
+          Yayınlama Sayfasına Git
+        </Button>
+        
         <PublishThemeDialog 
           open={publishDialogOpen}
           onOpenChange={setPublishDialogOpen}
