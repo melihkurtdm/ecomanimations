@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Facebook, Google, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
+import { Facebook, Search, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
 import { validateApiConnection, getAdAccounts } from '@/services/adPlatformService';
 import { toast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,14 +24,12 @@ const AdApiConnection: React.FC<AdApiConnectionProps> = ({
     selectedAccount?: string;
   }}>({});
   
-  // Check connection status when selected platforms change
   useEffect(() => {
     if (selectedPlatforms.length > 0) {
       checkConnections();
     }
   }, [selectedPlatforms]);
   
-  // Update parent component when connection status changes
   useEffect(() => {
     const allConnected = selectedPlatforms.every(
       platform => connectionStatus[platform]?.connected
@@ -88,7 +85,7 @@ const AdApiConnection: React.FC<AdApiConnectionProps> = ({
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case 'google':
-        return <Google className="h-5 w-5" />;
+        return <Search className="h-5 w-5" />;
       case 'facebook':
       case 'instagram':
         return <Facebook className="h-5 w-5" />;
