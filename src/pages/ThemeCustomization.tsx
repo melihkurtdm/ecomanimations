@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -266,7 +265,6 @@ const ThemeCustomization = () => {
     exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
   };
 
-  // Seçili tema bilgilerini al
   const selectedThemeData = themeData.find(t => t.id === currentTheme.id) || themeData[0];
 
   return (
@@ -281,26 +279,24 @@ const ThemeCustomization = () => {
       
       <div className="flex items-center justify-between mb-6">
         <div className="flex">
-          <TabsList className="grid grid-cols-2">
-            <TabsTrigger 
-              value="customize"
-              className="flex items-center"
-              onClick={() => setEditorMode("customize")}
-              data-state={editorMode === "customize" ? "active" : "inactive"}
-            >
-              <Palette className="h-4 w-4 mr-2" />
-              Görünüm Ayarları
-            </TabsTrigger>
-            <TabsTrigger 
-              value="builder"
-              className="flex items-center"
-              onClick={() => setEditorMode("builder")}
-              data-state={editorMode === "builder" ? "active" : "inactive"}
-            >
-              <Layers className="h-4 w-4 mr-2" />
-              Sayfa Düzenleyici
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="customize" value={editorMode} onValueChange={(value) => setEditorMode(value as "customize" | "builder")}>
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger 
+                value="customize"
+                className="flex items-center"
+              >
+                <Palette className="h-4 w-4 mr-2" />
+                Görünüm Ayarları
+              </TabsTrigger>
+              <TabsTrigger 
+                value="builder"
+                className="flex items-center"
+              >
+                <Layers className="h-4 w-4 mr-2" />
+                Sayfa Düzenleyici
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         
         <Button 
