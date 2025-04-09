@@ -1,20 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Grip, Plus, X, Settings, Eye, ArrowRight, Save, MoveVertical, Check, RotateCw } from 'lucide-react';
+import { Grip, Plus, X, Settings, Eye, ArrowRight, Save, MoveVertical, Check, RotateCw, ShoppingBag, Image, Tag, MessageSquare, Users, Mail, Clock, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 
 interface WidgetItem {
   id: string;
   type: string;
   title: string;
+  description?: string;
   content?: React.ReactNode;
   settings?: Record<string, any>;
 }
@@ -28,32 +30,36 @@ const defaultWidgets: WidgetItem[] = [
   {
     id: 'hero-1',
     type: 'hero',
-    title: 'Ana Görsel',
+    title: 'Ana Görsel Alanı',
+    description: 'Dikkat çekici ana görsel ve çağrı metni ile ziyaretçilerinizi karşılayın',
     settings: {
-      title: 'Modern Koleksiyonumuz',
-      subtitle: 'En yeni ürünlerimizi keşfedin',
+      title: 'Yeni Koleksiyonumuzu Keşfedin',
+      subtitle: 'Sezonun en trend ürünleri sizleri bekliyor',
       buttonText: 'Alışverişe Başla',
-      imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200'
+      imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200'
     }
   },
   {
     id: 'featured-1',
     type: 'featured',
     title: 'Öne Çıkan Ürünler',
+    description: 'En çok satan veya öne çıkarmak istediğiniz ürünleri gösterin',
     settings: {
       title: 'En Çok Satanlar',
-      productCount: 4
+      productCount: 4,
+      showPrices: true,
+      showRatings: true
     }
   },
   {
-    id: 'cta-1',
-    type: 'cta',
-    title: 'İndirim Duyurusu',
+    id: 'categories-1',
+    type: 'categories',
+    title: 'Kategori Vitrini',
+    description: 'Ürün kategorilerinizi görsel olarak sergileyin',
     settings: {
-      title: 'Yaz İndirimleri Başladı',
-      description: 'Tüm yaz koleksiyonunda %30 indirim',
-      buttonText: 'İndirimleri Gör',
-      backgroundColor: '#f3f4f6'
+      title: 'Kategoriler',
+      layout: 'grid',
+      columnCount: 3
     }
   }
 ];
@@ -62,44 +68,77 @@ const availableWidgets: WidgetItem[] = [
   {
     id: 'hero',
     type: 'hero',
-    title: 'Ana Görsel'
+    title: 'Ana Görsel Alanı',
+    description: 'Dikkat çekici ana görsel ve çağrı metni'
   },
   {
     id: 'featured',
     type: 'featured',
-    title: 'Öne Çıkan Ürünler'
-  },
-  {
-    id: 'cta',
-    type: 'cta',
-    title: 'Çağrı Bloğu'
-  },
-  {
-    id: 'products',
-    type: 'products',
-    title: 'Ürün Koleksiyonu'
+    title: 'Öne Çıkan Ürünler',
+    description: 'En çok satan veya indirimli ürünler'
   },
   {
     id: 'categories',
     type: 'categories',
-    title: 'Kategoriler'
+    title: 'Kategori Vitrini',
+    description: 'Ürün kategorileriniz'
+  },
+  {
+    id: 'products',
+    type: 'products',
+    title: 'Ürün Koleksiyonu',
+    description: 'Ürün listesi veya grid görünümü'
+  },
+  {
+    id: 'banner',
+    type: 'banner',
+    title: 'Kampanya Bannerı',
+    description: 'İndirim veya kampanya duyurusu'
   },
   {
     id: 'testimonials',
     type: 'testimonials',
-    title: 'Müşteri Yorumları'
+    title: 'Müşteri Yorumları',
+    description: 'Güven artırıcı müşteri değerlendirmeleri'
   },
   {
     id: 'newsletter',
     type: 'newsletter',
-    title: 'Bülten Kaydı'
+    title: 'E-Bülten Kaydı',
+    description: 'Ziyaretçilerinizden e-posta toplayın'
   },
   {
-    id: 'blog',
-    type: 'blog',
-    title: 'Blog Yazıları'
+    id: 'benefits',
+    type: 'benefits',
+    title: 'Alışveriş Avantajları',
+    description: 'Ücretsiz kargo, iade garantisi vb.'
+  },
+  {
+    id: 'instagram',
+    type: 'instagram',
+    title: 'Instagram Galerisi',
+    description: 'Sosyal medya içeriklerinizi gösterin'
+  },
+  {
+    id: 'countdown',
+    type: 'countdown',
+    title: 'Geri Sayım',
+    description: 'Sınırlı süreli kampanyalar için'
   }
 ];
+
+const eCommerceIcons: Record<string, React.ElementType> = {
+  'hero': Image,
+  'featured': ShoppingBag,
+  'categories': Tag,
+  'products': ShoppingBag,
+  'banner': Image,
+  'testimonials': MessageSquare,
+  'newsletter': Mail,
+  'benefits': Truck,
+  'instagram': Image,
+  'countdown': Clock
+};
 
 const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, themeColor }) => {
   const [activeWidgets, setActiveWidgets] = useState<WidgetItem[]>(defaultWidgets);
@@ -133,7 +172,7 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
       
       toast({
         title: "Bileşen eklendi",
-        description: `${widget.title} bileşeni sayfanıza eklendi.`,
+        description: `${widget.title} bileşeni mağazanıza eklendi.`,
       });
     }
   };
@@ -142,28 +181,68 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
     switch(widgetType) {
       case 'hero':
         return {
-          title: 'Yeni Koleksiyon',
-          subtitle: 'Ürünlerimizi keşfedin',
+          title: 'Yeni Koleksiyonumuzu Keşfedin',
+          subtitle: 'Sezonun en trend ürünleri sizleri bekliyor',
           buttonText: 'Alışverişe Başla',
-          imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200'
+          imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200',
+          textColor: '#ffffff',
+          buttonColor: themeColor
         };
       case 'featured':
         return {
           title: 'Öne Çıkan Ürünler',
-          productCount: 4
+          productCount: 4,
+          showPrices: true,
+          showRatings: true
         };
-      case 'cta':
+      case 'categories':
         return {
-          title: 'Özel Teklif',
-          description: 'Sınırlı süre için indirim',
-          buttonText: 'Şimdi İncele',
-          backgroundColor: '#f3f4f6'
+          title: 'Kategoriler',
+          layout: 'grid',
+          columnCount: 3
         };
       case 'products':
         return {
           title: 'Ürünlerimiz',
           productCount: 8,
-          columnCount: 4
+          columnCount: 4,
+          showFilters: true
+        };
+      case 'banner':
+        return {
+          title: 'Özel Kampanya',
+          description: 'Tüm siparişlerde %20 indirim',
+          buttonText: 'Detaylar',
+          backgroundColor: '#f9f9f9',
+          imageUrl: ''
+        };
+      case 'testimonials':
+        return {
+          title: 'Müşterilerimiz Ne Diyor?',
+          testimonialCount: 3,
+          showAvatar: true
+        };
+      case 'newsletter':
+        return {
+          title: 'Yeni Ürünler ve İndirimlerden Haberdar Olun',
+          description: 'E-bültenimize üye olarak kampanyalardan ilk siz haberdar olun',
+          buttonText: 'Abone Ol',
+          placeholderText: 'E-posta adresiniz'
+        };
+      case 'benefits':
+        return {
+          benefits: [
+            { title: 'Ücretsiz Kargo', description: '150 TL üzeri siparişlerde' },
+            { title: '30 Gün İade', description: 'Koşulsuz iade garantisi' }, 
+            { title: 'Güvenli Ödeme', description: '256-bit SSL güvenliği' }
+          ]
+        };
+      case 'countdown':
+        return {
+          title: 'Kampanya Bitimine Kalan Süre',
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          showDays: true,
+          showHours: true
         };
       default:
         return {};
@@ -182,7 +261,7 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
     
     toast({
       title: "Bileşen kaldırıldı",
-      description: "Bileşen sayfanızdan kaldırıldı.",
+      description: "Bileşen mağazanızdan kaldırıldı.",
     });
   };
 
@@ -196,7 +275,7 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
       
       toast({
         title: "Düzen kaydedildi",
-        description: "Sayfa düzeniniz başarıyla kaydedildi.",
+        description: "Mağaza düzeniniz başarıyla kaydedildi.",
       });
     }, 1500);
   };
@@ -218,8 +297,8 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
       setIsPublishing(false);
       
       toast({
-        title: "Sayfa yayınlandı",
-        description: "Değişiklikleriniz canlı sitenizde yayınlandı.",
+        title: "Mağaza yayınlandı",
+        description: "Değişiklikleriniz canlı mağazanızda yayınlandı.",
       });
     }, 2000);
   };
@@ -258,19 +337,29 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
   };
 
   const renderWidgetPreview = (widget: WidgetItem) => {
+    
+    
     switch (widget.type) {
       case 'hero':
         return (
           <div 
-            className="bg-gray-100 p-6 rounded-md h-32 flex items-center justify-center"
-            style={{ backgroundImage: widget.settings?.imageUrl ? `url(${widget.settings.imageUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            className="bg-gray-100 p-6 rounded-md h-32 flex items-center justify-center relative overflow-hidden"
+            style={{ 
+              backgroundImage: widget.settings?.imageUrl ? `url(${widget.settings.imageUrl})` : undefined, 
+              backgroundSize: 'cover', 
+              backgroundPosition: 'center' 
+            }}
           >
-            <div className="text-center bg-white bg-opacity-80 p-2 rounded">
+            <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+            <div className="text-center relative z-10 bg-white bg-opacity-80 p-2 rounded">
               <h3 className="font-bold text-lg">{widget.settings?.title || "Ana Görsel Başlığı"}</h3>
               <p className="text-sm text-gray-600">{widget.settings?.subtitle || "Alt başlık metni burada"}</p>
               <div className="mt-2">
-                <span className="inline-block px-3 py-1 bg-gray-800 text-white text-xs rounded">
-                  {widget.settings?.buttonText || "Buton"}
+                <span 
+                  className="inline-block px-3 py-1 text-white text-xs rounded"
+                  style={{ backgroundColor: widget.settings?.buttonColor || themeColor }}
+                >
+                  {widget.settings?.buttonText || "Alışverişe Başla"}
                 </span>
               </div>
             </div>
@@ -282,38 +371,21 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
             <h3 className="font-medium mb-2">{widget.settings?.title || "Öne Çıkan Ürünler"}</h3>
             <div className="grid grid-cols-2 gap-2">
               {Array(widget.settings?.productCount || 4).fill(0).map((_, i) => (
-                <div key={i} className="bg-white rounded h-12 flex items-center justify-center">
-                  <span className="text-xs text-gray-500">Ürün {i+1}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 'cta':
-        return (
-          <div 
-            className="p-4 rounded-md"
-            style={{ backgroundColor: widget.settings?.backgroundColor || "#f3f4f6" }}
-          >
-            <div className="text-center">
-              <h3 className="font-medium">{widget.settings?.title || "Çağrı Başlığı"}</h3>
-              <p className="text-xs text-gray-600 mt-1">{widget.settings?.description || "Çağrı açıklaması"}</p>
-              <div className="mt-2">
-                <span className="inline-block px-3 py-1 bg-gray-800 text-white text-xs rounded">
-                  {widget.settings?.buttonText || "Buton"}
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-      case 'products':
-        return (
-          <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-medium mb-2">{widget.settings?.title || "Ürün Koleksiyonu"}</h3>
-            <div className={`grid grid-cols-${widget.settings?.columnCount || 3} gap-2`}>
-              {Array(widget.settings?.productCount || 6).fill(0).map((_, i) => (
-                <div key={i} className="bg-white rounded h-10 flex items-center justify-center">
-                  <span className="text-xs text-gray-500">Ürün {i+1}</span>
+                <div key={i} className="bg-white rounded overflow-hidden">
+                  <div className="h-10 bg-gray-200"></div>
+                  <div className="p-2">
+                    <div className="h-3 w-full bg-gray-300 rounded-sm"></div>
+                    {widget.settings?.showPrices && (
+                      <div className="h-3 w-1/2 bg-gray-400 rounded-sm mt-1"></div>
+                    )}
+                    {widget.settings?.showRatings && (
+                      <div className="flex mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <div key={i} className="h-2 w-2 rounded-full bg-yellow-400 mr-0.5"></div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -322,25 +394,65 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
       case 'categories':
         return (
           <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-medium mb-2">Kategoriler</h3>
-            <div className="flex flex-wrap gap-2">
-              {['Giyim', 'Aksesuar', 'Ayakkabı', 'Çanta'].map((category, i) => (
-                <div key={i} className="bg-white rounded px-3 py-2 text-xs">
-                  {category}
+            <h3 className="font-medium mb-2">{widget.settings?.title || "Kategoriler"}</h3>
+            <div className={`grid grid-cols-${widget.settings?.columnCount || 3} gap-2`}>
+              {['Giyim', 'Aksesuar', 'Ayakkabı', 'Çanta', 'Elektronik', 'Ev'].slice(0, widget.settings?.columnCount || 3).map((category, i) => (
+                <div key={i} className="bg-white rounded h-12 flex items-center justify-center">
+                  <span className="text-xs text-gray-700">{category}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        );
+      case 'products':
+        return (
+          <div className="bg-gray-100 p-4 rounded-md">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-medium">{widget.settings?.title || "Ürün Koleksiyonu"}</h3>
+              {widget.settings?.showFilters && (
+                <div className="flex gap-1">
+                  <div className="h-5 w-12 bg-white rounded-sm"></div>
+                  <div className="h-5 w-12 bg-white rounded-sm"></div>
+                </div>
+              )}
+            </div>
+            <div className={`grid grid-cols-${widget.settings?.columnCount || 4} gap-2`}>
+              {Array(Math.min(widget.settings?.productCount || 8, 8)).fill(0).map((_, i) => (
+                <div key={i} className="bg-white rounded h-10 flex items-center justify-center">
+                  <span className="text-xs text-gray-500">Ürün {i+1}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'banner':
+        return (
+          <div 
+            className="p-4 rounded-md"
+            style={{ backgroundColor: widget.settings?.backgroundColor || "#f9f9f9" }}
+          >
+            <div className="text-center">
+              <h3 className="font-medium">{widget.settings?.title || "Özel Kampanya"}</h3>
+              <p className="text-xs text-gray-600 mt-1">{widget.settings?.description || "Tüm siparişlerde %20 indirim"}</p>
+              <div className="mt-2">
+                <span className="inline-block px-3 py-1 bg-gray-800 text-white text-xs rounded">
+                  {widget.settings?.buttonText || "Detaylar"}
+                </span>
+              </div>
             </div>
           </div>
         );
       case 'testimonials':
         return (
           <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-medium mb-2">Müşteri Yorumları</h3>
+            <h3 className="font-medium mb-2">{widget.settings?.title || "Müşterilerimiz Ne Diyor?"}</h3>
             <div className="space-y-2">
-              {[1, 2].map((_, i) => (
+              {Array(widget.settings?.testimonialCount || 3).fill(0).map((_, i) => (
                 <div key={i} className="bg-white p-2 rounded text-xs">
                   <div className="flex items-center mb-1">
-                    <div className="h-4 w-4 rounded-full bg-gray-300 mr-1"></div>
+                    {widget.settings?.showAvatar && (
+                      <div className="h-4 w-4 rounded-full bg-gray-300 mr-1"></div>
+                    )}
                     <span className="font-medium">Müşteri {i+1}</span>
                   </div>
                   <p className="text-gray-500">Harika ürünler ve hızlı teslimat!</p>
@@ -352,28 +464,61 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
       case 'newsletter':
         return (
           <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-medium mb-1">Bültenimize Abone Olun</h3>
-            <p className="text-xs text-gray-500 mb-2">Yeni ürünler ve indirimlerden haberdar olun</p>
+            <h3 className="font-medium mb-1">{widget.settings?.title || "Bültenimize Abone Olun"}</h3>
+            <p className="text-xs text-gray-500 mb-2">{widget.settings?.description || "Yeni ürünler ve indirimlerden haberdar olun"}</p>
             <div className="flex space-x-1">
               <div className="bg-white h-6 flex-1 rounded"></div>
               <div className="bg-gray-800 h-6 w-16 rounded"></div>
             </div>
           </div>
         );
-      case 'blog':
+      case 'benefits':
         return (
           <div className="bg-gray-100 p-4 rounded-md">
-            <h3 className="font-medium mb-2">Blog Yazıları</h3>
-            <div className="space-y-2">
-              {[1, 2].map((_, i) => (
-                <div key={i} className="flex items-center">
-                  <div className="h-10 w-10 bg-gray-300 rounded mr-2"></div>
-                  <div>
-                    <div className="h-3 w-24 bg-gray-300 rounded mb-1"></div>
-                    <div className="h-2 w-16 bg-gray-200 rounded"></div>
-                  </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(widget.settings?.benefits || [
+                { title: 'Ücretsiz Kargo', description: '150 TL üzeri siparişlerde' },
+                { title: '30 Gün İade', description: 'Koşulsuz iade garantisi' }, 
+                { title: 'Güvenli Ödeme', description: '256-bit SSL güvenliği' }
+              ]).map((benefit, i) => (
+                <div key={i} className="bg-white p-2 rounded text-center">
+                  <div className="h-4 w-4 mx-auto mb-1 bg-gray-300 rounded-full"></div>
+                  <h4 className="text-xs font-medium">{benefit.title}</h4>
+                  <p className="text-xs text-gray-500">{benefit.description}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        );
+      case 'countdown':
+        return (
+          <div className="bg-gray-100 p-4 rounded-md">
+            <h3 className="font-medium mb-2">{widget.settings?.title || "Kampanya Bitimine Kalan Süre"}</h3>
+            <div className="flex justify-center space-x-2">
+              {widget.settings?.showDays && (
+                <div className="bg-white p-2 rounded">
+                  <div className="text-center">
+                    <span className="text-xs font-bold">00</span>
+                    <p className="text-xs text-gray-500">Gün</p>
+                  </div>
+                </div>
+              )}
+              {widget.settings?.showHours && (
+                <>
+                  <div className="bg-white p-2 rounded">
+                    <div className="text-center">
+                      <span className="text-xs font-bold">00</span>
+                      <p className="text-xs text-gray-500">Saat</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-2 rounded">
+                    <div className="text-center">
+                      <span className="text-xs font-bold">00</span>
+                      <p className="text-xs text-gray-500">Dakika</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
@@ -398,6 +543,8 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
     };
     
     switch (widget.type) {
+      
+      
       case 'hero':
         return (
           <div className="space-y-4">
@@ -437,6 +584,23 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
                 placeholder="https://..."
               />
             </div>
+            <div>
+              <Label htmlFor="buttonColor">Buton Rengi</Label>
+              <div className="flex space-x-2">
+                <Input 
+                  id="buttonColor" 
+                  value={widgetSettings.buttonColor || themeColor} 
+                  onChange={(e) => updateSettings('buttonColor', e.target.value)}
+                  placeholder="#8B5CF6"
+                />
+                <Input 
+                  type="color" 
+                  value={widgetSettings.buttonColor || themeColor} 
+                  onChange={(e) => updateSettings('buttonColor', e.target.value)}
+                  className="w-12 p-1 h-10"
+                />
+              </div>
+            </div>
           </div>
         );
       case 'featured':
@@ -462,9 +626,25 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
                 max={12}
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showPrices"
+                checked={widgetSettings.showPrices || false}
+                onCheckedChange={(checked) => updateSettings('showPrices', checked)}
+              />
+              <Label htmlFor="showPrices">Fiyatları göster</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showRatings"
+                checked={widgetSettings.showRatings || false}
+                onCheckedChange={(checked) => updateSettings('showRatings', checked)}
+              />
+              <Label htmlFor="showRatings">Değerlendirmeleri göster</Label>
+            </div>
           </div>
         );
-      case 'cta':
+      case 'categories':
         return (
           <div className="space-y-4">
             <div>
@@ -473,42 +653,39 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
                 id="title" 
                 value={widgetSettings.title || ''} 
                 onChange={(e) => updateSettings('title', e.target.value)}
-                placeholder="Çağrı başlığı"
+                placeholder="Kategoriler"
               />
             </div>
             <div>
-              <Label htmlFor="description">Açıklama</Label>
+              <Label htmlFor="columnCount">Sütun Sayısı</Label>
               <Input 
-                id="description" 
-                value={widgetSettings.description || ''} 
-                onChange={(e) => updateSettings('description', e.target.value)}
-                placeholder="Açıklama metni"
+                id="columnCount" 
+                type="number"
+                value={widgetSettings.columnCount || 3} 
+                onChange={(e) => updateSettings('columnCount', parseInt(e.target.value))}
+                min={1}
+                max={6}
               />
             </div>
             <div>
-              <Label htmlFor="buttonText">Buton Metni</Label>
-              <Input 
-                id="buttonText" 
-                value={widgetSettings.buttonText || ''} 
-                onChange={(e) => updateSettings('buttonText', e.target.value)}
-                placeholder="Buton metni"
-              />
-            </div>
-            <div>
-              <Label htmlFor="backgroundColor">Arkaplan Rengi</Label>
-              <div className="flex space-x-2">
-                <Input 
-                  id="backgroundColor" 
-                  value={widgetSettings.backgroundColor || '#f3f4f6'} 
-                  onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                  placeholder="#f3f4f6"
-                />
-                <Input 
-                  type="color" 
-                  value={widgetSettings.backgroundColor || '#f3f4f6'} 
-                  onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                  className="w-12 p-1 h-10"
-                />
+              <Label htmlFor="layout">Görünüm</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button 
+                  type="button" 
+                  variant={widgetSettings.layout === 'grid' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => updateSettings('layout', 'grid')}
+                >
+                  Grid
+                </Button>
+                <Button 
+                  type="button" 
+                  variant={widgetSettings.layout === 'list' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => updateSettings('layout', 'list')}
+                >
+                  Liste
+                </Button>
               </div>
             </div>
           </div>
@@ -522,7 +699,7 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
                 id="title" 
                 value={widgetSettings.title || ''} 
                 onChange={(e) => updateSettings('title', e.target.value)}
-                placeholder="Ürünler başlığı"
+                placeholder="Ürünlerimiz"
               />
             </div>
             <div>
@@ -547,252 +724,162 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
                 max={6}
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showFilters"
+                checked={widgetSettings.showFilters || false}
+                onCheckedChange={(checked) => updateSettings('showFilters', checked)}
+              />
+              <Label htmlFor="showFilters">Filtreler göster</Label>
+            </div>
           </div>
         );
-      default:
+      case 'banner':
         return (
-          <div className="py-4 text-center text-gray-500">
-            Bu bileşen için özelleştirilebilir ayarlar bulunmuyor.
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Başlık</Label>
+              <Input 
+                id="title" 
+                value={widgetSettings.title || ''} 
+                onChange={(e) => updateSettings('title', e.target.value)}
+                placeholder="Özel Kampanya"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Açıklama</Label>
+              <Textarea 
+                id="description" 
+                value={widgetSettings.description || ''} 
+                onChange={(e) => updateSettings('description', e.target.value)}
+                placeholder="Kampanya açıklaması"
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label htmlFor="buttonText">Buton Metni</Label>
+              <Input 
+                id="buttonText" 
+                value={widgetSettings.buttonText || ''} 
+                onChange={(e) => updateSettings('buttonText', e.target.value)}
+                placeholder="Detaylar"
+              />
+            </div>
+            <div>
+              <Label htmlFor="backgroundColor">Arkaplan Rengi</Label>
+              <div className="flex space-x-2">
+                <Input 
+                  id="backgroundColor" 
+                  value={widgetSettings.backgroundColor || '#f9f9f9'} 
+                  onChange={(e) => updateSettings('backgroundColor', e.target.value)}
+                  placeholder="#f9f9f9"
+                />
+                <Input 
+                  type="color" 
+                  value={widgetSettings.backgroundColor || '#f9f9f9'} 
+                  onChange={(e) => updateSettings('backgroundColor', e.target.value)}
+                  className="w-12 p-1 h-10"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="imageUrl">Görsel URL (opsiyonel)</Label>
+              <Input 
+                id="imageUrl" 
+                value={widgetSettings.imageUrl || ''} 
+                onChange={(e) => updateSettings('imageUrl', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
           </div>
         );
-    }
-  };
-
-  return (
-    <div className="grid grid-cols-12 gap-6 mt-6">
-      {/* Kenar çubuğu */}
-      <div className="col-span-12 md:col-span-3">
-        <Card className="sticky top-24">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">
-              <Tabs value={currentTab} onValueChange={setCurrentTab}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="widgets" className="flex-1">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Bileşenler
-                  </TabsTrigger>
-                  <TabsTrigger value="settings" className="flex-1">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Düzen
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TabsContent value="widgets" className="mt-0">
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-2">
-                  {availableWidgets.map((widget) => (
-                    <div
-                      key={widget.id}
-                      onClick={() => addWidget(widget.id)}
-                      className="p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-between"
-                    >
-                      <span>{widget.title}</span>
-                      <Plus className="h-4 w-4 text-gray-500" />
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="settings" className="mt-0">
-              <div className="space-y-4">
-                <div className="p-3 border rounded-md bg-gray-50">
-                  <h3 className="font-medium mb-2">Sayfa Ayarları</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="page-title">Sayfa Başlığı</Label>
-                      <Input id="page-title" placeholder="Ana Sayfa" />
-                    </div>
-                    <div>
-                      <Label htmlFor="page-description">Meta Açıklama</Label>
-                      <Input id="page-description" placeholder="Sayfa açıklaması..." />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 border rounded-md bg-gray-50">
-                  <h3 className="font-medium mb-2">Genel Stil</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="content-width">İçerik Genişliği</Label>
-                      <div className="grid grid-cols-3 gap-2 mt-1">
-                        <Button variant="outline" size="sm" className="text-xs">Dar</Button>
-                        <Button variant="outline" size="sm" className="text-xs bg-gray-100">Normal</Button>
-                        <Button variant="outline" size="sm" className="text-xs">Geniş</Button>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="spacing">Bileşen Aralığı</Label>
-                      <div className="grid grid-cols-3 gap-2 mt-1">
-                        <Button variant="outline" size="sm" className="text-xs">Az</Button>
-                        <Button variant="outline" size="sm" className="text-xs bg-gray-100">Normal</Button>
-                        <Button variant="outline" size="sm" className="text-xs">Çok</Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <div className="mt-6 pt-4 border-t">
-              <Button
-                className="w-full"
-                onClick={saveLayout}
-                disabled={isSaving || isPublishing}
-                style={{ backgroundColor: themeColor }}
-              >
-                {isSaving ? (
-                  <span className="flex items-center">
-                    <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                    Kaydediliyor...
-                  </span>
-                ) : isSaved ? (
-                  <span className="flex items-center">
-                    <Check className="h-4 w-4 mr-2" />
-                    Kaydedildi
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <Save className="h-4 w-4 mr-2" />
-                    Düzeni Kaydet
-                  </span>
-                )}
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                disabled={isPublishing}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                {isPreviewMode ? 'Düzenleme Moduna Dön' : 'Önizleme'}
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={publishSite}
-                disabled={isPublishing || !isSaved}
-              >
-                {isPublishing ? (
-                  <span className="flex items-center">
-                    <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                    Yayınlanıyor...
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Yayınla
-                  </span>
-                )}
-              </Button>
+      case 'testimonials':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Başlık</Label>
+              <Input 
+                id="title" 
+                value={widgetSettings.title || ''} 
+                onChange={(e) => updateSettings('title', e.target.value)}
+                placeholder="Müşterilerimiz Ne Diyor?"
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Ana içerik */}
-      <div className="col-span-12 md:col-span-9">
-        <div className="bg-white border rounded-lg p-6 min-h-[600px]">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold flex items-center">
-              <MoveVertical className="h-5 w-5 mr-2" style={{ color: themeColor }} />
-              {isPreviewMode ? 'Sayfa Önizleme' : 'Sürükle & Bırak Düzenleyici'}
-            </h2>
-          </div>
-          
-          {activeWidgets.length === 0 ? (
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <p className="text-gray-500">Soldaki menüden bileşen ekleyerek başlayın</p>
-              <Button 
-                variant="outline"
-                className="mt-4"
-                onClick={() => setActiveWidgets(defaultWidgets)}
-              >
-                Örnek şablonu yükle
-              </Button>
+            <div>
+              <Label htmlFor="testimonialCount">Yorum Sayısı</Label>
+              <Input 
+                id="testimonialCount" 
+                type="number"
+                value={widgetSettings.testimonialCount || 3} 
+                onChange={(e) => updateSettings('testimonialCount', parseInt(e.target.value))}
+                min={1}
+                max={10}
+              />
             </div>
-          ) : (
-            <Reorder.Group 
-              axis="y" 
-              values={activeWidgets} 
-              onReorder={setActiveWidgets}
-              className="space-y-4"
-            >
-              {activeWidgets.map((widget) => (
-                <Reorder.Item
-                  key={widget.id}
-                  value={widget}
-                  className={`border rounded-lg overflow-hidden transition-shadow ${
-                    selectedWidget === widget.id ? 'ring-2 ring-blue-500 shadow-md' : ''
-                  } ${isPreviewMode ? '' : 'hover:shadow-md'}`}
-                  onClick={() => !isPreviewMode && setSelectedWidget(widget.id)}
-                  drag={!isPreviewMode}
-                >
-                  {!isPreviewMode && (
-                    <div className="bg-gray-100 p-2 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Grip className="h-4 w-4 mr-2 text-gray-400 cursor-move" />
-                        <span className="font-medium">{widget.title}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={(e) => openWidgetSettings(widget, e)}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-red-500"
-                          onClick={(e) => removeWidget(widget.id, e)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="p-4">
-                    {renderWidgetPreview(widget)}
-                  </div>
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
-          )}
-        </div>
-      </div>
-      
-      {/* Widget ayarları diyaloğu */}
-      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{currentEditingWidget?.title} Ayarları</DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            {renderSettingsForm(currentEditingWidget)}
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showAvatar"
+                checked={widgetSettings.showAvatar || false}
+                onCheckedChange={(checked) => updateSettings('showAvatar', checked)}
+              />
+              <Label htmlFor="showAvatar">Profil resimlerini göster</Label>
+            </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
-              İptal
-            </Button>
-            <Button onClick={saveWidgetSettings}>
-              Kaydet
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-export default ThemeDragDropBuilder;
+        );
+      case 'newsletter':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Başlık</Label>
+              <Input 
+                id="title" 
+                value={widgetSettings.title || ''} 
+                onChange={(e) => updateSettings('title', e.target.value)}
+                placeholder="Bültenimize Abone Olun"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Açıklama</Label>
+              <Textarea 
+                id="description" 
+                value={widgetSettings.description || ''} 
+                onChange={(e) => updateSettings('description', e.target.value)}
+                placeholder="E-bülten açıklaması"
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label htmlFor="buttonText">Buton Metni</Label>
+              <Input 
+                id="buttonText" 
+                value={widgetSettings.buttonText || ''} 
+                onChange={(e) => updateSettings('buttonText', e.target.value)}
+                placeholder="Abone Ol"
+              />
+            </div>
+            <div>
+              <Label htmlFor="placeholderText">Form Placeholder Metni</Label>
+              <Input 
+                id="placeholderText" 
+                value={widgetSettings.placeholderText || ''} 
+                onChange={(e) => updateSettings('placeholderText', e.target.value)}
+                placeholder="E-posta adresiniz"
+              />
+            </div>
+          </div>
+        );
+      case 'countdown':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Başlık</Label>
+              <Input 
+                id="title" 
+                value={widgetSettings.title || ''} 
+                onChange={(e) => updateSettings('title', e.target.value)}
+                placeholder="Kampanya Bitimine Kalan Süre"
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate">Bitiş Tarihi</Label>
+              <Input

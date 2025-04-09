@@ -26,10 +26,10 @@ const AnalyticsPeriodSelector: React.FC<AnalyticsPeriodSelectorProps> = ({
       className="w-full sm:w-auto"
     >
       <TabsList className="grid grid-cols-4 w-full sm:w-auto">
-        <TabsTrigger value="day">Bugün</TabsTrigger>
-        <TabsTrigger value="week">Bu Hafta</TabsTrigger>
-        <TabsTrigger value="month">Bu Ay</TabsTrigger>
-        <TabsTrigger value="year">Bu Yıl</TabsTrigger>
+        <TabsTrigger value="day">Günlük</TabsTrigger>
+        <TabsTrigger value="week">Haftalık</TabsTrigger>
+        <TabsTrigger value="month">Aylık</TabsTrigger>
+        <TabsTrigger value="year">Yıllık</TabsTrigger>
       </TabsList>
     </Tabs>
   );
