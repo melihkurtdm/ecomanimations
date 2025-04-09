@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import DomainManagement from "./pages/DomainManagement";
 import ThemePublish from "./pages/ThemePublish";
 import AdvertisingManager from "./pages/AdvertisingManager";
+import StoreAnalytics from "./pages/StoreAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ function App() {
               <Route path="/dashboard/customers" element={<Customers />} />
               <Route path="/dashboard/store" element={<Store />} />
               <Route path="/dashboard/stats" element={<Stats />} />
+              <Route path="/dashboard/analytics" element={<StoreAnalytics />} />
               <Route path="/dashboard/settings" element={<Settings />} />
               <Route path="/dashboard/domain-management" element={<DomainManagement />} />
               <Route path="/dashboard/store-setup" element={<StoreSetup />} />
