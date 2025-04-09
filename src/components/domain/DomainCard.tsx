@@ -21,15 +21,17 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
+import { DomainStatus } from '@/types/domain';
 
 interface DomainCardProps {
   domain: string;
-  status: 'verified' | 'pending' | 'error';
+  status: DomainStatus;
   isPrimary: boolean;
   createdAt: string;
-  onVerify: () => void;
+  onVerify: () => Promise<void>;
   onMakePrimary: () => void;
   onDelete: () => void;
+  onRefresh?: () => void;
 }
 
 const DomainCard: React.FC<DomainCardProps> = ({
@@ -39,11 +41,13 @@ const DomainCard: React.FC<DomainCardProps> = ({
   createdAt,
   onVerify,
   onMakePrimary,
-  onDelete
+  onDelete,
+  onRefresh
 }) => {
   const { toast } = useToast();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleVerifyDomain = async () => {
     try {
@@ -64,6 +68,27 @@ const DomainCard: React.FC<DomainCardProps> = ({
       });
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handleRefreshDomain = async () => {
+    if (!onRefresh) return;
+    
+    try {
+      setIsRefreshing(true);
+      await onRefresh();
+      toast({
+        title: "Domain durumu güncellendi",
+        description: "Alan adı durumu yenilendi.",
+      });
+    } catch (error) {
+      toast({
+        title: "Yenileme hatası",
+        description: "Alan adı durumu yenilenirken bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -149,19 +174,28 @@ const DomainCard: React.FC<DomainCardProps> = ({
           
           <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
             {status === 'pending' && (
-              <Button size="sm" variant="outline" onClick={handleVerifyDomain} disabled={isVerifying}>
-                {isVerifying ? (
-                  <>
-                    <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
-                    Doğrulanıyor...
-                  </>
-                ) : (
-                  <>
-                    <RotateCw className="h-4 w-4 mr-1" />
-                    Doğrula
-                  </>
-                )}
-              </Button>
+              <>
+                <Button size="sm" variant="outline" onClick={handleVerifyDomain} disabled={isVerifying}>
+                  {isVerifying ? (
+                    <>
+                      <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                      Doğrulanıyor...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCw className="h-4 w-4 mr-1" />
+                      Doğrula
+                    </>
+                  )}
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleRefreshDomain} disabled={isRefreshing}>
+                  {isRefreshing ? (
+                    <RefreshCcw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="h-4 w-4" />
+                  )}
+                </Button>
+              </>
             )}
             
             {status === 'verified' && !isPrimary && (
