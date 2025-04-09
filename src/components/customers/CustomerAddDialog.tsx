@@ -67,7 +67,19 @@ const CustomerAddDialog = ({
   });
 
   const handleSubmit = (values: FormData) => {
-    onSubmit(values);
+    // Explicitly cast the form values to the expected type to satisfy TypeScript
+    const customerData: Omit<Customer, 'id' | 'createdAt' | 'communicationHistory'> = {
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      address: values.address,
+      totalOrders: values.totalOrders,
+      totalSpent: values.totalSpent,
+      notes: values.notes,
+      status: values.status,
+    };
+    
+    onSubmit(customerData);
     form.reset();
   };
 
