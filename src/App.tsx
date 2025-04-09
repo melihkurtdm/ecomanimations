@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,7 @@ import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
 import DomainManagement from "./pages/DomainManagement";
 import ThemePublish from "./pages/ThemePublish";
+import AdvertisingManager from "./pages/AdvertisingManager";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,7 @@ function App() {
               <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />
               <Route path="/dashboard/theme-customization" element={<ThemeCustomization />} />
               <Route path="/dashboard/theme-publish" element={<ThemePublish />} />
+              <Route path="/dashboard/advertising" element={<AdvertisingManager />} />
               <Route path="/purchase" element={<PurchasePage />} />
               <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
               <Route path="*" element={<NotFound />} />

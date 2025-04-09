@@ -22,7 +22,7 @@ const PublishThemeDialog: React.FC<PublishThemeDialogProps> = ({
   isSaved,
   onPublish
 }) => {
-  const handleClick = () => {
+  const handlePublishClick = () => {
     if (!isSaved && !isPublished) {
       toast({
         title: "Değişiklikler kaydedilmedi",
@@ -41,17 +41,7 @@ const PublishThemeDialog: React.FC<PublishThemeDialogProps> = ({
         <Button 
           variant="default" 
           className="gap-2"
-          disabled={!isSaved || isPublished}
-          onClick={(e) => {
-            if (!isSaved && !isPublished) {
-              e.preventDefault();
-              toast({
-                title: "Değişiklikler kaydedilmedi",
-                description: "Lütfen önce değişiklikleri kaydedin.",
-                variant: "destructive",
-              });
-            }
-          }}
+          disabled={isPublished}
         >
           <Globe className="h-4 w-4" />
           {isPublished ? "Yayında" : "Yayına Al"}
@@ -90,7 +80,7 @@ const PublishThemeDialog: React.FC<PublishThemeDialogProps> = ({
             İptal
           </Button>
           <Button 
-            onClick={handleClick} 
+            onClick={handlePublishClick} 
             disabled={isPublishing || (!isSaved && !isPublished)}
             className="gap-2"
           >

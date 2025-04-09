@@ -1,131 +1,77 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Store, Palette, Settings, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { toast } from '@/components/ui/use-toast';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Store, Palette, Users, ShoppingBag, BarChart3, Globe, MegaphoneIcon } from 'lucide-react';
+
+const QuickAccessCard = ({ icon, title, description, linkPath }: { 
+  icon: React.ReactNode, 
+  title: string, 
+  description: string,
+  linkPath: string
+}) => {
+  return (
+    <Card className="p-5 flex flex-col h-full hover:shadow-md transition-shadow">
+      <div className="flex items-center mb-3">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+          {icon}
+        </div>
+        <h3 className="font-medium">{title}</h3>
+      </div>
+      <p className="text-sm text-gray-500 flex-1 mb-4">{description}</p>
+      <Button asChild variant="outline" className="w-full justify-start">
+        <Link to={linkPath}>
+          <span>Yönet</span>
+        </Link>
+      </Button>
+    </Card>
+  );
+};
 
 const QuickAccessGrid = () => {
-  const navigate = useNavigate();
-  
-  const handleNavigateStore = () => {
-    navigate('/dashboard/store');
-    toast({
-      title: "Mağaza Sayfası",
-      description: "Mağazanızı yönetebilirsiniz.",
-    });
-  };
-
-  const handleNavigateTheme = () => {
-    navigate('/dashboard/theme-customization');
-    toast({
-      title: "Tema Özelleştirme",
-      description: "Mağazanızın temasını özelleştirebilirsiniz.",
-    });
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100
-      }
-    }
-  };
-
   return (
-    <motion.div 
-      variants={itemVariants}
-      className="lg:col-span-2"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Hızlı Erişim</CardTitle>
-          <CardDescription>Sık kullanılan özellikler</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <motion.div 
-            className="group cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={handleNavigateStore}
-          >
-            <Card className="border border-gray-200 transition-colors group-hover:border-brand-purple">
-              <CardContent className="p-6 flex items-center">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                  <Store className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Mağaza Yönetimi</h3>
-                  <p className="text-sm text-gray-500">Ürünlerinizi yönetin</p>
-                </div>
-                <ChevronRight className="h-5 w-5 ml-auto text-gray-400 group-hover:text-brand-purple transition-colors" />
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div 
-            className="group cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={handleNavigateTheme}
-          >
-            <Card className="border border-gray-200 transition-colors group-hover:border-brand-purple">
-              <CardContent className="p-6 flex items-center">
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
-                  <Palette className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Tema Özelleştirme</h3>
-                  <p className="text-sm text-gray-500">Görünümü değiştirin</p>
-                </div>
-                <ChevronRight className="h-5 w-5 ml-auto text-gray-400 group-hover:text-brand-purple transition-colors" />
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div 
-            className="group cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={() => navigate('/dashboard/theme-selection')}
-          >
-            <Card className="border border-gray-200 transition-colors group-hover:border-brand-purple">
-              <CardContent className="p-6 flex items-center">
-                <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mr-4">
-                  <Palette className="h-6 w-6 text-pink-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Tema Seçimi</h3>
-                  <p className="text-sm text-gray-500">Hazır temalar</p>
-                </div>
-                <ChevronRight className="h-5 w-5 ml-auto text-gray-400 group-hover:text-brand-purple transition-colors" />
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div 
-            className="group cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={() => navigate('/dashboard/settings')}
-          >
-            <Card className="border border-gray-200 transition-colors group-hover:border-brand-purple">
-              <CardContent className="p-6 flex items-center">
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
-                  <Settings className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Ayarlar</h3>
-                  <p className="text-sm text-gray-500">Hesap ve mağaza ayarları</p>
-                </div>
-                <ChevronRight className="h-5 w-5 ml-auto text-gray-400 group-hover:text-brand-purple transition-colors" />
-              </CardContent>
-            </Card>
-          </motion.div>
-        </CardContent>
-      </Card>
-    </motion.div>
+    <div className="col-span-2 lg:col-span-2">
+      <h2 className="text-xl font-bold mb-4">Hızlı Erişim</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <QuickAccessCard 
+          icon={<Store className="h-5 w-5 text-primary" />}
+          title="Mağazam"
+          description="Ürünleri yönetin, stok durumunu güncelleyin"
+          linkPath="/dashboard/store"
+        />
+        <QuickAccessCard 
+          icon={<Palette className="h-5 w-5 text-primary" />}
+          title="Tema Düzenle"
+          description="Mağazanızın görünümünü özelleştirin"
+          linkPath="/dashboard/theme-customization"
+        />
+        <QuickAccessCard 
+          icon={<Users className="h-5 w-5 text-primary" />}
+          title="Müşteriler"
+          description="Müşteri listesi ve iletişim geçmişi"
+          linkPath="/dashboard/customers"
+        />
+        <QuickAccessCard 
+          icon={<BarChart3 className="h-5 w-5 text-primary" />}
+          title="İstatistikler"
+          description="Satış ve ziyaretçi istatistiklerini görüntüleyin"
+          linkPath="/dashboard/stats"
+        />
+        <QuickAccessCard 
+          icon={<Globe className="h-5 w-5 text-primary" />}
+          title="Alan Adı"
+          description="Alan adı yönetimi ve SSL ayarları"
+          linkPath="/dashboard/domain-management"
+        />
+        <QuickAccessCard 
+          icon={<MegaphoneIcon className="h-5 w-5 text-primary" />}
+          title="Reklam Yönetimi"
+          description="Google ve Meta üzerinde kolayca reklam oluşturun"
+          linkPath="/dashboard/advertising"
+        />
+      </div>
+    </div>
   );
 };
 
