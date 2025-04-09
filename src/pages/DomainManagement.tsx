@@ -8,7 +8,8 @@ import {
   RefreshCw, 
   AlertTriangle, 
   Info, 
-  ExternalLink
+  ExternalLink,
+  CheckCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';

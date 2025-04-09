@@ -54,7 +54,7 @@ interface ThemeCustomizationFormProps {
   onFontChange: (key: keyof ThemeSettings['fonts'], value: string) => void;
   onBorderRadiusChange: (value: string) => void;
   onSpacingChange: (key: keyof ThemeSettings['spacing'], value: string) => void;
-  onSchemeSelect: (scheme: typeof themeSettings.colors) => void;
+  onSchemeSelect: (scheme: ThemeSettings['colors']) => void;
   onSaveChanges: () => void;
   onResetDefaults: () => void;
 }

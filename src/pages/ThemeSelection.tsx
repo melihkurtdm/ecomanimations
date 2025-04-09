@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -44,6 +43,7 @@ const ThemeSelection = () => {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [showPreview, setShowPreview] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState(false);
   
   const filteredThemes = activeCategory === "all" 
     ? themeData 
@@ -118,7 +118,13 @@ const ThemeSelection = () => {
       animate="visible"
       className="container mx-auto px-4 py-8"
     >
-      <ThemeHeader onBack={() => navigate('/dashboard')} />
+      <ThemeHeader 
+        title="Tema Seçimi"
+        description="Mağazanız için uygun temayı seçin"
+        onBack={() => navigate('/dashboard')}
+        previewMode={previewMode}
+        onTogglePreview={() => setPreviewMode(!previewMode)}
+      />
       
       <motion.div variants={itemVariants} className="mb-8">
         <Tabs defaultValue="all" className="w-full">

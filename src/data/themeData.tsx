@@ -1,5 +1,8 @@
 
 import { ThemeItem } from '@/components/theme/ThemeCard';
+import { CategoryItem } from '@/components/theme/ThemeCategories';
+import { LayoutGrid, Star, LayoutList, Zap } from 'lucide-react';
+import React from 'react';
 
 export const themeData: ThemeItem[] = [
   {
@@ -69,10 +72,6 @@ export const themeData: ThemeItem[] = [
     category: "fashion"
   }
 ];
-
-import { CategoryItem } from '@/components/theme/ThemeCategories';
-import { LayoutGrid, Star, LayoutList, Zap } from 'lucide-react';
-import React from 'react';
 
 export const categoryData: CategoryItem[] = [
   { id: "all", name: "Tüm Temalar", icon: <LayoutGrid className="h-4 w-4" /> },
