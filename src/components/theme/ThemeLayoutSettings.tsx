@@ -12,7 +12,10 @@ interface SpacingSettings {
 interface ThemeLayoutSettingsProps {
   spacing: SpacingSettings;
   borderRadius: string;
-  colors: { primary: string };
+  colors: {
+    primary: string;
+    secondary: string; // Add the secondary property to fix the type error
+  };
   onBorderRadiusChange: (value: string) => void;
   onSpacingChange: (key: keyof SpacingSettings, value: string) => void;
 }
