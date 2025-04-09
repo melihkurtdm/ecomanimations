@@ -13,6 +13,7 @@ import PurchasePage from "./pages/PurchasePage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import ThemeSelection from "./pages/ThemeSelection";
 import StoreSetup from "./pages/StoreSetup";
+import Store from "./pages/Store";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/store" element={<Store />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
             <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />
