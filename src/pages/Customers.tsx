@@ -1,11 +1,17 @@
 
 import React, { useState } from 'react';
-import { Layout } from '@/components/ui/sidebar';
+import { 
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarInset 
+} from '@/components/ui/sidebar';
 import CustomerHeader from '@/components/customers/CustomerHeader';
 import CustomerTable from '@/components/customers/CustomerTable';
 import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer';
 import { Customer } from '@/types/customer';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyCustomerState from '@/components/customers/EmptyCustomerState';
 
 const MOCK_CUSTOMERS: Customer[] = [
   {
@@ -165,27 +171,40 @@ const Customers: React.FC = () => {
   };
   
   return (
-    <Layout>
-      <div className="container py-6">
-        <CustomerHeader 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onAddCustomer={handleAddCustomer}
-        />
-        
-        <CustomerTable 
-          customers={filteredCustomers}
-          onViewCustomer={handleOpenCustomerDetail}
-        />
-        
-        <CustomerDetailDrawer 
-          customer={selectedCustomer}
-          open={isDrawerOpen}
-          onOpenChange={setIsDrawerOpen}
-          onAddCommunication={handleAddCommunication}
-        />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <Sidebar>
+          <SidebarContent>
+            {/* Sidebar content can be added here if needed */}
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <div className="container py-6">
+            <CustomerHeader 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onAddCustomer={handleAddCustomer}
+            />
+            
+            {filteredCustomers.length > 0 ? (
+              <CustomerTable 
+                customers={filteredCustomers}
+                onViewCustomer={handleOpenCustomerDetail}
+              />
+            ) : (
+              <EmptyCustomerState onAddCustomer={handleAddCustomer} />
+            )}
+            
+            <CustomerDetailDrawer 
+              customer={selectedCustomer}
+              open={isDrawerOpen}
+              onOpenChange={setIsDrawerOpen}
+              onAddCommunication={handleAddCommunication}
+            />
+          </div>
+        </SidebarInset>
       </div>
-    </Layout>
+    </SidebarProvider>
   );
 };
 
