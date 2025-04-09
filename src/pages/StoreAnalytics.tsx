@@ -14,7 +14,7 @@ import DeviceStatsChart from '@/components/analytics/DeviceStatsChart';
 import TopPagesTable from '@/components/analytics/TopPagesTable';
 import ConversionFunnelChart from '@/components/analytics/ConversionFunnelChart';
 
-import { fetchAnalyticsData } from '@/services/analyticsService';
+import { getAnalyticsData } from '@/services/analyticsService';
 import { AnalyticsData } from '@/types/analytics';
 
 const StoreAnalytics = () => {
@@ -32,7 +32,12 @@ const StoreAnalytics = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const analyticsData = await fetchAnalyticsData(period);
+      // Convert period to format expected by getAnalyticsData
+      const apiPeriod = period === 'day' ? '7d' : 
+                        period === 'week' ? '7d' : 
+                        period === 'month' ? '30d' : 
+                        '90d';
+      const analyticsData = await getAnalyticsData(apiPeriod);
       setData(analyticsData);
     } catch (error) {
       console.error('Analytics veri yükleme hatası:', error);
@@ -50,7 +55,12 @@ const StoreAnalytics = () => {
     setIsRefreshing(true);
     
     try {
-      const analyticsData = await fetchAnalyticsData(period);
+      // Convert period to format expected by getAnalyticsData
+      const apiPeriod = period === 'day' ? '7d' : 
+                        period === 'week' ? '7d' : 
+                        period === 'month' ? '30d' : 
+                        '90d';
+      const analyticsData = await getAnalyticsData(apiPeriod);
       setData(analyticsData);
       
       toast({

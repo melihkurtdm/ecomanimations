@@ -16,15 +16,27 @@ import { getAnalyticsData } from '@/services/analyticsService';
 import { AnalyticsData } from '@/types/analytics';
 import { ArrowDownIcon, ArrowUpIcon, BarChart3, LineChart, PieChart, Table2 } from 'lucide-react';
 
-type Period = '7d' | '30d' | '90d' | 'year';
+// Define a mapping type to convert UI period to API period
+type UIPeriod = 'day' | 'week' | 'month' | 'year';
+type APIPeriod = '7d' | '30d' | '90d' | 'year';
 
 const Analytics = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [period, setPeriod] = useState<Period>('30d');
+  const [period, setPeriod] = useState<UIPeriod>('month');
   const [activeTab, setActiveTab] = useState("overview");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
+
+  // Convert UI period to API period
+  const getAPIPeriod = (uiPeriod: UIPeriod): APIPeriod => {
+    switch (uiPeriod) {
+      case 'day': return '7d';
+      case 'week': return '7d';
+      case 'month': return '30d';
+      case 'year': return 'year';
+    }
+  };
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -41,7 +53,8 @@ const Analytics = () => {
     const fetchAnalytics = async () => {
       setIsAnalyticsLoading(true);
       try {
-        const data = await getAnalyticsData(period);
+        const apiPeriod = getAPIPeriod(period);
+        const data = await getAnalyticsData(apiPeriod);
         setAnalyticsData(data);
       } catch (error) {
         toast({
@@ -59,7 +72,7 @@ const Analytics = () => {
     }
   }, [period, user]);
 
-  const handlePeriodChange = (newPeriod: Period) => {
+  const handlePeriodChange = (newPeriod: UIPeriod) => {
     setPeriod(newPeriod);
   };
 
