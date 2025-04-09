@@ -160,7 +160,7 @@ const Index = () => {
                     <h3 className="text-xl font-semibold mb-2">İstatistikler</h3>
                     <p className="text-gray-600 mb-4 flex-grow">Satış ve ziyaretçi istatistiklerinizi takip edin.</p>
                     <Button 
-                      onClick={() => navigate('/dashboard/settings')} 
+                      onClick={() => navigate('/dashboard/stats')} 
                       className="w-full group-hover:bg-green-600 group-hover:border-green-600 transition-colors"
                       variant="outline"
                     >

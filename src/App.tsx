@@ -15,6 +15,7 @@ import ThemeSelection from "./pages/ThemeSelection";
 import ThemeCustomization from "./pages/ThemeCustomization";
 import StoreSetup from "./pages/StoreSetup";
 import Store from "./pages/Store";
+import Stats from "./pages/Stats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/store" element={<Store />} />
             <Route path="/dashboard/theme-customization" element={<ThemeCustomization />} />
+            <Route path="/dashboard/stats" element={<Stats />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
             <Route path="/dashboard/theme-selection" element={<ThemeSelection />} />
