@@ -21,12 +21,32 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { 
   Package, 
   Plus, 
   Search, 
   Edit, 
-  Trash2 
+  Trash2,
+  Save
 } from 'lucide-react';
 
 // Sample product data structure
@@ -40,10 +60,23 @@ interface Product {
   createdAt: Date;
 }
 
+interface ProductFormValues {
+  id?: string;
+  name: string;
+  price: string;
+  stock: string;
+  category: string;
+  description: string;
+}
+
 const Store = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   
   // Sample products data
   const [products, setProducts] = useState<Product[]>([
@@ -78,19 +111,101 @@ const Store = () => {
     return null; // Will redirect via useEffect
   }
 
+  const addForm = useForm<ProductFormValues>({
+    defaultValues: {
+      name: '',
+      price: '',
+      stock: '',
+      category: '',
+      description: '',
+    },
+  });
+
+  const editForm = useForm<ProductFormValues>({
+    defaultValues: {
+      name: '',
+      price: '',
+      stock: '',
+      category: '',
+      description: '',
+    },
+  });
+
   const handleAddProduct = () => {
-    // In a real application, this would open a modal or navigate to an add product form
-    console.log('Add product clicked');
+    addForm.reset();
+    setShowAddDialog(true);
   };
 
   const handleEditProduct = (id: string) => {
-    console.log('Edit product with ID:', id);
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setCurrentProduct(product);
+      editForm.reset({
+        id: product.id,
+        name: product.name,
+        price: product.price.toString(),
+        stock: product.stock.toString(),
+        category: product.category,
+        description: product.description,
+      });
+      setShowEditDialog(true);
+    }
   };
 
   const handleDeleteProduct = (id: string) => {
-    console.log('Delete product with ID:', id);
-    // In a real application, this would show a confirmation dialog
-    setProducts(products.filter(product => product.id !== id));
+    const product = products.find(p => p.id === id);
+    if (product) {
+      setCurrentProduct(product);
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (currentProduct) {
+      setProducts(products.filter(product => product.id !== currentProduct.id));
+      toast.success('Ürün başarıyla silindi');
+      setShowDeleteConfirm(false);
+      setCurrentProduct(null);
+    }
+  };
+
+  const onAddSubmit = (data: ProductFormValues) => {
+    const newProduct: Product = {
+      id: Date.now().toString(),
+      name: data.name,
+      price: parseFloat(data.price),
+      stock: parseInt(data.stock),
+      category: data.category,
+      description: data.description,
+      createdAt: new Date()
+    };
+    
+    setProducts([...products, newProduct]);
+    toast.success('Yeni ürün başarıyla eklendi');
+    setShowAddDialog(false);
+    addForm.reset();
+  };
+
+  const onEditSubmit = (data: ProductFormValues) => {
+    if (currentProduct) {
+      const updatedProducts = products.map((product) => 
+        product.id === currentProduct.id
+          ? {
+              ...product,
+              name: data.name,
+              price: parseFloat(data.price),
+              stock: parseInt(data.stock),
+              category: data.category,
+              description: data.description,
+            }
+          : product
+      );
+      
+      setProducts(updatedProducts);
+      toast.success('Ürün başarıyla güncellendi');
+      setShowEditDialog(false);
+      setCurrentProduct(null);
+    }
   };
 
   const filteredProducts = products.filter(product => 
@@ -185,6 +300,252 @@ const Store = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Product Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Yeni Ürün Ekle</DialogTitle>
+            <DialogDescription>
+              Mağazanıza yeni bir ürün eklemek için aşağıdaki formu doldurun.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...addForm}>
+            <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
+              <FormField
+                control={addForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ürün Adı</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ürün adını girin" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={addForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fiyat (₺)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          step="0.01" 
+                          placeholder="0.00" 
+                          {...field} 
+                          required 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={addForm.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stok Adedi</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          placeholder="0" 
+                          {...field} 
+                          required 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={addForm.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategori</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ürün kategorisini girin" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={addForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Açıklama</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Ürün açıklamasını girin" 
+                        className="min-h-[100px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">İptal</Button>
+                </DialogClose>
+                <Button type="submit">
+                  <Save className="mr-2 h-4 w-4" />
+                  Ürünü Kaydet
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Ürünü Düzenle</DialogTitle>
+            <DialogDescription>
+              Ürün bilgilerini güncellemek için aşağıdaki formu kullanın.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <FormField
+                control={editForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ürün Adı</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ürün adını girin" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fiyat (₺)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          step="0.01" 
+                          placeholder="0.00" 
+                          {...field} 
+                          required 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stok Adedi</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          placeholder="0" 
+                          {...field} 
+                          required 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={editForm.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategori</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ürün kategorisini girin" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Açıklama</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Ürün açıklamasını girin" 
+                        className="min-h-[100px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">İptal</Button>
+                </DialogClose>
+                <Button type="submit">
+                  <Save className="mr-2 h-4 w-4" />
+                  Değişiklikleri Kaydet
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Ürünü Sil</DialogTitle>
+            <DialogDescription>
+              Bu işlem geri alınamaz. Bu ürünü silmek istediğinizden emin misiniz?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {currentProduct && (
+              <p className="text-sm font-medium">
+                <span className="font-semibold">{currentProduct.name}</span> isimli ürün silinecek.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">İptal</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={confirmDelete}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Ürünü Sil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
