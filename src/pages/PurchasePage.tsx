@@ -6,11 +6,25 @@ import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Check, ShoppingCart, CreditCard, Package, BuildingBank, Wallet, Shield } from 'lucide-react';
+import { Check, ShoppingCart, CreditCard, Package, Building, Wallet, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+// Define the types for package data
+interface BasePackage {
+  name: string;
+  price: string;
+  numericPrice: number;
+  period: string;
+  description: string;
+  features: string[];
+  badge?: string;
+  tag?: string;
+  yearlyPrice?: string;
+  originalYearlyPrice?: string;
+}
+
 // Sabit paket verilerini tanımlayalım
-const packageData = {
+const packageData: Record<string, BasePackage> = {
   "başlangıç": {
     name: "Start",
     price: "₺0",
@@ -257,7 +271,7 @@ const PurchasePage = () => {
                     className={`border rounded-md p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${selectedPaymentMethod === 'bank-transfer' ? 'border-brand-purple bg-brand-purple/5' : 'hover:bg-gray-50'}`}
                     onClick={() => setSelectedPaymentMethod('bank-transfer')}
                   >
-                    <BuildingBank className={`h-6 w-6 mb-2 ${selectedPaymentMethod === 'bank-transfer' ? 'text-brand-purple' : 'text-gray-500'}`} />
+                    <Building className={`h-6 w-6 mb-2 ${selectedPaymentMethod === 'bank-transfer' ? 'text-brand-purple' : 'text-gray-500'}`} />
                     <span className={`text-sm ${selectedPaymentMethod === 'bank-transfer' ? 'font-medium text-brand-purple' : ''}`}>Havale/EFT</span>
                   </div>
                   <div 
