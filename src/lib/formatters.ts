@@ -1,5 +1,6 @@
 
-export const formatCurrency = (amount: number): string => {
+// Format currency values
+export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
     currency: 'TRY',
@@ -7,20 +8,24 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-export const formatDate = (date: Date): string => {
+// Format date values to a readable date format
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
   return new Intl.DateTimeFormat('tr-TR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  }).format(new Date(date));
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
 };
 
-export const formatDateTime = (date: Date): string => {
+// Format date values to a readable date and time format
+export const formatDateTime = (dateString: string | Date) => {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
   return new Intl.DateTimeFormat('tr-TR', {
-    day: '2-digit',
-    month: '2-digit',
     year: 'numeric',
+    month: 'long',
+    day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  }).format(new Date(date));
+  }).format(date);
 };

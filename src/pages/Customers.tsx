@@ -1,197 +1,191 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
+import { Layout } from '@/components/ui/sidebar';
 import CustomerHeader from '@/components/customers/CustomerHeader';
 import CustomerTable from '@/components/customers/CustomerTable';
 import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer';
-import CustomerAddDialog from '@/components/customers/CustomerAddDialog';
 import { Customer } from '@/types/customer';
+import { useToast } from '@/components/ui/use-toast';
 
-// Örnek müşteri verileri
-const sampleCustomers: Customer[] = [
+const MOCK_CUSTOMERS: Customer[] = [
   {
     id: '1',
     name: 'Ahmet Yılmaz',
     email: 'ahmet.yilmaz@example.com',
     phone: '+90 555 123 4567',
-    address: 'Kadıköy, İstanbul',
-    createdAt: new Date('2023-02-15'),
-    lastOrderDate: new Date('2023-05-20'),
-    totalOrders: 5,
-    totalSpent: 2750.50,
-    notes: 'Premium müşteri',
     status: 'active',
+    totalOrders: 8,
+    totalSpent: 2450.75,
+    lastOrderDate: '2025-03-15T10:30:00Z',
+    address: 'Atatürk Bulvarı No:123, Çankaya, Ankara',
+    createdAt: '2024-09-15T14:22:00Z',
     communicationHistory: [
       {
         id: '1',
-        date: new Date('2023-05-20'),
         type: 'email',
-        content: 'Siparişiniz yola çıktı.',
+        date: '2025-03-20T09:15:00Z',
+        content: 'Yeni ürün koleksiyonumuz hakkında bilgilendirme e-postası gönderildi.',
         status: 'sent'
       },
       {
         id: '2',
-        date: new Date('2023-05-18'),
         type: 'phone',
-        content: 'Ödeme onaylandı.',
+        date: '2025-03-05T14:30:00Z',
+        content: 'Siparişi ile ilgili teslimat bilgisi verildi, müşteri teşekkür etti.',
         status: 'completed'
       }
-    ]
+    ],
+    notes: 'Premium müşteri, genellikle elektronik ürünleri tercih ediyor.'
   },
   {
     id: '2',
-    name: 'Zeynep Kaya',
-    email: 'zeynep.kaya@example.com',
+    name: 'Ayşe Kaya',
+    email: 'ayse.kaya@example.com',
     phone: '+90 555 987 6543',
-    address: 'Beyoğlu, İstanbul',
-    createdAt: new Date('2023-03-10'),
-    lastOrderDate: new Date('2023-06-05'),
-    totalOrders: 3,
-    totalSpent: 1250.75,
-    notes: 'İndirim kuponlarına ilgili',
     status: 'active',
+    totalOrders: 5,
+    totalSpent: 1280.50,
+    lastOrderDate: '2025-04-01T15:45:00Z',
+    address: 'Bağdat Caddesi No:456, Kadıköy, İstanbul',
+    createdAt: '2024-10-05T11:30:00Z',
     communicationHistory: [
       {
-        id: '3',
-        date: new Date('2023-06-05'),
-        type: 'email',
-        content: 'İndirim kuponu gönderildi.',
-        status: 'sent'
+        id: '1',
+        type: 'note',
+        date: '2025-04-02T10:00:00Z',
+        content: 'Müşteri geçmiş siparişlerinden memnun olduğunu belirtti, indirim kuponu gönderildi.',
+        status: 'completed'
       }
-    ]
+    ],
+    notes: ''
   },
   {
     id: '3',
     name: 'Mehmet Demir',
     email: 'mehmet.demir@example.com',
-    phone: '+90 555 456 7890',
-    address: 'Beşiktaş, İstanbul',
-    createdAt: new Date('2023-01-05'),
-    lastOrderDate: new Date('2023-06-15'),
-    totalOrders: 8,
-    totalSpent: 4320.25,
-    notes: 'VIP müşteri',
-    status: 'active',
+    phone: '+90 555 444 3333',
+    status: 'inactive',
+    totalOrders: 2,
+    totalSpent: 350.25,
+    lastOrderDate: '2024-11-10T09:20:00Z',
+    address: 'Cumhuriyet Mahallesi 123. Sokak No:7, Konak, İzmir',
+    createdAt: '2024-09-25T16:45:00Z',
+    communicationHistory: [],
+    notes: 'Uzun süredir alışveriş yapmadı, özel teklif gönderilebilir.'
+  },
+  {
+    id: '4',
+    name: 'Zeynep Şahin',
+    email: 'zeynep.sahin@example.com',
+    phone: '+90 555 222 1111',
+    status: 'blocked',
+    totalOrders: 1,
+    totalSpent: 125.00,
+    lastOrderDate: '2024-07-22T13:10:00Z',
+    address: 'Kültür Mahallesi 456. Sokak No:12, Merkez, Antalya',
+    createdAt: '2024-07-15T10:20:00Z',
     communicationHistory: [
       {
-        id: '4',
-        date: new Date('2023-06-15'),
-        type: 'email',
-        content: 'Yeni ürünler hakkında bilgilendirme.',
-        status: 'sent'
+        id: '1',
+        type: 'note',
+        date: '2024-07-23T11:30:00Z',
+        content: 'Müşteri ürünleri iade etmeye çalıştı ancak iade süresi geçmişti. Şikayet oluşturuldu.',
+        status: 'completed'
       },
       {
-        id: '5',
-        date: new Date('2023-06-10'),
-        type: 'phone',
-        content: 'Sipariş detayları konuşuldu.',
-        status: 'completed'
+        id: '2',
+        type: 'email',
+        date: '2024-07-25T15:45:00Z',
+        content: 'Hesabın askıya alındığına dair bilgilendirme e-postası gönderildi.',
+        status: 'sent'
       }
-    ]
-  },
+    ],
+    notes: 'Kötüye kullanım nedeniyle hesap askıya alındı.'
+  }
 ];
 
-const Customers = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+const Customers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [customers, setCustomers] = useState<Customer[]>(sampleCustomers);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [showDetailDrawer, setShowDetailDrawer] = useState(false);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-
-  // Yetkisiz kullanıcıları yönlendir
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
-  if (!user) {
-    return null;
-  }
-
-  const handleViewCustomer = (customer: Customer) => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { toast } = useToast();
+  
+  const filteredCustomers = MOCK_CUSTOMERS.filter(customer => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      customer.name.toLowerCase().includes(searchLower) ||
+      customer.email.toLowerCase().includes(searchLower) ||
+      customer.phone.toLowerCase().includes(searchLower)
+    );
+  });
+  
+  const handleOpenCustomerDetail = (customer: Customer) => {
     setSelectedCustomer(customer);
-    setShowDetailDrawer(true);
+    setIsDrawerOpen(true);
   };
-
+  
   const handleAddCustomer = () => {
-    setShowAddDialog(true);
+    toast({
+      title: "Yeni müşteri ekleme",
+      description: "Bu özellik henüz geliştirme aşamasındadır.",
+    });
   };
-
-  const onAddSubmit = (data: Omit<Customer, 'id' | 'createdAt' | 'communicationHistory'>) => {
-    const newCustomer: Customer = {
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      communicationHistory: [],
-      ...data,
-    };
+  
+  const handleAddCommunication = (
+    customerId: string, 
+    communication: Omit<Customer['communicationHistory'][0], 'id'>
+  ) => {
+    // In a real app, this would update the database
+    // For now, we'll just show a toast message
+    toast({
+      title: "İletişim kaydedildi",
+      description: "Müşteri ile iletişim başarıyla kaydedildi.",
+    });
     
-    setCustomers([...customers, newCustomer]);
-    toast.success('Yeni müşteri başarıyla eklendi');
-    setShowAddDialog(false);
-  };
-
-  const addCommunication = (customerId: string, communication: Omit<Customer['communicationHistory'][0], 'id'>) => {
-    setCustomers(prev => prev.map(customer => {
+    // Update the local state for demo purposes
+    const updatedCustomers = MOCK_CUSTOMERS.map(customer => {
       if (customer.id === customerId) {
         return {
           ...customer,
           communicationHistory: [
-            ...customer.communicationHistory,
             {
-              id: Date.now().toString(),
+              id: `temp-${Date.now()}`,
               ...communication
-            }
+            },
+            ...customer.communicationHistory
           ]
         };
       }
       return customer;
-    }));
-
-    toast.success('İletişim kaydı eklendi');
+    });
+    
+    // Find the updated customer to update the selected customer state
+    const updatedCustomer = updatedCustomers.find(c => c.id === customerId) || null;
+    setSelectedCustomer(updatedCustomer);
   };
-
-  const filteredCustomers = customers.filter(customer => 
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container mx-auto px-4 py-8"
-    >
-      <CustomerHeader 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onAddCustomer={handleAddCustomer}
-      />
-
-      <CustomerTable 
-        customers={filteredCustomers}
-        onViewCustomer={handleViewCustomer}
-      />
-
-      <CustomerDetailDrawer 
-        customer={selectedCustomer}
-        open={showDetailDrawer}
-        onOpenChange={setShowDetailDrawer}
-        onAddCommunication={addCommunication}
-      />
-
-      <CustomerAddDialog 
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSubmit={onAddSubmit}
-      />
-    </motion.div>
+    <Layout>
+      <div className="container py-6">
+        <CustomerHeader 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onAddCustomer={handleAddCustomer}
+        />
+        
+        <CustomerTable 
+          customers={filteredCustomers}
+          onViewCustomer={handleOpenCustomerDetail}
+        />
+        
+        <CustomerDetailDrawer 
+          customer={selectedCustomer}
+          open={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
+          onAddCommunication={handleAddCommunication}
+        />
+      </div>
+    </Layout>
   );
 };
 

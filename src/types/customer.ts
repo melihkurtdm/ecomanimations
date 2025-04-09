@@ -1,21 +1,21 @@
 
-export interface Customer {
+export type Customer = {
   id: string;
   name: string;
   email: string;
   phone: string;
-  address: string;
-  createdAt: Date;
-  lastOrderDate?: Date;
+  status: 'active' | 'inactive' | 'blocked';
   totalOrders: number;
   totalSpent: number;
-  notes?: string;
-  status: 'active' | 'inactive' | 'blocked';
+  lastOrderDate?: string;
+  address: string;
+  createdAt: string;
   communicationHistory: {
     id: string;
-    date: Date;
     type: 'email' | 'phone' | 'note' | 'other';
+    date: string | Date;
     content: string;
-    status: 'pending' | 'sent' | 'completed' | 'failed';
+    status: 'sent' | 'completed' | 'pending' | 'failed';
   }[];
-}
+  notes?: string;
+};
