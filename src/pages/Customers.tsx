@@ -9,6 +9,7 @@ import {
 import CustomerHeader from '@/components/customers/CustomerHeader';
 import CustomerTable from '@/components/customers/CustomerTable';
 import CustomerDetailDrawer from '@/components/customers/CustomerDetailDrawer';
+import CustomerAddDialog from '@/components/customers/CustomerAddDialog';
 import { Customer } from '@/types/customer';
 import { useToast } from '@/components/ui/use-toast';
 import EmptyCustomerState from '@/components/customers/EmptyCustomerState';
@@ -114,15 +115,23 @@ const Customers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [statusFilter, setStatusFilter] = useState<'all' | Customer['status']>('all');
   const { toast } = useToast();
   
-  const filteredCustomers = MOCK_CUSTOMERS.filter(customer => {
+  const filteredCustomers = customers.filter(customer => {
+    // Apply text search filter
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = 
       customer.name.toLowerCase().includes(searchLower) ||
       customer.email.toLowerCase().includes(searchLower) ||
-      customer.phone.toLowerCase().includes(searchLower)
-    );
+      customer.phone.toLowerCase().includes(searchLower);
+    
+    // Apply status filter
+    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
   });
   
   const handleOpenCustomerDetail = (customer: Customer) => {
@@ -131,10 +140,11 @@ const Customers: React.FC = () => {
   };
   
   const handleAddCustomer = () => {
-    toast({
-      title: "Yeni müşteri ekleme",
-      description: "Bu özellik henüz geliştirme aşamasındadır.",
-    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleCustomerAdded = (newCustomer: Customer) => {
+    setCustomers(prevCustomers => [newCustomer, ...prevCustomers]);
   };
   
   const handleAddCommunication = (
@@ -142,14 +152,13 @@ const Customers: React.FC = () => {
     communication: Omit<Customer['communicationHistory'][0], 'id'>
   ) => {
     // In a real app, this would update the database
-    // For now, we'll just show a toast message
     toast({
       title: "İletişim kaydedildi",
       description: "Müşteri ile iletişim başarıyla kaydedildi.",
     });
     
-    // Update the local state for demo purposes
-    const updatedCustomers = MOCK_CUSTOMERS.map(customer => {
+    // Update the local state
+    const updatedCustomers = customers.map(customer => {
       if (customer.id === customerId) {
         return {
           ...customer,
@@ -164,6 +173,8 @@ const Customers: React.FC = () => {
       }
       return customer;
     });
+    
+    setCustomers(updatedCustomers);
     
     // Find the updated customer to update the selected customer state
     const updatedCustomer = updatedCustomers.find(c => c.id === customerId) || null;
@@ -184,6 +195,8 @@ const Customers: React.FC = () => {
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
               onAddCustomer={handleAddCustomer}
+              selectedStatus={statusFilter}
+              onStatusChange={setStatusFilter}
             />
             
             {filteredCustomers.length > 0 ? (
@@ -200,6 +213,12 @@ const Customers: React.FC = () => {
               open={isDrawerOpen}
               onOpenChange={setIsDrawerOpen}
               onAddCommunication={handleAddCommunication}
+            />
+
+            <CustomerAddDialog
+              open={isAddDialogOpen}
+              onOpenChange={setIsAddDialogOpen}
+              onCustomerAdded={handleCustomerAdded}
             />
           </div>
         </SidebarInset>
