@@ -4,7 +4,7 @@ import { motion, Reorder, useDragControls } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Grip, Plus, X, Settings, Eye, ArrowRight, Save, MoveVertical, Check, RotateCw, ShoppingBag, Image, Tag, MessageSquare, Users, Mail, Clock, Truck } from 'lucide-react';
+import { Grip, Plus, X, Settings, Eye, ArrowRight, Save, MoveVertical, Check, RotateCw, ShoppingBag, Image, Tag, MessageSquare, Users, Mail, Clock, Truck, Layers } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
