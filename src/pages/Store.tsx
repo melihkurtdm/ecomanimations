@@ -48,7 +48,8 @@ import {
   Trash2,
   Save,
   Grid3X3,
-  List
+  List,
+  Eye  // Eye ikonunu burada doğru şekilde import ettik
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '@/components/store/ProductCard';
