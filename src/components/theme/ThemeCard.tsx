@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
@@ -16,6 +15,8 @@ export interface ThemeItem {
   color: string;
   badge?: string;
   category: string;
+  previewUrl?: string;
+  designStyle?: string;
 }
 
 interface ThemeCardProps {

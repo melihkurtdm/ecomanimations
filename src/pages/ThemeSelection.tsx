@@ -10,7 +10,7 @@ import {
   Monitor, 
   ExternalLink, 
   Globe, 
-  DragDropIcon, 
+  GripHorizontal, 
   Paintbrush, 
   Layers,
   EyeIcon
