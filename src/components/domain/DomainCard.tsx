@@ -16,7 +16,8 @@ import {
   ExternalLink, 
   RotateCw, 
   Trash2,
-  RefreshCcw
+  RefreshCcw,
+  ArrowUpRight
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
@@ -42,6 +43,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
 }) => {
   const { toast } = useToast();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   const handleVerifyDomain = async () => {
     try {
@@ -66,6 +68,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
   };
 
   const handleExternalVisit = () => {
+    setIsChecking(true);
     // Check if domain is actually accessible
     const url = `https://${domain}`;
     
@@ -73,6 +76,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
     fetch(url, { mode: 'no-cors' })
       .then(() => {
         window.open(url, '_blank');
+        setIsChecking(false);
       })
       .catch((error) => {
         console.error("Domain ziyaret edilemiyor:", error);
@@ -81,6 +85,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
           description: "Bu alan adına henüz erişilemiyor. DNS ayarlarınızın yayılması 24-48 saat sürebilir.",
           variant: "destructive",
         });
+        setIsChecking(false);
       });
   };
 
@@ -166,9 +171,18 @@ const DomainCard: React.FC<DomainCardProps> = ({
               </Button>
             )}
             
-            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit}>
-              <ExternalLink className="h-4 w-4 mr-1" />
-              Ziyaret Et
+            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit} disabled={isChecking}>
+              {isChecking ? (
+                <>
+                  <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                  Kontrol ediliyor...
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  Ziyaret Et
+                </>
+              )}
             </Button>
             
             <Button size="sm" variant="outline" className="text-red-600" onClick={onDelete}>
@@ -184,6 +198,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
               <div>
                 <p>DNS kaydı bulunamadı. Lütfen DNS ayarlarınızı kontrol edin ve CNAME kaydını doğru şekilde ekleyin.</p>
+                <p className="mt-1 font-medium">Değer kısmına tam olarak şunu yazın: <span className="font-mono bg-red-100 px-1 rounded">routes.storehub.app</span></p>
               </div>
             </div>
           </div>
@@ -195,7 +210,18 @@ const DomainCard: React.FC<DomainCardProps> = ({
               <Clock className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
               <div>
                 <p>Alan adınız DNS doğrulamasını bekliyor. Lütfen DNS ayarlarınızı kontrol edin.</p>
-                <p className="mt-1">CNAME kaydı olarak <span className="font-mono bg-amber-100 px-1 rounded">routes.storehub.app</span> değerini ekleyin.</p>
+                <div className="mt-2 bg-amber-100 p-2 rounded-md">
+                  <p className="font-medium">CNAME kaydı nasıl eklenir:</p>
+                  <ol className="list-decimal list-inside mt-1 space-y-1">
+                    <li>Domain sağlayıcınızın kontrol paneline giriş yapın</li>
+                    <li>DNS ayarları veya DNS yönetimi bölümünü bulun</li>
+                    <li>Yeni bir CNAME kaydı ekleyin</li>
+                    <li>Host alanına <span className="font-mono bg-amber-50 px-1 rounded">@</span> veya domaininizi yazın</li>
+                    <li>Değer/Hedef alanına <span className="font-mono bg-amber-50 px-1 rounded">routes.storehub.app</span> yazın</li>
+                    <li>TTL değerini otomatik veya 3600 olarak bırakın</li>
+                    <li>Kaydedin ve DNS değişikliklerinin yayılması için bekleyin (24-48 saat sürebilir)</li>
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
