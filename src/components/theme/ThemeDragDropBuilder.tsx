@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -883,3 +884,283 @@ const ThemeDragDropBuilder: React.FC<ThemeDragDropBuilderProps> = ({ themeId, th
             <div>
               <Label htmlFor="endDate">Bitiş Tarihi</Label>
               <Input
+                id="endDate"
+                type="datetime-local"
+                value={widgetSettings.endDate ? new Date(widgetSettings.endDate).toISOString().slice(0, 16) : ''}
+                onChange={(e) => updateSettings('endDate', new Date(e.target.value).toISOString())}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showDays"
+                checked={widgetSettings.showDays || false}
+                onCheckedChange={(checked) => updateSettings('showDays', checked)}
+              />
+              <Label htmlFor="showDays">Günleri göster</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showHours"
+                checked={widgetSettings.showHours || false}
+                onCheckedChange={(checked) => updateSettings('showHours', checked)}
+              />
+              <Label htmlFor="showHours">Saatleri göster</Label>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="p-4 text-center text-gray-500">
+            Bu bileşen için ayar bulunmamaktadır.
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Sol panel - Sürükle bırak bileşenler */}
+      <div className="lg:col-span-1">
+        <Tabs defaultValue="widgets" value={currentTab} onValueChange={setCurrentTab}>
+          <TabsList className="w-full">
+            <TabsTrigger value="widgets" className="flex-1">Bileşenler</TabsTrigger>
+            <TabsTrigger value="design" className="flex-1">Tasarım</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="widgets" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">E-Ticaret Bileşenleri</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2">
+                  {availableWidgets.map((widget) => {
+                    const IconComponent = eCommerceIcons[widget.type] || ShoppingBag;
+                    
+                    return (
+                      <Button
+                        key={widget.id}
+                        variant="outline"
+                        className="h-auto py-3 px-3 flex flex-col items-center justify-center text-center"
+                        onClick={() => addWidget(widget.id)}
+                      >
+                        <IconComponent className="h-5 w-5 mb-1" />
+                        <span className="text-sm font-medium">{widget.title}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="design" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Tasarım Ayarları</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Ana Renk</Label>
+                    <div className="flex space-x-2 mt-1">
+                      <Input 
+                        type="color" 
+                        value={themeColor} 
+                        className="w-12 p-1 h-10"
+                        readOnly
+                      />
+                      <Input 
+                        value={themeColor} 
+                        className="flex-1"
+                        readOnly
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Tema özelleştirme sayfasından ana rengi değiştirebilirsiniz.</p>
+                  </div>
+                  
+                  <div>
+                    <Label>Mobil Görünüm</Label>
+                    <div className="mt-2">
+                      <Button variant="outline" className="w-full flex items-center">
+                        <MoveVertical className="h-4 w-4 mr-2" />
+                        Sıralamayı Değiştir
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Mobil görünümde bileşenlerin sıralamasını değiştirebilirsiniz.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      {/* Sağ panel - Önizleme */}
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">Sayfa Düzeni</CardTitle>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                className="flex items-center gap-1"
+              >
+                <Eye className="h-4 w-4" />
+                {isPreviewMode ? "Düzenleme Modu" : "Önizleme"}
+              </Button>
+              
+              <Button 
+                variant={isSaved ? "outline" : "default"} 
+                size="sm"
+                onClick={saveLayout}
+                disabled={isSaving}
+                className="flex items-center gap-1"
+              >
+                {isSaving ? (
+                  <RotateCw className="h-4 w-4 animate-spin" />
+                ) : isSaved ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isSaving ? "Kaydediliyor..." : isSaved ? "Kaydedildi" : "Kaydet"}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={publishSite}
+                disabled={isPublishing || !isSaved}
+                className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
+              >
+                {isPublishing ? (
+                  <RotateCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowRight className="h-4 w-4" />
+                )}
+                {isPublishing ? "Yayınlanıyor..." : "Yayınla"}
+              </Button>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <ScrollArea className="h-[600px] rounded-md">
+              <div className={`space-y-3 p-1 ${isPreviewMode ? 'pointer-events-none' : ''}`}>
+                {/* Aktif bileşenlerin sürükle bırak alanı */}
+                {activeWidgets.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+                    <div className="flex flex-col items-center">
+                      <Layers className="h-10 w-10 text-gray-400 mb-2" />
+                      <h3 className="text-lg font-medium text-gray-700 mb-1">Sayfanız boş görünüyor</h3>
+                      <p className="text-gray-500 mb-4">Soldaki bileşenlerden ekleyerek mağaza sayfanızı oluşturun</p>
+                      <Button 
+                        variant="default" 
+                        className="flex items-center gap-2"
+                        onClick={() => setCurrentTab("widgets")}
+                      >
+                        <Plus className="h-4 w-4" />
+                        Bileşen Ekle
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Reorder.Group 
+                    axis="y" 
+                    values={activeWidgets} 
+                    onReorder={setActiveWidgets}
+                    className="space-y-3"
+                  >
+                    {activeWidgets.map((widget) => {
+                      const dragControls = useDragControls();
+                      
+                      return (
+                        <Reorder.Item
+                          key={widget.id}
+                          value={widget}
+                          dragControls={dragControls}
+                          dragListener={!isPreviewMode}
+                        >
+                          <motion.div 
+                            className={`relative border rounded-lg overflow-hidden ${selectedWidget === widget.id ? 'ring-2 ring-primary' : 'border-gray-200'}`}
+                            onClick={() => setSelectedWidget(widget.id)}
+                            whileTap={{ scale: !isPreviewMode ? 0.98 : 1 }}
+                          >
+                            {!isPreviewMode && (
+                              <div className="absolute top-2 right-2 z-10 flex space-x-1">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 bg-white"
+                                  onClick={(e) => openWidgetSettings(widget, e)}
+                                >
+                                  <Settings className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 bg-white text-red-500 hover:text-red-700"
+                                  onClick={(e) => removeWidget(widget.id, e)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                            
+                            {!isPreviewMode && (
+                              <div 
+                                className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-1.5 rounded-md bg-white border"
+                                onPointerDown={(e) => dragControls.start(e)}
+                              >
+                                <Grip className="h-3 w-3 text-gray-400" />
+                              </div>
+                            )}
+                            
+                            <div className="p-2">
+                              {renderWidgetPreview(widget)}
+                            </div>
+                            
+                            {!isPreviewMode && (
+                              <div className="bg-gray-50 px-3 py-2 text-xs text-gray-500 flex items-center justify-between border-t">
+                                <span>{widget.title}</span>
+                                <span className="text-gray-400">#{widget.type}</span>
+                              </div>
+                            )}
+                          </motion.div>
+                        </Reorder.Item>
+                      );
+                    })}
+                  </Reorder.Group>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Ayarlar diyaloğu */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Bileşen Ayarları</DialogTitle>
+          </DialogHeader>
+          
+          {renderSettingsForm(currentEditingWidget)}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
+              İptal
+            </Button>
+            <Button onClick={saveWidgetSettings}>
+              Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default ThemeDragDropBuilder;
