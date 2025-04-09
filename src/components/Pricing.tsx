@@ -2,9 +2,11 @@
 import React, { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const plans = [
   {
+    id: "başlangıç",
     name: "Başlangıç",
     price: "₺399",
     period: "ay",
@@ -20,6 +22,7 @@ const plans = [
     ctaText: "Ücretsiz Deneyin"
   },
   {
+    id: "profesyonel",
     name: "Profesyonel",
     price: "₺999",
     period: "ay",
@@ -37,6 +40,7 @@ const plans = [
     ctaText: "Hemen Başlayın"
   },
   {
+    id: "kurumsal",
     name: "Kurumsal",
     price: "₺2499",
     period: "ay",
@@ -56,6 +60,7 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const navigate = useNavigate();
   const sectionRef = useRef<HTMLDivElement>(null);
   const planRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -92,6 +97,10 @@ const Pricing = () => {
       });
     };
   }, []);
+
+  const handleSelectPlan = (planId: string) => {
+    navigate(`/purchase?package=${planId}`);
+  };
 
   return (
     <section id="pricing" className="py-20 bg-white">
@@ -150,6 +159,7 @@ const Pricing = () => {
                   <Button 
                     className={`w-full ${plan.highlighted ? 'bg-brand-purple hover:bg-brand-purple/90' : ''}`}
                     variant={plan.highlighted ? "default" : "outline"}
+                    onClick={() => handleSelectPlan(plan.id)}
                   >
                     {plan.ctaText}
                   </Button>
