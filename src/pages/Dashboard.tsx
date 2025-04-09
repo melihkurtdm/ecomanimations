@@ -57,7 +57,10 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-2">
               <p>Henüz bir mağazanız yok. Hemen oluşturun!</p>
-              <Button className="w-full mt-4">
+              <Button 
+                className="w-full mt-4"
+                onClick={() => navigate('/purchase')}
+              >
                 Mağaza Oluştur
               </Button>
             </div>
@@ -72,7 +75,11 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-2">
               <p>20'den fazla profesyonel tema arasından seçim yapın.</p>
-              <Button variant="outline" className="w-full mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full mt-4"
+                onClick={() => navigate('/dashboard/theme-selection')}
+              >
                 Temaları Keşfet
               </Button>
             </div>
