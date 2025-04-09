@@ -26,7 +26,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Form doğrulama şeması
+// Form validation schema
+// Ensuring all required fields from Customer type are also required in the form
 const formSchema = z.object({
   name: z.string().min(2, { message: 'İsim en az 2 karakter olmalıdır' }),
   email: z.string().email({ message: 'Geçerli bir e-posta adresi giriniz' }),
