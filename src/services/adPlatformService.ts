@@ -1,5 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
+import adOptimizationService from "./adOptimizationService";
 
 interface AdCreative {
   id: string;
@@ -21,6 +22,7 @@ interface AdCampaignRequest {
   };
   creatives: AdCreative[];
   targetUrl: string;
+  useAiOptimization?: boolean;
 }
 
 interface AdCampaignResponse {
@@ -31,6 +33,13 @@ interface AdCampaignResponse {
     campaignId?: string;
     status: string;
     message?: string;
+  }[];
+  optimizationApplied?: boolean;
+  optimizationRecommendations?: {
+    creativeId: string;
+    audienceSegmentId: string;
+    allocationPercentage: number;
+    reason: string;
   }[];
 }
 
@@ -55,7 +64,7 @@ export const publishAdCampaign = async (campaignData: AdCampaignRequest): Promis
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Mock successful response
+    // Create response without optimization first
     const response: AdCampaignResponse = {
       id: `campaign-${Date.now()}`,
       status: 'pending',
@@ -66,6 +75,44 @@ export const publishAdCampaign = async (campaignData: AdCampaignRequest): Promis
         message: `Your ad campaign is being reviewed by ${platform === 'google' ? 'Google Ads' : 'Meta'}`
       }))
     };
+    
+    // If AI optimization is requested, apply it
+    if (campaignData.useAiOptimization) {
+      try {
+        const creatives = campaignData.creatives.map(c => ({
+          id: c.id,
+          type: c.type,
+          title: c.title
+        }));
+        
+        // Get optimization recommendations
+        const optimizationResult = await adOptimizationService.optimizeCampaign(
+          response.id,
+          creatives
+        );
+        
+        // Apply the optimizations
+        await adOptimizationService.applyOptimizations(
+          response.id,
+          optimizationResult.optimizedAllocations
+        );
+        
+        // Update response with optimization info
+        response.optimizationApplied = true;
+        response.optimizationRecommendations = optimizationResult.optimizedAllocations;
+        
+        toast({
+          title: "AI Optimizasyonu Uygulandı",
+          description: `Kampanyanız için ${optimizationResult.optimizedAllocations.length} adet optimizasyon uygulandı.`,
+        });
+      } catch (error) {
+        console.error("Error applying AI optimization:", error);
+        toast({
+          title: "AI Optimizasyonu Hatası",
+          description: "Optimizasyon uygulanırken bir hata oluştu, ancak kampanya yine de yayınlandı.",
+        });
+      }
+    }
     
     return response;
   } catch (error) {
@@ -113,4 +160,32 @@ export const updateApiConnectionStatus = (platform: string, status: boolean): vo
   if (platform in API_CONNECTED) {
     API_CONNECTED[platform as keyof typeof API_CONNECTED] = status;
   }
+};
+
+// Get performance data for a campaign
+export const getCampaignPerformance = async (campaignId: string) => {
+  const adPerformanceService = await import('./adPerformanceService');
+  return adPerformanceService.getCampaignPerformance(campaignId);
+};
+
+// Get audience segments
+export const getAudienceSegments = async () => {
+  const adPerformanceService = await import('./adPerformanceService');
+  return adPerformanceService.getAudienceSegments();
+};
+
+// Generate mock performance data for testing
+export const generatePerformanceData = async (campaignId: string, creatives: any[]) => {
+  const adPerformanceService = await import('./adPerformanceService');
+  return adPerformanceService.generateMockPerformanceData(campaignId, creatives);
+};
+
+export default {
+  publishAdCampaign,
+  getAdAccounts,
+  validateApiConnection,
+  updateApiConnectionStatus,
+  getCampaignPerformance,
+  getAudienceSegments,
+  generatePerformanceData
 };
