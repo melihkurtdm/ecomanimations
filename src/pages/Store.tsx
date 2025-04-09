@@ -46,8 +46,14 @@ import {
   Search, 
   Edit, 
   Trash2,
-  Save
+  Save,
+  Grid3X3,
+  List
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ProductCard from '@/components/store/ProductCard';
+import ProductDetailModal from '@/components/store/ProductDetailModal';
+import { Badge } from '@/components/ui/badge';
 
 // Sample product data structure
 interface Product {
@@ -77,6 +83,8 @@ const Store = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [showDetailModal, setShowDetailModal] = useState(false);
   
   // Sample products data
   const [products, setProducts] = useState<Product[]>([
@@ -97,6 +105,24 @@ const Store = () => {
       category: 'Giyim',
       description: 'Bu başka bir test ürünüdür.',
       createdAt: new Date('2023-02-20')
+    },
+    {
+      id: '3',
+      name: 'Premium Laptop Standı',
+      price: 349.99,
+      stock: 15,
+      category: 'Elektronik',
+      description: 'Ergonomik tasarımlı, ayarlanabilir yükseklikte laptop standı.',
+      createdAt: new Date('2023-03-10')
+    },
+    {
+      id: '4',
+      name: 'Akıllı Saat',
+      price: 899.99,
+      stock: 8,
+      category: 'Elektronik',
+      description: 'Nabız ölçme, adım sayma ve bildirim alma özellikleri ile tam donanımlı akıllı saat.',
+      createdAt: new Date('2023-03-25')
     },
   ]);
 
@@ -130,6 +156,11 @@ const Store = () => {
       description: '',
     },
   });
+
+  const handleViewProduct = (product: Product) => {
+    setCurrentProduct(product);
+    setShowDetailModal(true);
+  };
 
   const handleAddProduct = () => {
     addForm.reset();
@@ -213,93 +244,227 @@ const Store = () => {
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    },
+    exit: { opacity: 0 }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="container mx-auto px-4 py-8"
+    >
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Mağaza Ürün Yönetimi</h1>
-        <Button onClick={handleAddProduct}>
-          <Plus className="mr-2 h-4 w-4" />
-          Yeni Ürün Ekle
-        </Button>
+        <motion.h1 
+          className="text-2xl font-bold"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          Mağaza Ürün Yönetimi
+        </motion.h1>
+        <motion.div
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Button 
+            onClick={handleAddProduct}
+            className="bg-gradient-to-r from-brand-purple to-brand-blue hover:from-brand-purple hover:to-brand-purple transition-all duration-300"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Yeni Ürün Ekle
+          </Button>
+        </motion.div>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Ürün Arama</CardTitle>
-          <CardDescription>İsim veya kategori ile ürünlerinizi arayın</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Ürün ara..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Ürünlerim</CardTitle>
-          <CardDescription>Mağazanızdaki tüm ürünleri yönetin</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredProducts.length > 0 ? (
-            <Table>
-              <TableCaption>Toplam {filteredProducts.length} ürün</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ürün Adı</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Fiyat</TableHead>
-                  <TableHead>Stok</TableHead>
-                  <TableHead>Eklenme Tarihi</TableHead>
-                  <TableHead className="text-right">İşlemler</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{product.price.toFixed(2)} ₺</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>{product.createdAt.toLocaleDateString('tr-TR')}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditProduct(product.id)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteProduct(product.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8">
-              <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">Hiç ürün bulunamadı</h3>
-              <p className="text-muted-foreground mt-2">
-                Henüz hiç ürün eklemediniz veya arama kriterinize uygun ürün yok.
-              </p>
-              <Button 
-                onClick={handleAddProduct} 
-                className="mt-4"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                İlk ürününüzü ekleyin
-              </Button>
+      <motion.div
+        variants={containerVariants}
+        className="mb-6"
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Ürün Arama</CardTitle>
+                <CardDescription>İsim veya kategori ile ürünlerinizi arayın</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant={viewMode === 'list' ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === 'grid' ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Ürün ara..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <AnimatePresence mode="wait">
+        {viewMode === 'list' ? (
+          <motion.div
+            key="list-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Ürünlerim</CardTitle>
+                <CardDescription>Mağazanızdaki tüm ürünleri yönetin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {filteredProducts.length > 0 ? (
+                  <Table>
+                    <TableCaption>Toplam {filteredProducts.length} ürün</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ürün Adı</TableHead>
+                        <TableHead>Kategori</TableHead>
+                        <TableHead>Fiyat</TableHead>
+                        <TableHead>Stok</TableHead>
+                        <TableHead>Eklenme Tarihi</TableHead>
+                        <TableHead className="text-right">İşlemler</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProducts.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-gray-50">
+                              {product.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{product.price.toFixed(2)} ₺</TableCell>
+                          <TableCell>{product.stock}</TableCell>
+                          <TableCell>{product.createdAt.toLocaleDateString('tr-TR')}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleViewProduct(product)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleEditProduct(product.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">Hiç ürün bulunamadı</h3>
+                    <p className="text-muted-foreground mt-2">
+                      Henüz hiç ürün eklemediniz veya arama kriterinize uygun ürün yok.
+                    </p>
+                    <Button 
+                      onClick={handleAddProduct} 
+                      className="mt-4"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      İlk ürününüzü ekleyin
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Ürünlerim</CardTitle>
+                <CardDescription>Mağazanızdaki tüm ürünleri yönetin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {filteredProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filteredProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onEdit={handleEditProduct}
+                        onDelete={handleDeleteProduct}
+                        onView={handleViewProduct}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">Hiç ürün bulunamadı</h3>
+                    <p className="text-muted-foreground mt-2">
+                      Henüz hiç ürün eklemediniz veya arama kriterinize uygun ürün yok.
+                    </p>
+                    <Button 
+                      onClick={handleAddProduct} 
+                      className="mt-4"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      İlk ürününüzü ekleyin
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add Product Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -546,7 +711,14 @@ const Store = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      
+      {/* Product Detail Modal */}
+      <ProductDetailModal 
+        product={currentProduct} 
+        open={showDetailModal} 
+        onOpenChange={setShowDetailModal} 
+      />
+    </motion.div>
   );
 };
 
