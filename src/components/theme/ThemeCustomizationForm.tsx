@@ -232,10 +232,13 @@ const ThemeCustomizationForm: React.FC<ThemeCustomizationFormProps> = ({
           <Button 
             onClick={onSaveChanges} 
             disabled={!isDirty}
-            className="relative overflow-hidden group"
+            size="lg"
+            className={`relative overflow-hidden group transition-all duration-300 ${
+              isDirty ? 'animate-pulse' : ''
+            }`}
             style={{
               backgroundColor: isSaved ? themeSettings.colors.primary : themeSettings.colors.primary,
-              transition: "all 0.3s ease"
+              boxShadow: isDirty ? `0 0 10px ${themeSettings.colors.primary}80` : 'none',
             }}
           >
             <AnimatePresence mode="wait">
@@ -256,7 +259,7 @@ const ThemeCustomizationForm: React.FC<ThemeCustomizationFormProps> = ({
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="flex items-center"
+                  className="flex items-center font-medium"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Değişiklikleri Kaydet

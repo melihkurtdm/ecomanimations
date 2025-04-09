@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Globe, Archive, EyeOff, AlertTriangle } from 'lucide-react';
+import { Globe, Archive, EyeOff, AlertTriangle, Check } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 interface ThemePublishFormProps {
@@ -52,6 +52,11 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
         description: publishSettings.customDomain 
           ? `Temanız ${publishSettings.customDomain} adresinde yayında.` 
           : "Temanız başarıyla yayınlandı.",
+        action: (
+          <div className="bg-green-500 text-white p-1 rounded-full">
+            <Check className="h-4 w-4" />
+          </div>
+        ),
       });
     }, 1500);
   };
@@ -217,9 +222,10 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button 
             variant={isPublished ? "outline" : "default"} 
-            className="flex-1"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md"
             onClick={isPublished ? handleUnpublish : handlePublish}
             disabled={isLoading}
+            size="lg"
           >
             {isLoading ? (
               <>

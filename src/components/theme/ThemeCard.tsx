@@ -60,14 +60,16 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           cardStyle: 'border-t-4 shadow-sm hover:shadow-md',
           borderTopColor: theme.color,
           btnClass: 'rounded-full',
-          badgeStyle: 'rounded-full'
+          badgeStyle: 'rounded-full',
+          imageFilter: 'grayscale-0'
         };
       case 'luxury':
         return {
           cardStyle: 'shadow-md border-0 hover:shadow-xl',
           borderTopColor: 'transparent',
           btnClass: 'rounded-none border-b-2',
-          badgeStyle: 'rounded-none'
+          badgeStyle: 'rounded-none',
+          imageFilter: 'contrast-125 brightness-110'
         };
       case 'popup':
         return {
@@ -75,28 +77,56 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           borderTopColor: 'transparent',
           borderLeftColor: theme.color,
           btnClass: 'rounded-full',
-          badgeStyle: 'rounded-full'
+          badgeStyle: 'rounded-full',
+          imageFilter: 'saturate-150'
         };
       case 'catalog':
         return {
           cardStyle: 'border-2 shadow-none hover:shadow-sm',
           borderTopColor: 'transparent',
           btnClass: 'rounded-sm',
-          badgeStyle: 'rounded-sm'
+          badgeStyle: 'rounded-sm',
+          imageFilter: 'brightness-105'
         };
       case 'fashion':
         return {
           cardStyle: 'border-0 shadow-lg hover:shadow-xl',
           borderTopColor: 'transparent',
           btnClass: 'rounded-none font-light',
-          badgeStyle: 'rounded-full px-4'
+          badgeStyle: 'rounded-full px-4',
+          imageFilter: 'sepia(20%)'
+        };
+      case 'vintage':
+        return {
+          cardStyle: 'border-2 border-amber-200 shadow-md',
+          borderTopColor: 'transparent',
+          btnClass: 'rounded-md font-serif',
+          badgeStyle: 'rounded-md',
+          imageFilter: 'sepia(50%) contrast-125'
+        };
+      case 'minimal':
+        return {
+          cardStyle: 'border-0 shadow-sm',
+          borderTopColor: 'transparent',
+          btnClass: 'rounded-none uppercase tracking-widest text-xs',
+          badgeStyle: 'rounded-none',
+          imageFilter: 'grayscale(70%)'
+        };
+      case 'darkmode':
+        return {
+          cardStyle: 'bg-gray-900 text-white border-0 shadow-lg',
+          borderTopColor: 'transparent',
+          btnClass: 'bg-gray-800 text-white hover:bg-gray-700',
+          badgeStyle: 'bg-gray-800',
+          imageFilter: 'brightness-80 contrast-120'
         };
       default:
         return {
           cardStyle: '',
           borderTopColor: 'transparent',
           btnClass: '',
-          badgeStyle: ''
+          badgeStyle: '',
+          imageFilter: ''
         };
     }
   };
@@ -107,13 +137,14 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
     <motion.div 
       variants={itemVariants}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      className="transform-gpu" // Hardware acceleration for smoother animations
     >
       <Card 
         className={`overflow-hidden cursor-pointer transition-all duration-300 ${
           isSelected 
             ? 'ring-2 ring-offset-2 shadow-lg' 
             : 'hover:shadow-md'
-        } ${themeStyles.cardStyle}`}
+        } ${themeStyles.cardStyle} ${theme.id === 'darkmode' ? 'dark' : ''}`}
         style={{ 
           borderColor: isSelected ? theme.color : undefined,
           borderRadius,
@@ -126,8 +157,16 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           <img 
             src={theme.imageSrc} 
             alt={theme.name} 
-            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" 
+            className={`w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105 ${themeStyles.imageFilter}`}
+            style={{ filter: themeStyles.imageFilter }}
           />
+          
+          {/* Design style indicator */}
+          {theme.designStyle && (
+            <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+              {theme.designStyle.charAt(0).toUpperCase() + theme.designStyle.slice(1)} Style
+            </div>
+          )}
           
           {/* Theme badge */}
           {theme.badge && (
@@ -182,15 +221,15 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
           </div>
         </div>
         
-        <CardHeader className={`pb-2 ${headerStyle}`}>
+        <CardHeader className={`pb-2 ${headerStyle} ${theme.id === 'darkmode' ? 'text-white' : ''}`}>
           <CardTitle className="flex items-center justify-between">
             <span>{theme.name}</span>
             <span className="h-4 w-4 rounded-full" style={{ backgroundColor: theme.color }}></span>
           </CardTitle>
-          <CardDescription>{theme.description}</CardDescription>
+          <CardDescription className={theme.id === 'darkmode' ? 'text-gray-300' : ''}>{theme.description}</CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className={theme.id === 'darkmode' ? 'text-gray-200' : ''}>
           <div className="space-y-2">
             {theme.features.map((feature, index) => (
               <div key={index} className={`flex items-center ${theme.id === 'luxury' ? 'border-b pb-1' : ''}`}>
@@ -203,7 +242,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
                     style={{ backgroundColor: theme.color }}
                   ></div>
                 </div>
-                <span className={`text-sm text-gray-700 ${theme.id === 'luxury' ? 'font-medium' : ''}`}>{feature}</span>
+                <span className={`text-sm ${theme.id === 'darkmode' ? 'text-gray-200' : 'text-gray-700'} ${theme.id === 'luxury' ? 'font-medium' : ''}`}>{feature}</span>
               </div>
             ))}
           </div>
@@ -214,7 +253,11 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
             <Button 
               variant="secondary" 
               className={`w-full transition-all duration-300 ${buttonStyle} ${themeStyles.btnClass}`}
-              style={{ backgroundColor: `${theme.color}20`, color: theme.color, borderColor: `${theme.color}30` }}
+              style={{ 
+                backgroundColor: theme.id === 'darkmode' ? theme.color : `${theme.color}20`, 
+                color: theme.id === 'darkmode' ? 'white' : theme.color,
+                borderColor: `${theme.color}30` 
+              }}
             >
               <Sparkles className="mr-2 h-4 w-4" />
               Seçildi
@@ -225,7 +268,7 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
             <Button 
               variant="outline" 
               size="sm"
-              className={`w-full text-gray-600 ${buttonStyle} ${themeStyles.btnClass}`}
+              className={`w-full ${theme.id === 'darkmode' ? 'text-gray-200 border-gray-700' : 'text-gray-600'} ${buttonStyle} ${themeStyles.btnClass}`}
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(theme.previewUrl, '_blank');
