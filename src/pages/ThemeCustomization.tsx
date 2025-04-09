@@ -283,6 +283,7 @@ const ThemeCustomization = () => {
         <div className="flex">
           <TabsList className="grid grid-cols-2">
             <TabsTrigger 
+              value="customize"
               className="flex items-center"
               onClick={() => setEditorMode("customize")}
               data-state={editorMode === "customize" ? "active" : "inactive"}
@@ -291,6 +292,7 @@ const ThemeCustomization = () => {
               Görünüm Ayarları
             </TabsTrigger>
             <TabsTrigger 
+              value="builder"
               className="flex items-center"
               onClick={() => setEditorMode("builder")}
               data-state={editorMode === "builder" ? "active" : "inactive"}
