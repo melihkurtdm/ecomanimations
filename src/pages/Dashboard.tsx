@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Palette } from 'lucide-react';
+import { Palette, Store } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -57,13 +57,24 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p>Henüz bir mağazanız yok. Hemen oluşturun!</p>
-              <Button 
-                className="w-full mt-4"
-                onClick={() => navigate('/purchase')}
-              >
-                Mağaza Oluştur
-              </Button>
+              <div className="flex items-center justify-between">
+                <Button 
+                  className="w-full mt-4"
+                  onClick={() => navigate('/dashboard/store')}
+                >
+                  <Store className="h-4 w-4 mr-2" />
+                  Mağazaya Git
+                </Button>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <Button 
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/purchase')}
+                >
+                  Yeni Mağaza Oluştur
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

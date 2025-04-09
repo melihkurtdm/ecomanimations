@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { ChevronLeft, ChevronRight, Store, LayoutGrid, Settings, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Store, LayoutGrid, Settings, CheckCircle, Palette } from 'lucide-react';
 
 const storeFormSchema = z.object({
   storeName: z.string().min(3, {
@@ -180,19 +179,19 @@ const StoreSetup = () => {
           <CardContent>
             <div className="flex flex-col items-center space-y-6 p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                <Card className="bg-gray-50">
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/store')}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <LayoutGrid className="h-8 w-8 text-brand-purple mb-2" />
                     <h3 className="font-medium text-center">Ürün Ekle</h3>
                   </CardContent>
                 </Card>
-                <Card className="bg-gray-50">
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/theme-customization')}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
-                    <Settings className="h-8 w-8 text-brand-purple mb-2" />
-                    <h3 className="font-medium text-center">Mağazayı Özelleştir</h3>
+                    <Palette className="h-8 w-8 text-brand-purple mb-2" />
+                    <h3 className="font-medium text-center">Temayı Özelleştir</h3>
                   </CardContent>
                 </Card>
-                <Card className="bg-gray-50">
+                <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => navigate('/dashboard/store')}>
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <Store className="h-8 w-8 text-brand-purple mb-2" />
                     <h3 className="font-medium text-center">Mağazayı Görüntüle</h3>

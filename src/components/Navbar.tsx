@@ -1,13 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Store, Palette } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +43,29 @@ const Navbar = () => {
             <a href="#pricing" className="text-gray-600 hover:text-brand-purple transition-colors">Fiyatlandırma</a>
             <a href="#themes" className="text-gray-600 hover:text-brand-purple transition-colors">Temalar</a>
             <a href="#contact" className="text-gray-600 hover:text-brand-purple transition-colors">İletişim</a>
+            
+            {user && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/dashboard/store')}
+                  className="flex items-center"
+                >
+                  <Store className="h-4 w-4 mr-2" />
+                  Mağazam
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/dashboard/theme-customization')}
+                  className="flex items-center"
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Temam
+                </Button>
+              </>
+            )}
           </nav>
 
           <div className="hidden md:flex">
@@ -92,7 +118,37 @@ const Navbar = () => {
             >
               İletişim
             </a>
+            
+            {user && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    navigate('/dashboard/store');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center w-full justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50"
+                >
+                  <Store className="h-4 w-4 mr-2" />
+                  Mağazam
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    navigate('/dashboard/theme-customization');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center w-full justify-start px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-purple hover:bg-gray-50"
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Temam
+                </Button>
+              </>
+            )}
           </div>
+          
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-5 space-x-3">
               <UserMenu />
