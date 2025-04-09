@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
 
 // Form validation schema
 // Ensuring all required fields from Customer type are also required in the form
@@ -33,9 +34,9 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Geçerli bir e-posta adresi giriniz' }),
   phone: z.string().min(5, { message: 'Geçerli bir telefon numarası giriniz' }),
   address: z.string().min(5, { message: 'Adres en az 5 karakter olmalıdır' }),
-  totalOrders: z.number().default(0),
-  totalSpent: z.number().default(0),
-  notes: z.string().optional(),
+  totalOrders: z.number().nonnegative().default(0),
+  totalSpent: z.number().nonnegative().default(0),
+  notes: z.string().optional().default(''),
   status: z.enum(['active', 'inactive', 'blocked']).default('active'),
 });
 
@@ -67,20 +68,34 @@ const CustomerAddDialog = ({
   });
 
   const handleSubmit = (values: FormData) => {
-    // Explicitly cast the form values to the expected type to satisfy TypeScript
-    const customerData: Omit<Customer, 'id' | 'createdAt' | 'communicationHistory'> = {
-      name: values.name,
-      email: values.email,
-      phone: values.phone,
-      address: values.address,
-      totalOrders: values.totalOrders,
-      totalSpent: values.totalSpent,
-      notes: values.notes,
-      status: values.status,
-    };
-    
-    onSubmit(customerData);
-    form.reset();
+    try {
+      // Explicitly cast the form values to the expected type to satisfy TypeScript
+      const customerData: Omit<Customer, 'id' | 'createdAt' | 'communicationHistory'> = {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        address: values.address,
+        totalOrders: values.totalOrders,
+        totalSpent: values.totalSpent,
+        notes: values.notes,
+        status: values.status,
+      };
+      
+      onSubmit(customerData);
+      form.reset();
+      
+      toast({
+        title: "Müşteri eklendi",
+        description: "Müşteri başarıyla eklendi."
+      });
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Müşteri eklenirken bir hata oluştu.",
+        variant: "destructive"
+      });
+      console.error("Error adding customer:", error);
+    }
   };
 
   return (
