@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, Palette, Type, Layout, BookTemplate } from 'lucide-react';
 import ThemeColorPalette from './ThemeColorPalette';
 import ThemeFontSelector from './ThemeFontSelector';
 import ThemeLayoutSettings from './ThemeLayoutSettings';
@@ -83,29 +83,68 @@ const ThemeCustomizationForm: React.FC<ThemeCustomizationFormProps> = ({
   onResetDefaults
 }) => {
   return (
-    <Card className="border-2 border-opacity-50" style={{ borderColor: themeSettings.colors.primary }}>
-      <CardHeader>
-        <CardTitle>Tema Ayarları</CardTitle>
+    <Card 
+      className="border-2 border-opacity-50 overflow-hidden shadow-md" 
+      style={{ borderColor: themeSettings.colors.primary }}
+    >
+      <CardHeader className="bg-gradient-to-r" style={{ 
+        backgroundImage: `linear-gradient(to right, ${themeSettings.colors.primary}10, ${themeSettings.colors.secondary}20)` 
+      }}>
+        <CardTitle className="flex items-center">
+          <Palette className="mr-2 h-5 w-5" style={{ color: themeSettings.colors.primary }} />
+          Tema Ayarları
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5">
         <Tabs 
           defaultValue="colors" 
           value={activeTab}
           onValueChange={onTabChange}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-4 mb-6">
-            <TabsTrigger value="colors" className="flex items-center justify-center">
-              <span className="hidden sm:inline">Renkler</span>
+          <TabsList className="grid grid-cols-4 mb-6 bg-transparent p-0 border rounded-lg overflow-hidden">
+            <TabsTrigger 
+              value="colors" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:text-white data-[state=active]:shadow py-3 border-r"
+              style={{ 
+                backgroundImage: activeTab === "colors" ? `linear-gradient(to right, ${themeSettings.colors.primary}, ${themeSettings.colors.secondary})` : undefined
+              }}
+            >
+              <Palette className="h-4 w-4 mr-2 hidden md:inline" />
+              <span>Renkler</span>
             </TabsTrigger>
-            <TabsTrigger value="typography" className="flex items-center justify-center">
-              <span className="hidden sm:inline">Yazı</span>
+            
+            <TabsTrigger 
+              value="typography" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:text-white data-[state=active]:shadow py-3 border-r"
+              style={{ 
+                backgroundImage: activeTab === "typography" ? `linear-gradient(to right, ${themeSettings.colors.primary}, ${themeSettings.colors.secondary})` : undefined
+              }}
+            >
+              <Type className="h-4 w-4 mr-2 hidden md:inline" />
+              <span>Yazı</span>
             </TabsTrigger>
-            <TabsTrigger value="layout" className="flex items-center justify-center">
-              <span className="hidden sm:inline">Düzen</span>
+            
+            <TabsTrigger 
+              value="layout" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:text-white data-[state=active]:shadow py-3 border-r"
+              style={{ 
+                backgroundImage: activeTab === "layout" ? `linear-gradient(to right, ${themeSettings.colors.primary}, ${themeSettings.colors.secondary})` : undefined
+              }}
+            >
+              <Layout className="h-4 w-4 mr-2 hidden md:inline" />
+              <span>Düzen</span>
             </TabsTrigger>
-            <TabsTrigger value="presets" className="flex items-center justify-center">
-              <span className="hidden sm:inline">Hazır</span>
+            
+            <TabsTrigger 
+              value="presets" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:text-white data-[state=active]:shadow py-3"
+              style={{ 
+                backgroundImage: activeTab === "presets" ? `linear-gradient(to right, ${themeSettings.colors.primary}, ${themeSettings.colors.secondary})` : undefined
+              }}
+            >
+              <BookTemplate className="h-4 w-4 mr-2 hidden md:inline" />
+              <span>Hazır</span>
             </TabsTrigger>
           </TabsList>
           
@@ -183,13 +222,21 @@ const ThemeCustomizationForm: React.FC<ThemeCustomizationFormProps> = ({
         </Tabs>
         
         <div className="flex justify-between mt-6 pt-6 border-t border-gray-200">
-          <Button variant="outline" onClick={onResetDefaults}>
+          <Button 
+            variant="outline" 
+            onClick={onResetDefaults}
+            className="hover:bg-gray-100 transition-colors"
+          >
             Varsayılana Döndür
           </Button>
           <Button 
             onClick={onSaveChanges} 
             disabled={!isDirty}
             className="relative overflow-hidden group"
+            style={{
+              backgroundColor: isSaved ? themeSettings.colors.primary : themeSettings.colors.primary,
+              transition: "all 0.3s ease"
+            }}
           >
             <AnimatePresence mode="wait">
               {isSaved ? (
@@ -218,7 +265,8 @@ const ThemeCustomizationForm: React.FC<ThemeCustomizationFormProps> = ({
             </AnimatePresence>
             
             <motion.div 
-              className="absolute inset-0 bg-brand-purple opacity-0 group-hover:opacity-20 transition-opacity"
+              className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity"
+              style={{ backgroundColor: "#FFFFFF" }}
               initial={false}
               animate={isSaved ? { opacity: 0.2 } : { opacity: 0 }}
               transition={{ duration: 0.3 }}
