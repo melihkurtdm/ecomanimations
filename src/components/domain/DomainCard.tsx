@@ -1,129 +1,150 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { 
+  Card, 
+  CardContent,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, 
-  XCircle, 
+  AlertTriangle, 
+  Clock, 
+  Star, 
   ExternalLink, 
-  Settings, 
-  Trash2, 
-  AlertTriangle 
+  RotateCw, 
+  Trash2
 } from 'lucide-react';
-
-export interface DomainItem {
-  id: string;
-  name: string;
-  status: 'active' | 'pending' | 'error';
-  type: 'primary' | 'secondary' | 'redirect';
-  ssl: boolean;
-  createdAt: string;
-  errorMessage?: string;
-}
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DomainCardProps {
-  domain: DomainItem;
-  onEdit: (domainId: string) => void;
-  onDelete: (domainId: string) => void;
-  onVerify?: (domainId: string) => void;
+  domain: string;
+  status: 'verified' | 'pending' | 'error';
+  isPrimary: boolean;
+  createdAt: string;
+  onVerify: () => void;
+  onMakePrimary: () => void;
+  onDelete: () => void;
 }
 
-const DomainCard: React.FC<DomainCardProps> = ({ domain, onEdit, onDelete, onVerify }) => {
-  const getStatusColor = (status: string) => {
+const DomainCard: React.FC<DomainCardProps> = ({
+  domain,
+  status,
+  isPrimary,
+  createdAt,
+  onVerify,
+  onMakePrimary,
+  onDelete
+}) => {
+  const getStatusBadge = () => {
     switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 border-green-200';
+      case 'verified':
+        return (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Doğrulandı
+          </Badge>
+        );
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return (
+          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            <Clock className="h-3 w-3 mr-1" />
+            Doğrulama Bekliyor
+          </Badge>
+        );
       case 'error':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return (
+          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Hata
+          </Badge>
+        );
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return null;
     }
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg">{domain.name}</CardTitle>
-          <Badge className={getStatusColor(domain.status)}>
-            <div className="flex items-center space-x-1">
-              {domain.status === 'active' && <CheckCircle className="h-3 w-3 mr-1" />}
-              {domain.status === 'pending' && <AlertTriangle className="h-3 w-3 mr-1" />}
-              {domain.status === 'error' && <XCircle className="h-3 w-3 mr-1" />}
-              <span>{domain.status === 'active' ? 'Aktif' : 
-                    domain.status === 'pending' ? 'Beklemede' : 'Hata'}</span>
+    <Card className="overflow-hidden transition-all hover:shadow-md">
+      <CardContent className="p-0">
+        <div className="flex flex-col sm:flex-row sm:items-center p-4">
+          <div className="flex-grow">
+            <div className="flex items-center space-x-2 mb-1">
+              <span className="font-medium">{domain}</span>
+              {isPrimary && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Birincil Alan Adı</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
-          </Badge>
-        </div>
-        <CardDescription>
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="text-xs">
-              {domain.type === 'primary' ? 'Ana Domain' : 
-               domain.type === 'secondary' ? 'İkincil Domain' : 'Yönlendirme'}
-            </Badge>
-            {domain.ssl && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                <CheckCircle className="h-3 w-3 mr-1" /> SSL
-              </Badge>
+            <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 mb-3 sm:mb-0">
+              {getStatusBadge()}
+              <span className="text-xs">
+                {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: tr })} eklendi
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+            {status === 'pending' && (
+              <Button size="sm" variant="outline" onClick={onVerify}>
+                <RotateCw className="h-4 w-4 mr-1" />
+                Doğrula
+              </Button>
             )}
-          </div>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="text-sm">
-          <div className="flex items-center text-gray-500 mb-1">
-            <span>Oluşturulma: {new Date(domain.createdAt).toLocaleDateString('tr-TR')}</span>
-          </div>
-          
-          {domain.status === 'error' && domain.errorMessage && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-md text-red-700 text-xs">
-              <div className="flex items-start">
-                <AlertTriangle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
-                <span>{domain.errorMessage}</span>
-              </div>
-            </div>
-          )}
-          
-          {domain.status === 'pending' && (
-            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-100 rounded-md text-yellow-700 text-xs">
-              <div className="flex items-start">
-                <AlertTriangle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
-                <span>DNS ayarlarının yapılandırılması ve doğrulanması gerekiyor.</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="pt-0">
-        <div className="flex space-x-2 w-full">
-          {domain.status === 'active' && (
-            <Button variant="outline" size="sm" className="flex-1">
+            
+            {status === 'verified' && !isPrimary && (
+              <Button size="sm" variant="outline" onClick={onMakePrimary}>
+                <Star className="h-4 w-4 mr-1" />
+                Birincil Yap
+              </Button>
+            )}
+            
+            <Button size="sm" variant="outline" className="text-blue-600" onClick={() => window.open(`https://${domain}`, '_blank')}>
               <ExternalLink className="h-4 w-4 mr-1" />
               Ziyaret Et
             </Button>
-          )}
-          
-          {domain.status === 'pending' && onVerify && (
-            <Button variant="outline" size="sm" onClick={() => onVerify(domain.id)} className="flex-1">
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Doğrula
+            
+            <Button size="sm" variant="outline" className="text-red-600" onClick={onDelete}>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Sil
             </Button>
-          )}
-          
-          <Button variant="outline" size="sm" onClick={() => onEdit(domain.id)} className="flex-1">
-            <Settings className="h-4 w-4 mr-1" />
-            Düzenle
-          </Button>
-          
-          <Button variant="outline" size="sm" onClick={() => onDelete(domain.id)} className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50">
-            <Trash2 className="h-4 w-4 mr-1" />
-            Sil
-          </Button>
+          </div>
         </div>
-      </CardFooter>
+        
+        {status === 'error' && (
+          <div className="px-4 py-3 bg-red-50 border-t border-red-200 text-sm text-red-800">
+            <div className="flex">
+              <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
+              <div>
+                <p>DNS kaydı bulunamadı. Lütfen DNS ayarlarınızı kontrol edin ve CNAME kaydını doğru şekilde ekleyin.</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {status === 'pending' && (
+          <div className="px-4 py-3 bg-amber-50 border-t border-amber-200 text-sm text-amber-800">
+            <div className="flex">
+              <Clock className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
+              <div>
+                <p>Alan adınız DNS doğrulamasını bekliyor. Lütfen DNS ayarlarınızı kontrol edin.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };
