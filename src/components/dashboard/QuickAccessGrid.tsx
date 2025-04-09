@@ -1,75 +1,126 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Store, Palette, Users, ShoppingBag, BarChart3, Globe, MegaphoneIcon } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ShoppingCart, PaintBucket, BarChart2, Users, Globe, CreditCard, Megaphone, Sparkles, Film } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const QuickAccessCard = ({ icon, title, description, linkPath }: { 
-  icon: React.ReactNode, 
-  title: string, 
-  description: string,
-  linkPath: string
-}) => {
-  return (
-    <Card className="p-5 flex flex-col h-full hover:shadow-md transition-shadow">
-      <div className="flex items-center mb-3">
-        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-          {icon}
-        </div>
-        <h3 className="font-medium">{title}</h3>
-      </div>
-      <p className="text-sm text-gray-500 flex-1 mb-4">{description}</p>
-      <Button asChild variant="outline" className="w-full justify-start">
-        <Link to={linkPath}>
-          <span>Yönet</span>
-        </Link>
-      </Button>
-    </Card>
-  );
+const translations = {
+  tr: {
+    quickAccess: 'Hızlı Erişim',
+    store: 'Mağaza',
+    themes: 'Temalar',
+    analytics: 'Analitik',
+    customers: 'Müşteriler',
+    domains: 'Alan Adları',
+    billing: 'Faturalama',
+    advertising: 'Reklam',
+    aiContent: 'AI İçerik',
+    videoCreator: 'Video Oluşturucu'
+  },
+  en: {
+    quickAccess: 'Quick Access',
+    store: 'Store',
+    themes: 'Themes',
+    analytics: 'Analytics',
+    customers: 'Customers',
+    domains: 'Domains',
+    billing: 'Billing',
+    advertising: 'Advertising',
+    aiContent: 'AI Content',
+    videoCreator: 'Video Creator'
+  }
 };
 
 const QuickAccessGrid = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   return (
-    <div className="col-span-2 lg:col-span-2">
-      <h2 className="text-xl font-bold mb-4">Hızlı Erişim</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <QuickAccessCard 
-          icon={<Store className="h-5 w-5 text-primary" />}
-          title="Mağazam"
-          description="Ürünleri yönetin, stok durumunu güncelleyin"
-          linkPath="/dashboard/store"
-        />
-        <QuickAccessCard 
-          icon={<Palette className="h-5 w-5 text-primary" />}
-          title="Tema Düzenle"
-          description="Mağazanızın görünümünü özelleştirin"
-          linkPath="/dashboard/theme-customization"
-        />
-        <QuickAccessCard 
-          icon={<Users className="h-5 w-5 text-primary" />}
-          title="Müşteriler"
-          description="Müşteri listesi ve iletişim geçmişi"
-          linkPath="/dashboard/customers"
-        />
-        <QuickAccessCard 
-          icon={<BarChart3 className="h-5 w-5 text-primary" />}
-          title="İstatistikler"
-          description="Satış ve ziyaretçi istatistiklerini görüntüleyin"
-          linkPath="/dashboard/stats"
-        />
-        <QuickAccessCard 
-          icon={<Globe className="h-5 w-5 text-primary" />}
-          title="Alan Adı"
-          description="Alan adı yönetimi ve SSL ayarları"
-          linkPath="/dashboard/domain-management"
-        />
-        <QuickAccessCard 
-          icon={<MegaphoneIcon className="h-5 w-5 text-primary" />}
-          title="Reklam Yönetimi"
-          description="Google ve Meta üzerinde kolayca reklam oluşturun"
-          linkPath="/dashboard/advertising"
-        />
+    <div className="lg:col-span-2 space-y-4">
+      <h2 className="text-xl font-semibold">{t.quickAccess}</h2>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <Link to="/dashboard/store" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <ShoppingCart className="h-6 w-6 mb-2 text-primary" />
+              <span className="text-sm">{t.store}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/theme-selection" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <PaintBucket className="h-6 w-6 mb-2 text-blue-500" />
+              <span className="text-sm">{t.themes}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/analytics" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <BarChart2 className="h-6 w-6 mb-2 text-green-500" />
+              <span className="text-sm">{t.analytics}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/customers" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <Users className="h-6 w-6 mb-2 text-amber-500" />
+              <span className="text-sm">{t.customers}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/domain-management" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <Globe className="h-6 w-6 mb-2 text-purple-500" />
+              <span className="text-sm">{t.domains}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/purchase" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <CreditCard className="h-6 w-6 mb-2 text-red-500" />
+              <span className="text-sm">{t.billing}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/advertising" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <Megaphone className="h-6 w-6 mb-2 text-cyan-500" />
+              <span className="text-sm">{t.advertising}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/ai-content" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <Sparkles className="h-6 w-6 mb-2 text-amber-500" />
+              <span className="text-sm">{t.aiContent}</span>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/dashboard/video-creator" className="block">
+          <Card className="hover:bg-muted/50 transition-colors">
+            <CardContent className="flex flex-col items-center justify-center p-6">
+              <Film className="h-6 w-6 mb-2 text-pink-500" />
+              <span className="text-sm">{t.videoCreator}</span>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );

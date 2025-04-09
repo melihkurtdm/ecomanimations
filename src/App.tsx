@@ -24,6 +24,7 @@ import ThemePublish from "./pages/ThemePublish";
 import AdvertisingManager from "./pages/AdvertisingManager";
 import StoreAnalytics from "./pages/StoreAnalytics";
 import AIContentGenerator from "./pages/AIContentGenerator";
+import VideoCreator from "./pages/VideoCreator";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/dashboard/theme-publish" element={<ThemePublish />} />
                 <Route path="/dashboard/advertising" element={<AdvertisingManager />} />
                 <Route path="/dashboard/ai-content" element={<AIContentGenerator />} />
+                <Route path="/dashboard/video-creator" element={<VideoCreator />} />
                 <Route path="/purchase" element={<PurchasePage />} />
                 <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
                 <Route path="*" element={<NotFound />} />
