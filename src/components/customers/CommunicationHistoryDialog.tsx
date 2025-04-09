@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Mail, Phone, MessageSquareText, ClipboardList } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
@@ -113,15 +114,35 @@ const CommunicationHistoryDialog = ({
                   <FormLabel>İletişim Tipi</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="İletişim tipini seçin" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="email">E-posta</SelectItem>
-                      <SelectItem value="phone">Telefon</SelectItem>
-                      <SelectItem value="note">Not</SelectItem>
-                      <SelectItem value="other">Diğer</SelectItem>
+                      <SelectItem value="email" className="flex items-center">
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 mr-2 text-blue-500" />
+                          <span>E-posta</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="phone" className="flex items-center">
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-green-500" />
+                          <span>Telefon</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="note" className="flex items-center">
+                        <div className="flex items-center">
+                          <MessageSquareText className="h-4 w-4 mr-2 text-amber-500" />
+                          <span>Not</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="other" className="flex items-center">
+                        <div className="flex items-center">
+                          <ClipboardList className="h-4 w-4 mr-2 text-purple-500" />
+                          <span>Diğer</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -155,7 +176,7 @@ const CommunicationHistoryDialog = ({
                   <FormLabel>Durum</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="İletişim durumunu seçin" />
                       </SelectTrigger>
                     </FormControl>
@@ -171,7 +192,7 @@ const CommunicationHistoryDialog = ({
               )}
             />
             
-            <DialogFooter>
+            <DialogFooter className="mt-6">
               <DialogClose asChild>
                 <Button type="button" variant="outline">İptal</Button>
               </DialogClose>
