@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import { DownloadCloud, RefreshCw, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 import AnalyticsPeriodSelector from '@/components/analytics/AnalyticsPeriodSelector';
 import AnalyticsOverviewCards from '@/components/analytics/AnalyticsOverviewCards';
@@ -13,13 +15,57 @@ import VisitorsChart from '@/components/analytics/VisitorsChart';
 import DeviceStatsChart from '@/components/analytics/DeviceStatsChart';
 import TopPagesTable from '@/components/analytics/TopPagesTable';
 import ConversionFunnelChart from '@/components/analytics/ConversionFunnelChart';
+import LanguageSelector from '@/components/common/LanguageSelector';
+import ThemeToggle from '@/components/common/ThemeToggle';
 
 import { getAnalyticsData } from '@/services/analyticsService';
 import { AnalyticsData } from '@/types/analytics';
 
+const translations = {
+  tr: {
+    title: 'Mağaza Analytics',
+    description: 'Ziyaretçi ve dönüşüm istatistiklerinizi analiz edin',
+    back: 'Geri Dön',
+    refresh: 'Yenile',
+    export: 'Dışa Aktar',
+    refreshSuccess: 'Veriler güncellendi',
+    refreshSuccessDesc: 'Analytics verileri başarıyla güncellendi.',
+    refreshError: 'Yenileme hatası',
+    refreshErrorDesc: 'Analytics verileri güncellenirken bir hata oluştu.',
+    exportStarted: 'Dışa aktarma başladı',
+    exportStartedDesc: 'Analytics verileri CSV olarak indiriliyor.',
+    exportCompleted: 'Dışa aktarma tamamlandı',
+    exportCompletedDesc: 'Analytics verileri başarıyla indirildi.',
+    loading: 'Yükleniyor...',
+    loadingError: 'Veri yükleme hatası',
+    loadingErrorDesc: 'Analytics verileri yüklenirken bir hata oluştu.'
+  },
+  en: {
+    title: 'Store Analytics',
+    description: 'Analyze your visitor and conversion statistics',
+    back: 'Go Back',
+    refresh: 'Refresh',
+    export: 'Export',
+    refreshSuccess: 'Data updated',
+    refreshSuccessDesc: 'Analytics data has been successfully updated.',
+    refreshError: 'Refresh error',
+    refreshErrorDesc: 'An error occurred while updating analytics data.',
+    exportStarted: 'Export started',
+    exportStartedDesc: 'Analytics data is being downloaded as CSV.',
+    exportCompleted: 'Export completed',
+    exportCompletedDesc: 'Analytics data has been successfully downloaded.',
+    loading: 'Loading...',
+    loadingError: 'Data loading error',
+    loadingErrorDesc: 'An error occurred while loading analytics data.'
+  }
+};
+
 const StoreAnalytics = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -42,8 +88,8 @@ const StoreAnalytics = () => {
     } catch (error) {
       console.error('Analytics veri yükleme hatası:', error);
       toast({
-        title: 'Veri yükleme hatası',
-        description: 'Analytics verileri yüklenirken bir hata oluştu.',
+        title: t.loadingError,
+        description: t.loadingErrorDesc,
         variant: 'destructive',
       });
     } finally {
@@ -64,13 +110,13 @@ const StoreAnalytics = () => {
       setData(analyticsData);
       
       toast({
-        title: 'Veriler güncellendi',
-        description: 'Analytics verileri başarıyla güncellendi.',
+        title: t.refreshSuccess,
+        description: t.refreshSuccessDesc,
       });
     } catch (error) {
       toast({
-        title: 'Yenileme hatası',
-        description: 'Analytics verileri güncellenirken bir hata oluştu.',
+        title: t.refreshError,
+        description: t.refreshErrorDesc,
         variant: 'destructive',
       });
     } finally {
@@ -80,36 +126,72 @@ const StoreAnalytics = () => {
 
   const handleExportData = () => {
     toast({
-      title: 'Dışa aktarma başladı',
-      description: 'Analytics verileri CSV olarak indiriliyor.',
+      title: t.exportStarted,
+      description: t.exportStartedDesc,
     });
     
     // Gerçek bir uygulamada burada veri dışa aktarma işlemi yapılır
     setTimeout(() => {
       toast({
-        title: 'Dışa aktarma tamamlandı',
-        description: 'Analytics verileri başarıyla indirildi.',
+        title: t.exportCompleted,
+        description: t.exportCompletedDesc,
       });
     }, 1500);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { 
+        duration: 0.4 
+      }
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <motion.div 
+      className="container mx-auto px-4 py-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Mağaza Analytics</h1>
-          <p className="text-gray-500">Ziyaretçi ve dönüşüm istatistiklerinizi analiz edin</p>
+          <h1 className="text-2xl font-bold">{t.title}</h1>
+          <p className="text-gray-500">{t.description}</p>
         </div>
         <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+          <ThemeToggle />
+          <LanguageSelector />
           <Button variant="outline" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Geri Dön
+            {t.back}
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
-        <AnalyticsPeriodSelector period={period} onChange={setPeriod} />
+      <motion.div 
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0"
+        variants={itemVariants}
+      >
+        <AnalyticsPeriodSelector 
+          period={period} 
+          onChange={setPeriod} 
+          locale={language}
+        />
         
         <div className="flex space-x-2">
           <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing || loading}>
@@ -118,15 +200,15 @@ const StoreAnalytics = () => {
             ) : (
               <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            Yenile
+            {t.refresh}
           </Button>
           
           <Button variant="outline" onClick={handleExportData} disabled={loading || !data}>
             <DownloadCloud className="h-4 w-4 mr-2" />
-            Dışa Aktar
+            {t.export}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {loading && !data ? (
         <div className="space-y-6">
@@ -174,20 +256,26 @@ const StoreAnalytics = () => {
       ) : (
         data && (
           <div className="space-y-6">
-            <AnalyticsOverviewCards data={data} />
+            <motion.div variants={itemVariants}>
+              <AnalyticsOverviewCards data={data} />
+            </motion.div>
             
-            <VisitorsChart data={data.timeStats} period={period} />
+            <motion.div variants={itemVariants}>
+              <VisitorsChart data={data.timeStats} period={period} />
+            </motion.div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={itemVariants}>
               <TopPagesTable data={data.topPages} />
               <DeviceStatsChart data={data.deviceStats} />
-            </div>
+            </motion.div>
             
-            <ConversionFunnelChart data={data.conversionStats} />
+            <motion.div variants={itemVariants}>
+              <ConversionFunnelChart data={data.conversionStats} />
+            </motion.div>
           </div>
         )
       )}
-    </div>
+    </motion.div>
   );
 };
 
