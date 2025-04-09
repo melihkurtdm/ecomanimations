@@ -32,14 +32,14 @@ const CustomerHeader = ({
       </div>
       
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Müşteri adı, telefon veya email ara..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full"
+            className="pl-9 w-full"
           />
         </div>
         
