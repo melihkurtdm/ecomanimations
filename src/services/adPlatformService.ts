@@ -34,10 +34,21 @@ interface AdCampaignResponse {
   }[];
 }
 
+// In a real implementation, these would be environment variables
+const API_CONNECTED = {
+  google: false,
+  facebook: false,
+  instagram: false
+};
+
 export const publishAdCampaign = async (campaignData: AdCampaignRequest): Promise<AdCampaignResponse> => {
   try {
-    // In a real implementation, this would make API calls to Google and Meta
-    // For now, we'll simulate a successful response
+    // Check if platforms are connected first
+    const disconnectedPlatforms = campaignData.platforms.filter(p => !API_CONNECTED[p as keyof typeof API_CONNECTED]);
+    
+    if (disconnectedPlatforms.length > 0) {
+      throw new Error(`Bazı platformlarla (${disconnectedPlatforms.join(', ')}) bağlantı kurulamadı`);
+    }
     
     console.log("Publishing campaign with data:", campaignData);
     
@@ -84,8 +95,22 @@ export const getAdAccounts = async (platform: 'google' | 'facebook' | 'instagram
 
 // Function to validate API connection
 export const validateApiConnection = async (platform: string): Promise<boolean> => {
+  // Check if we're already connected (in a real app, this would check session/localStorage)
+  if (API_CONNECTED[platform as keyof typeof API_CONNECTED]) {
+    return true;
+  }
+  
   // This would make an API call to validate the connection
   // For now, return mock result after delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  return true;
+  
+  // Always return false initially to show the connect button
+  return false;
+};
+
+// Function to update connection status (called after OAuth flow)
+export const updateApiConnectionStatus = (platform: string, status: boolean): void => {
+  if (platform in API_CONNECTED) {
+    API_CONNECTED[platform as keyof typeof API_CONNECTED] = status;
+  }
 };

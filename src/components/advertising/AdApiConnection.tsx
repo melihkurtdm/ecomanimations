@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,9 +45,11 @@ const AdApiConnection: React.FC<AdApiConnectionProps> = ({
     
     for (const platform of selectedPlatforms) {
       try {
+        // Call the API validation function
         const isConnected = await validateApiConnection(platform);
         
         if (isConnected) {
+          // Only if truly connected, fetch accounts
           const accounts = await getAdAccounts(platform as 'google' | 'facebook' | 'instagram');
           newStatus[platform] = {
             connected: true,
@@ -104,6 +107,51 @@ const AdApiConnection: React.FC<AdApiConnectionProps> = ({
         return 'Instagram Ads';
       default:
         return platform;
+    }
+  };
+  
+  const handleConnectAccount = async (platform: string) => {
+    setIsChecking(true);
+    
+    try {
+      // In a real implementation, this would open OAuth flow or API key input
+      // For this demo, we'll simulate a successful connection after delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // After successful connection, update the status
+      const accounts = await getAdAccounts(platform as 'google' | 'facebook' | 'instagram');
+      
+      setConnectionStatus(prev => ({
+        ...prev,
+        [platform]: {
+          connected: true,
+          accounts,
+          selectedAccount: accounts.length > 0 ? accounts[0].id : undefined
+        }
+      }));
+      
+      toast({
+        title: `${getPlatformName(platform)} bağlantısı kuruldu`,
+        description: "Hesabınız başarıyla bağlandı.",
+      });
+    } catch (error) {
+      console.error(`Error connecting to ${platform}:`, error);
+      
+      toast({
+        title: "Bağlantı hatası",
+        description: `${getPlatformName(platform)} hesabınızla bağlantı kurulamadı.`,
+        variant: "destructive"
+      });
+      
+      setConnectionStatus(prev => ({
+        ...prev,
+        [platform]: {
+          connected: false,
+          accounts: []
+        }
+      }));
+    } finally {
+      setIsChecking(false);
     }
   };
   
@@ -179,22 +227,8 @@ const AdApiConnection: React.FC<AdApiConnectionProps> = ({
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => {
-                    toast({
-                      title: `${getPlatformName(platform)} bağlantısı kuruldu`,
-                      description: "Hesabınız başarıyla bağlandı.",
-                    });
-                    setConnectionStatus(prev => ({
-                      ...prev,
-                      [platform]: {
-                        connected: true,
-                        accounts: [
-                          { id: `${platform}-123`, name: `${getPlatformName(platform)} Hesabı` }
-                        ],
-                        selectedAccount: `${platform}-123`
-                      }
-                    }));
-                  }}
+                  onClick={() => handleConnectAccount(platform)}
+                  disabled={isChecking}
                 >
                   <LinkIcon className="h-4 w-4 mr-2" />
                   Hesaba Bağlan
