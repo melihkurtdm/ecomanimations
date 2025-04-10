@@ -2,10 +2,38 @@
 import React, { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Hero = () => {
+  const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+
+  const translations = {
+    tr: {
+      tagline: "E-ticaret Çözümleriniz",
+      heading: "Modern E-ticaret Platformunuz",
+      description: "Kullanıcı dostu arayüz ve profesyonel temalarla çevrimiçi mağazanızı hızlıca oluşturun. Satışlarınızı artırmak hiç bu kadar kolay olmamıştı.",
+      startButton: "Hemen Başlayın",
+      demoButton: "Demo İnceleyin",
+      businesses: "işletme bizimle çalışıyor",
+      salesIncreasing: "Satışlar artıyor",
+      easySetup: "Kolay kurulum"
+    },
+    en: {
+      tagline: "Your E-commerce Solutions",
+      heading: "Modern E-commerce Platform",
+      description: "Create your online store quickly with a user-friendly interface and professional themes. Increasing your sales has never been easier.",
+      startButton: "Start Now",
+      demoButton: "View Demo",
+      businesses: "businesses work with us",
+      salesIncreasing: "Sales increasing",
+      easySetup: "Easy setup"
+    }
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,62 +70,161 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 pt-28 pb-16 md:py-32">
+    <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-16 md:py-32">
       <div className="absolute inset-0 z-0 opacity-50">
         <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-brand-purple/5 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-brand-blue/5 to-transparent"></div>
+        
+        {/* Animasyonlu arka plan öğeleri */}
+        <motion.div 
+          className="absolute top-20 left-10 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3] 
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut" 
+          }}
+        />
+        
+        <motion.div 
+          className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.5, 0.2] 
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-          <div 
+          <motion.div 
             ref={heroRef} 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.7, 
+              delay: 0.2,
+              ease: [0.23, 1, 0.32, 1]
+            }}
             className="transform translate-y-10 opacity-0 transition-all duration-700 delay-100"
           >
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-purple/10 text-brand-purple mb-4">
-              E-ticaret Çözümleriniz
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Modern <span className="gradient-text">E-ticaret</span> Platformunuz
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 md:max-w-lg">
-              Kullanıcı dostu arayüz ve profesyonel temalarla çevrimiçi mağazanızı hızlıca oluşturun. Satışlarınızı artırmak hiç bu kadar kolay olmamıştı.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="group animate-pulse">
-                Hemen Başlayın
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-purple/10 text-brand-purple mb-4"
+            >
+              {t.tagline}
+            </motion.span>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+            >
+              {language === 'tr' ? (
+                <>Modern <span className="gradient-text">E-ticaret</span> Platformunuz</>
+              ) : (
+                <>Modern <span className="gradient-text">E-commerce</span> Platform</>
+              )}
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="text-lg text-gray-600 dark:text-gray-300 mb-8 md:max-w-lg"
+            >
+              {t.description}
+            </motion.p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <Button size="lg" className="group relative overflow-hidden">
+                <span className="relative z-10">{t.startButton}</span>
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 relative z-10" />
+                <motion.span 
+                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-0"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                />
               </Button>
-              <Button variant="outline" size="lg">
-                Demo İnceleyin
+              <Button variant="outline" size="lg" className="relative overflow-hidden group">
+                <span className="relative z-10">{t.demoButton}</span>
+                <motion.span 
+                  className="absolute inset-0 bg-gray-100 dark:bg-gray-800 z-0"
+                  initial={{ y: "-100%" }}
+                  whileHover={{ y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                />
               </Button>
-            </div>
-            <div className="mt-8 flex items-center gap-4">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1 }}
+              className="mt-8 flex items-center gap-4"
+            >
               <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs">
-                  👤
-                </div>
-                <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs">
-                  👤
-                </div>
-                <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs">
-                  👤
-                </div>
+                <motion.div 
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-8 h-8 rounded-full bg-purple-500 border-2 border-white flex items-center justify-center text-xs text-white"
+                >
+                  A
+                </motion.div>
+                <motion.div 
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-8 h-8 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-xs text-white"
+                >
+                  B
+                </motion.div>
+                <motion.div 
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-8 h-8 rounded-full bg-pink-500 border-2 border-white flex items-center justify-center text-xs text-white"
+                >
+                  C
+                </motion.div>
               </div>
-              <p className="text-sm text-gray-600">
-                <span className="font-semibold">1,000+</span> işletme bizimle çalışıyor
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-semibold">1,000+</span> {t.businesses}
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
-          <div 
+          <motion.div 
             ref={imageRef} 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ 
+              duration: 0.7, 
+              delay: 0.4,
+              ease: [0.23, 1, 0.32, 1]
+            }}
             className="transform translate-x-10 opacity-0 transition-all duration-700 delay-300 relative"
           >
-            <div className="relative rounded-lg overflow-hidden shadow-2xl border border-gray-200 animate-float">
+            <motion.div 
+              className="relative rounded-lg overflow-hidden shadow-2xl border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700"
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
               <div className="absolute inset-0 bg-gradient-to-tr from-brand-purple/20 to-brand-blue/20 z-0"></div>
-              <div className="bg-white p-2">
-                <div className="bg-gray-100 rounded-lg flex flex-col overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 p-2">
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col overflow-hidden">
                   <div className="bg-gray-800 h-10 flex items-center px-4">
                     <div className="flex space-x-2">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -105,36 +232,84 @@ const Hero = () => {
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                   </div>
-                  <div className="h-60 md:h-80 bg-white p-4 overflow-hidden">
-                    <div className="bg-gray-100 h-8 w-1/2 rounded mb-4"></div>
+                  <div className="h-60 md:h-80 bg-white dark:bg-gray-900 p-4 overflow-hidden">
+                    <div className="bg-gray-100 dark:bg-gray-800 h-8 w-1/2 rounded mb-4"></div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-100 h-24 rounded"></div>
-                      <div className="bg-gray-100 h-24 rounded"></div>
-                      <div className="bg-gray-100 h-24 rounded"></div>
-                      <div className="bg-gray-100 h-24 rounded"></div>
+                      <motion.div 
+                        className="bg-gray-100 dark:bg-gray-800 h-24 rounded"
+                        whileHover={{ scale: 1.03 }}
+                        transition={{ duration: 0.2 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="bg-gray-100 dark:bg-gray-800 h-24 rounded"
+                        whileHover={{ scale: 1.03 }}
+                        transition={{ duration: 0.2 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="bg-gray-100 dark:bg-gray-800 h-24 rounded"
+                        whileHover={{ scale: 1.03 }}
+                        transition={{ duration: 0.2 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="bg-gray-100 dark:bg-gray-800 h-24 rounded"
+                        whileHover={{ scale: 1.03 }}
+                        transition={{ duration: 0.2 }}
+                      ></motion.div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
             
-            <div className="absolute -bottom-6 -right-6 bg-white rounded-lg shadow-lg p-4 animate-float" style={{animationDelay: '1s'}}>
+            <motion.div 
+              className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-10"
+              initial={{ opacity: 0, y: 20, x: 20 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+              whileHover={{ scale: 1.05 }}
+            >
               <div className="flex items-center gap-3">
                 <div className="bg-green-500 h-3 w-3 rounded-full"></div>
-                <span className="text-sm font-medium">Satışlar artıyor</span>
+                <span className="text-sm font-medium">{t.salesIncreasing}</span>
               </div>
-              <div className="mt-2 h-12 w-32 bg-gray-100 rounded-md"></div>
-            </div>
+              <div className="mt-2 h-12 w-32">
+                <motion.div 
+                  className="h-2 w-1/3 bg-green-200 dark:bg-green-900 rounded-md mb-2"
+                  animate={{ width: ['33%', '80%', '40%', '90%', '70%'] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                ></motion.div>
+                <motion.div 
+                  className="h-2 w-1/2 bg-green-200 dark:bg-green-900 rounded-md mb-2"
+                  animate={{ width: ['50%', '30%', '70%', '40%', '85%'] }}
+                  transition={{ duration: 6, repeat: Infinity, delay: 0.5 }}
+                ></motion.div>
+                <motion.div 
+                  className="h-2 w-2/3 bg-green-200 dark:bg-green-900 rounded-md"
+                  animate={{ width: ['66%', '90%', '50%', '75%', '95%'] }}
+                  transition={{ duration: 5.5, repeat: Infinity, delay: 1 }}
+                ></motion.div>
+              </div>
+            </motion.div>
             
-            <div className="absolute -top-6 -left-6 bg-white rounded-lg shadow-lg p-4 animate-float" style={{animationDelay: '1.5s'}}>
+            <motion.div 
+              className="absolute -top-6 -left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-10"
+              initial={{ opacity: 0, y: -20, x: -20 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ duration: 0.5, delay: 1.4 }}
+              whileHover={{ scale: 1.05 }}
+            >
               <div className="flex items-center gap-3">
-                <div className="h-6 w-6 rounded-full bg-brand-purple flex items-center justify-center text-white text-xs">
+                <motion.div 
+                  className="h-6 w-6 rounded-full bg-brand-purple flex items-center justify-center text-white text-xs"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
                   ✓
-                </div>
-                <span className="text-sm font-medium">Kolay kurulum</span>
+                </motion.div>
+                <span className="text-sm font-medium">{t.easySetup}</span>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>
