@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Initialize dark mode as the default
+// Force dark mode as the default on initial load
 document.documentElement.classList.add('dark');
 if (!localStorage.getItem('theme')) {
   localStorage.setItem('theme', 'dark');
