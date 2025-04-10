@@ -10,6 +10,11 @@ import ThemePublishForm from '@/components/theme/ThemePublishForm';
 import ThemeStatistics from '@/components/theme/ThemeStatistics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Ensure the dark theme is set
+useEffect(() => {
+  document.documentElement.classList.add('dark');
+}, []);
+
 const currentTheme = {
   id: "modern",
   name: "Modern Mağaza",
@@ -40,7 +45,10 @@ const ThemePublish = () => {
   const [previewAnimation, setPreviewAnimation] = useState(false);
   const [activeTab, setActiveTab] = useState("preview");
 
+  // Ensure dark mode is applied when component mounts
   useEffect(() => {
+    document.documentElement.classList.add('dark');
+    
     if (!user && !isLoading) {
       toast({
         title: "Oturum açmanız gerekiyor",
@@ -74,12 +82,48 @@ const ThemePublish = () => {
     }, 2000);
   };
 
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center"
+        >
+          <motion.div 
+            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="mt-4 text-lg">Yükleniyor...</p>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-background text-foreground">
       <ThemeHeader 
         title="Tema Yayınlama"
         description="Mağazanızı yayınlayarak müşterilerinize erişilebilir hale getirin"
@@ -88,7 +132,12 @@ const ThemePublish = () => {
         onTogglePreview={() => {}}
       />
       
-      <div className="mt-6">
+      <motion.div 
+        className="mt-6"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         <Tabs defaultValue="preview" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="preview">Önizleme</TabsTrigger>
@@ -102,7 +151,10 @@ const ThemePublish = () => {
             transition={{ duration: 0.3 }}
           >
             <TabsContent value="preview" className="mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <motion.div 
+                variants={fadeInUp}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              >
                 <div className="lg:col-span-3">
                   <ThemePreview 
                     themeSettings={themeSettings}
@@ -112,11 +164,14 @@ const ThemePublish = () => {
                     onRefreshPreview={refreshPreview}
                   />
                 </div>
-              </div>
+              </motion.div>
             </TabsContent>
             
             <TabsContent value="publish" className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div 
+                variants={fadeInUp}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              >
                 <div className="md:col-span-2">
                   <ThemePublishForm 
                     isPublished={isPublished}
@@ -133,21 +188,45 @@ const ThemePublish = () => {
                     onRefreshPreview={refreshPreview}
                   />
                 </div>
-              </div>
+              </motion.div>
             </TabsContent>
             
             <TabsContent value="stats" className="mt-0">
-              <div className="space-y-6">
+              <motion.div 
+                variants={fadeInUp}
+                className="space-y-6"
+              >
                 <ThemeStatistics />
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
+                  <motion.div 
+                    className="md:col-span-2"
+                    variants={fadeInUp}
+                  >
                     {/* Buraya detaylı analitik grafikler eklenebilir */}
-                    <div className="h-72 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <p className="text-gray-500">Detaylı istatistikler için grafikler burada gösterilecek</p>
+                    <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden relative">
+                      <motion.div
+                        className="absolute inset-0"
+                        animate={{
+                          backgroundPosition: ['0% 0%', '100% 100%'],
+                        }}
+                        transition={{
+                          duration: 20,
+                          repeat: Infinity,
+                          repeatType: 'reverse',
+                        }}
+                        style={{
+                          backgroundImage: 'linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05))',
+                          backgroundSize: '400% 400%',
+                        }}
+                      />
+                      <p className="text-gray-500 dark:text-gray-400 relative z-10">Detaylı istatistikler için grafikler burada gösterilecek</p>
                     </div>
-                  </div>
-                  <div className="md:col-span-1">
+                  </motion.div>
+                  <motion.div 
+                    className="md:col-span-1"
+                    variants={fadeInUp}
+                  >
                     <ThemePreview 
                       themeSettings={themeSettings}
                       previewAnimation={previewAnimation}
@@ -155,13 +234,13 @@ const ThemePublish = () => {
                       isPublished={isPublished}
                       onRefreshPreview={refreshPreview}
                     />
-                  </div>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </TabsContent>
           </motion.div>
         </Tabs>
-      </div>
+      </motion.div>
     </div>
   );
 };
