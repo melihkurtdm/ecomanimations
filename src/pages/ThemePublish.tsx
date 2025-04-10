@@ -9,11 +9,7 @@ import ThemePreview from '@/components/theme/ThemePreview';
 import ThemePublishForm from '@/components/theme/ThemePublishForm';
 import ThemeStatistics from '@/components/theme/ThemeStatistics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Ensure the dark theme is set
-useEffect(() => {
-  document.documentElement.classList.add('dark');
-}, []);
+import ThemeToggle from '@/components/common/ThemeToggle';
 
 const currentTheme = {
   id: "modern",
