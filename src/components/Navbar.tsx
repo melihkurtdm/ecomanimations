@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
+import Logo from './common/Logo';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -82,10 +82,11 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold gradient-text">E-Paket</Link>
+            <Link to="/" className="flex items-center">
+              <Logo size="lg" />
+            </Link>
           </div>
 
-          {/* Desktop Navigation - Enhanced with NavigationMenu */}
           <div className="hidden md:flex">
             <NavigationMenu>
               <NavigationMenuList className="gap-2">
@@ -165,7 +166,6 @@ const Navbar = () => {
             <UserMenu />
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <Button 
               variant="ghost" 
@@ -179,7 +179,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu with animations */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 

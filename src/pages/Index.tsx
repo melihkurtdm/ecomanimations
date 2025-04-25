@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -44,6 +44,15 @@ const Index = () => {
     }
   };
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
   return (
     <div className="overflow-x-hidden">
       <div className="fixed top-4 right-4 z-50 flex space-x-2">
@@ -55,7 +64,16 @@ const Index = () => {
       <Hero />
       <Features />
       <Themes />
-      <Pricing />
+      
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
+      >
+        <Pricing />
+      </motion.div>
+      
       <TestimonialSection />
       <CallToAction />
       
