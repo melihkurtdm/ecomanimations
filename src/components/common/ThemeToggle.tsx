@@ -5,20 +5,16 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
 const ThemeToggle: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const isLandingPage = window.location.pathname === '/';
+    return isLandingPage ? 'dark' : 'light';
+  });
 
   useEffect(() => {
-    // Check for user preference in localStorage
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else {
-      // Set default to dark
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
     }
   }, []);
 
@@ -28,7 +24,6 @@ const ThemeToggle: React.FC = () => {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
     localStorage.setItem('theme', newTheme);
     
-    // Show a toast notification when theme changes
     toast({
       title: newTheme === 'dark' ? 'Koyu tema aktif' : 'Açık tema aktif',
       description: newTheme === 'dark' ? 'Sayfa koyu temaya geçti' : 'Sayfa açık temaya geçti',
