@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +23,8 @@ import {
   Palette, 
   Truck, 
   CreditCard,
-  Globe
+  Globe,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,8 +40,10 @@ const storeFormSchema = z.object({
     message: "Domain en az 3 karakter olmalıdır.",
   }).regex(/^[a-z0-9-]+$/, {
     message: "Domain sadece küçük harf, sayı ve tire içerebilir.",
-  }),
-  customDomain: z.string().optional(),
+  }).optional(),
+  customDomain: z.string().min(3, {
+    message: "Domain en az 3 karakter olmalıdır.",
+  }).optional(),
 });
 
 // Step 2: Shipping Settings Schema
@@ -85,7 +89,7 @@ const StoreSetup = () => {
       storeName: formData.storeName || "",
       storeDescription: formData.storeDescription || "",
       domain: formData.domain || "",
-      customDomain: "",
+      customDomain: formData.customDomain || "",
     },
   });
 
@@ -151,18 +155,63 @@ const StoreSetup = () => {
         });
       }
     }
+  };
 
-    // In a real app, you would also check with your backend/database
-    // For now, we're simulating with localStorage
+  // Delete existing store
+  const deleteExistingStore = () => {
+    if (!user) return;
+    
+    // Remove from localStorage
+    localStorage.removeItem(`store_${user.id}`);
+    
+    // Reset form and state
+    setFormData({});
+    basicForm.reset({
+      storeName: "",
+      storeDescription: "",
+      domain: "",
+      customDomain: "",
+    });
+    
+    toast({
+      title: "Mağaza silindi",
+      description: "Mağaza bilgileriniz silindi. Yeni bir mağaza oluşturabilirsiniz.",
+    });
   };
 
   const handleBasicSubmit = (data: z.infer<typeof storeFormSchema>) => {
-    // Handle domain selection
-    const domainData = {
-      ...data,
-      domain: data.domain,
-      customDomain: useCustomDomain ? data.customDomain : undefined,
-    };
+    // Handle domain selection based on which option was chosen
+    let domainData = { ...data };
+    
+    if (useCustomDomain) {
+      // When using custom domain, validate customDomain but make domain optional
+      if (!data.customDomain || data.customDomain.length < 3) {
+        basicForm.setError('customDomain', {
+          type: 'manual',
+          message: 'Özel alan adı en az 3 karakter olmalıdır.',
+        });
+        return;
+      }
+      domainData = {
+        ...data,
+        customDomain: data.customDomain,
+        domain: undefined, // Don't use subdomain when custom domain is selected
+      };
+    } else {
+      // When using subdomain, validate domain but make customDomain optional
+      if (!data.domain || data.domain.length < 3) {
+        basicForm.setError('domain', {
+          type: 'manual',
+          message: 'Alt alan adı en az 3 karakter olmalıdır.',
+        });
+        return;
+      }
+      domainData = {
+        ...data,
+        domain: data.domain,
+        customDomain: undefined, // Don't use custom domain when subdomain is selected
+      };
+    }
 
     setFormData({...formData, ...domainData});
     setCurrentStep('shipping');
@@ -324,10 +373,18 @@ const StoreSetup = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Mağazanızı Oluşturun</h1>
-        <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Dashboard'a Dön
-        </Button>
+        <div className="flex space-x-2">
+          {localStorage.getItem(`store_${user?.id}`) && (
+            <Button variant="outline" className="text-red-600" onClick={deleteExistingStore}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Mağazayı Sil
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Dashboard'a Dön
+          </Button>
+        </div>
       </div>
       
       {/* Progress Indicator */}
@@ -422,29 +479,30 @@ const StoreSetup = () => {
                         </label>
                       </div>
                       
-                      <FormField
-                        control={basicForm.control}
-                        name="domain"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="flex items-center">
-                                <Input 
-                                  placeholder="magazam" 
-                                  {...field} 
-                                  disabled={useCustomDomain}
-                                  className={useCustomDomain ? "opacity-50" : ""}
-                                />
-                                <span className="ml-2 text-gray-500">.shopset.net</span>
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              Mağazanızın internet adresi. Sadece küçük harf, sayı ve tire kullanabilirsiniz.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {!useCustomDomain && (
+                        <FormField
+                          control={basicForm.control}
+                          name="domain"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <div className="flex items-center">
+                                  <Input 
+                                    placeholder="magazam" 
+                                    {...field} 
+                                    className="flex-1"
+                                  />
+                                  <span className="ml-2 text-gray-500">.shopset.net</span>
+                                </div>
+                              </FormControl>
+                              <FormDescription>
+                                Mağazanızın internet adresi. Sadece küçük harf, sayı ve tire kullanabilirsiniz.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </div>
                     
                     <div>

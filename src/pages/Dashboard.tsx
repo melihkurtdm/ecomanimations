@@ -9,16 +9,30 @@ import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import UserProfile from '@/components/dashboard/UserProfile';
 import LoadingScreen from '@/components/ui/loading-screen';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [userStore, setUserStore] = useState<any>(null);
 
   // Redirect if not logged in
   useEffect(() => {
     if (!user) {
       navigate('/auth');
+    } else {
+      // Load user's store information from localStorage
+      const storedStore = localStorage.getItem(`store_${user.id}`);
+      if (storedStore) {
+        try {
+          const storeData = JSON.parse(storedStore);
+          setUserStore(storeData);
+        } catch (error) {
+          console.error("Error parsing store data:", error);
+        }
+      }
     }
   }, [user, navigate]);
 
@@ -41,6 +55,26 @@ const Dashboard = () => {
     };
   };
 
+  const handleCreateStore = () => {
+    navigate('/dashboard/store-setup');
+  };
+
+  const handleVisitStore = () => {
+    if (!userStore) return;
+    
+    // Determine the URL based on store data
+    let storeUrl = "";
+    if (userStore.customDomain) {
+      storeUrl = `https://${userStore.customDomain}`;
+    } else if (userStore.domain) {
+      storeUrl = `https://${userStore.domain}.shopset.net`;
+    }
+    
+    if (storeUrl) {
+      window.open(storeUrl, '_blank');
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -58,6 +92,21 @@ const Dashboard = () => {
       opacity: 1,
       y: 0,
       transition: { duration: 0.5 }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.05,
+      boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    },
+    tap: {
+      scale: 0.95
     }
   };
 
@@ -79,6 +128,47 @@ const Dashboard = () => {
         animate="visible"
       >
         <DashboardHeader userName={user.email?.split('@')[0] || 'Kullanıcı'} />
+        
+        {userStore ? (
+          <motion.div 
+            className="mb-8 flex justify-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Button 
+                onClick={handleVisitStore}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md"
+              >
+                Mağazanızı Ziyaret Edin
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            className="mb-8 flex justify-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Button 
+                onClick={handleCreateStore}
+                size="lg"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+              >
+                Yeni Mağaza Oluştur
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
         
         <motion.div variants={itemVariants}>
           <StatCards stats={stats} />

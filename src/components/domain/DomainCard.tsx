@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -98,7 +99,8 @@ const DomainCard: React.FC<DomainCardProps> = ({
   const handleExternalVisit = () => {
     setIsChecking(true);
     // Check if domain is actually accessible
-    window.open(`https://${domain}`, '_blank');
+    const url = isCustomDomain ? `https://${domain}` : `https://${domain}.shopset.net`;
+    window.open(url, '_blank');
     setIsChecking(false);
   };
 
@@ -158,13 +160,21 @@ const DomainCard: React.FC<DomainCardProps> = ({
     return null;
   };
 
+  const getFullDomainDisplay = () => {
+    if (isCustomDomain) {
+      return domain;
+    } else {
+      return `${domain}.shopset.net`;
+    }
+  };
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row sm:items-center p-4">
           <div className="flex-grow">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="font-medium">{domain}</span>
+              <span className="font-medium">{getFullDomainDisplay()}</span>
               {isPrimary && (
                 <TooltipProvider>
                   <Tooltip>
