@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -18,7 +17,8 @@ import {
   Trash2,
   RefreshCcw,
   ArrowUpRight,
-  Copy
+  Copy,
+  Globe
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
@@ -29,6 +29,7 @@ interface DomainCardProps {
   status: DomainStatus;
   isPrimary: boolean;
   createdAt: string;
+  isCustomDomain?: boolean;
   onVerify: () => Promise<void>;
   onMakePrimary: () => void;
   onDelete: () => void;
@@ -40,6 +41,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
   status,
   isPrimary,
   createdAt,
+  isCustomDomain = false,
   onVerify,
   onMakePrimary,
   onDelete,
@@ -136,7 +138,26 @@ const DomainCard: React.FC<DomainCardProps> = ({
     }
   };
 
-  
+  const getDomainTypeIndicator = () => {
+    if (isCustomDomain) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Globe className="h-4 w-4 text-blue-500 ml-1" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Özel Alan Adı</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-0">
@@ -158,6 +179,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {getDomainTypeIndicator()}
             </div>
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 mb-3 sm:mb-0">
               {getStatusBadge()}

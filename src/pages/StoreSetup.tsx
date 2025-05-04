@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +24,7 @@ import {
   CreditCard,
   Globe
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Step 1: Basic Store Information Schema
 const storeFormSchema = z.object({
@@ -39,6 +39,7 @@ const storeFormSchema = z.object({
   }).regex(/^[a-z0-9-]+$/, {
     message: "Domain sadece küçük harf, sayı ve tire içerebilir.",
   }),
+  customDomain: z.string().optional(),
 });
 
 // Step 2: Shipping Settings Schema
@@ -74,6 +75,8 @@ const StoreSetup = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<'basic' | 'shipping' | 'payment' | 'complete'>('basic');
   const [formData, setFormData] = useState<Partial<StoreSetupForm>>({});
+  const [useCustomDomain, setUseCustomDomain] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Basic Store Info Form
   const basicForm = useForm<z.infer<typeof storeFormSchema>>({
@@ -82,6 +85,7 @@ const StoreSetup = () => {
       storeName: formData.storeName || "",
       storeDescription: formData.storeDescription || "",
       domain: formData.domain || "",
+      customDomain: "",
     },
   });
 
@@ -114,12 +118,63 @@ const StoreSetup = () => {
         variant: "destructive",
       });
       navigate('/auth');
+    } else if (user) {
+      // Check if user already has a store
+      checkExistingStore();
     }
   }, [user, isLoading, navigate]);
 
+  // Check if the user already has a store
+  const checkExistingStore = async () => {
+    if (!user) return;
+
+    // Try to load store data from localStorage first
+    const storedStore = localStorage.getItem(`store_${user.id}`);
+    if (storedStore) {
+      const storeData = JSON.parse(storedStore);
+      setFormData(storeData);
+      
+      // Pre-fill the form with stored data
+      basicForm.reset({
+        storeName: storeData.storeName || "",
+        storeDescription: storeData.storeDescription || "",
+        domain: storeData.domain || "",
+        customDomain: storeData.customDomain || "",
+      });
+      
+      // If the store was completed, navigate to dashboard
+      if (storeData.isComplete) {
+        navigate('/dashboard');
+        toast({
+          title: "Mağazanız zaten kurulmuş",
+          description: "Mağaza ayarlarınızı dashboard üzerinden değiştirebilirsiniz.",
+        });
+      }
+    }
+
+    // In a real app, you would also check with your backend/database
+    // For now, we're simulating with localStorage
+  };
+
   const handleBasicSubmit = (data: z.infer<typeof storeFormSchema>) => {
-    setFormData({...formData, ...data});
+    // Handle domain selection
+    const domainData = {
+      ...data,
+      domain: data.domain,
+      customDomain: useCustomDomain ? data.customDomain : undefined,
+    };
+
+    setFormData({...formData, ...domainData});
     setCurrentStep('shipping');
+    
+    // Save progress to localStorage
+    if (user) {
+      localStorage.setItem(`store_${user.id}`, JSON.stringify({
+        ...formData, 
+        ...domainData,
+      }));
+    }
+    
     toast({
       title: "Temel bilgiler kaydedildi",
       description: "Şimdi kargo ayarlarını yapılandırabilirsiniz.",
@@ -129,24 +184,87 @@ const StoreSetup = () => {
   const handleShippingSubmit = (data: z.infer<typeof shippingFormSchema>) => {
     setFormData({...formData, ...data});
     setCurrentStep('payment');
+    
+    // Save progress to localStorage
+    if (user) {
+      localStorage.setItem(`store_${user.id}`, JSON.stringify({
+        ...formData, 
+        ...data,
+      }));
+    }
+    
     toast({
       title: "Kargo ayarları kaydedildi",
       description: "Şimdi ödeme ayarlarını yapılandırabilirsiniz.",
     });
   };
 
-  const handlePaymentSubmit = (data: z.infer<typeof paymentFormSchema>) => {
+  const handlePaymentSubmit = async (data: z.infer<typeof paymentFormSchema>) => {
     setFormData({...formData, ...data});
+    setIsSaving(true);
     
-    // Simüle edilmiş bir bekleme süresi - gerçek uygulamada API çağrısı yapılacak
+    // Combined store data
+    const storeData = {
+      ...formData,
+      ...data,
+      isComplete: true,
+      userId: user?.id,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    if (user) {
+      localStorage.setItem(`store_${user.id}`, JSON.stringify(storeData));
+    }
+    
     toast({
       title: "Mağaza oluşturuluyor",
       description: "Mağazanız oluşturuluyor, lütfen bekleyin...",
     });
     
-    setTimeout(() => {
+    try {
+      // Here you would also save to your backend/database
+      // For example with Supabase (commented out for now):
+      /*
+      if (user) {
+        await supabase
+          .from('stores')
+          .upsert({
+            user_id: user.id,
+            store_name: storeData.storeName,
+            store_description: storeData.storeDescription,
+            domain: storeData.domain,
+            custom_domain: storeData.customDomain,
+            shipping_settings: {
+              name: storeData.shippingName,
+              cost: storeData.shippingCost,
+              free_threshold: storeData.freeShippingThreshold
+            },
+            payment_settings: {
+              currency: storeData.currency,
+              accept_credit_card: storeData.acceptCreditCard,
+              accept_pay_at_door: storeData.acceptPayAtDoor,
+              accept_bank_transfer: storeData.acceptBankTransfer
+            },
+            created_at: new Date()
+          });
+      }
+      */
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setCurrentStep('complete');
-    }, 1500);
+    } catch (error) {
+      console.error("Error saving store data:", error);
+      toast({
+        title: "Hata",
+        description: "Mağaza oluşturulurken bir hata meydana geldi. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleBack = () => {
@@ -289,25 +407,85 @@ const StoreSetup = () => {
                     )}
                   />
                   
-                  <FormField
-                    control={basicForm.control}
-                    name="domain"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mağaza Domain Adı</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center">
-                            <Input placeholder="magazam" {...field} />
-                            <span className="ml-2 text-gray-500">.shopplatform.com</span>
-                          </div>
-                        </FormControl>
-                        <FormDescription>
-                          Mağazanızın internet adresi. Sadece küçük harf, sayı ve tire kullanabilirsiniz.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input 
+                          type="radio" 
+                          id="useDefaultDomain" 
+                          checked={!useCustomDomain}
+                          onChange={() => setUseCustomDomain(false)}
+                          className="h-4 w-4"
+                        />
+                        <label htmlFor="useDefaultDomain" className="text-sm font-medium">
+                          Ücretsiz alt alan adı kullan
+                        </label>
+                      </div>
+                      
+                      <FormField
+                        control={basicForm.control}
+                        name="domain"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="flex items-center">
+                                <Input 
+                                  placeholder="magazam" 
+                                  {...field} 
+                                  disabled={useCustomDomain}
+                                  className={useCustomDomain ? "opacity-50" : ""}
+                                />
+                                <span className="ml-2 text-gray-500">.shopset.net</span>
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Mağazanızın internet adresi. Sadece küçük harf, sayı ve tire kullanabilirsiniz.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input 
+                          type="radio" 
+                          id="useCustomDomain" 
+                          checked={useCustomDomain}
+                          onChange={() => setUseCustomDomain(true)}
+                          className="h-4 w-4"
+                        />
+                        <label htmlFor="useCustomDomain" className="text-sm font-medium">
+                          Kendi alan adımı kullan
+                        </label>
+                      </div>
+                      
+                      {useCustomDomain && (
+                        <FormField
+                          control={basicForm.control}
+                          name="customDomain"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <div className="flex items-center">
+                                  <Globe className="h-4 w-4 mr-2 text-gray-400" />
+                                  <Input 
+                                    placeholder="magazam.com" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormDescription>
+                                Kendi alan adınızı girin (örn: magazam.com, magazam.net). Daha sonra DNS ayarlarını yapmanız gerekecektir.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                  </div>
                   
                   <div className="flex justify-end">
                     <Button type="submit">
@@ -524,9 +702,18 @@ const StoreSetup = () => {
                       <ChevronLeft className="mr-2 h-4 w-4" />
                       Geri
                     </Button>
-                    <Button type="submit">
-                      <Store className="mr-2 h-5 w-5" />
-                      Mağazayı Oluştur
+                    <Button type="submit" disabled={isSaving}>
+                      {isSaving ? (
+                        <>
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                          Oluşturuluyor...
+                        </>
+                      ) : (
+                        <>
+                          <Store className="mr-2 h-5 w-5" />
+                          Mağazayı Oluştur
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>
