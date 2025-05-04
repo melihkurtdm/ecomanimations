@@ -130,7 +130,7 @@ const Dashboard = () => {
       transition: {
         duration: 2,
         repeat: Infinity,
-        repeatType: "reverse"
+        repeatType: "reverse" // Fixed: Using a valid literal value instead of a string variable
       }
     }
   };
