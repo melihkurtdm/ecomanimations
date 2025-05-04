@@ -8,4 +8,7 @@ export interface Domain {
   primary: boolean;
   createdAt: string;
   lastChecked: string;
+  // Added fields for more detailed tracking
+  verifiedAt?: string;
+  errorMessage?: string;
 }

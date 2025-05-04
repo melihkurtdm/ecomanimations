@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -16,7 +17,8 @@ import {
   RotateCw, 
   Trash2,
   RefreshCcw,
-  ArrowUpRight
+  ArrowUpRight,
+  Copy
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
@@ -94,23 +96,16 @@ const DomainCard: React.FC<DomainCardProps> = ({
   const handleExternalVisit = () => {
     setIsChecking(true);
     // Check if domain is actually accessible
-    const url = `https://${domain}`;
-    
-    // Try to fetch the domain first to check if it's available
-    fetch(url, { mode: 'no-cors' })
-      .then(() => {
-        window.open(url, '_blank');
-        setIsChecking(false);
-      })
-      .catch((error) => {
-        console.error("Domain ziyaret edilemiyor:", error);
-        toast({
-          title: "Alan adı erişilebilir değil",
-          description: "Bu alan adına henüz erişilemiyor. DNS ayarlarınızın yayılması 24-48 saat sürebilir.",
-          variant: "destructive",
-        });
-        setIsChecking(false);
-      });
+    window.open(`https://${domain}`, '_blank');
+    setIsChecking(false);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Kopyalandı",
+      description: `"${text}" panoya kopyalandı`,
+    });
   };
 
   const getStatusBadge = () => {
@@ -232,7 +227,16 @@ const DomainCard: React.FC<DomainCardProps> = ({
               <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
               <div>
                 <p>DNS kaydı bulunamadı. Lütfen DNS ayarlarınızı kontrol edin ve CNAME kaydını doğru şekilde ekleyin.</p>
-                <p className="mt-1 font-medium">Değer kısmına tam olarak şunu yazın: <span className="font-mono bg-red-100 px-1 rounded">routes.storehub.app</span></p>
+                <div className="mt-1 flex items-center">
+                  <p className="font-medium">Değer kısmına tam olarak şunu yazın:</p>
+                  <code className="font-mono bg-red-100 px-2 py-0.5 rounded mx-2">routes.shopset.net</code>
+                  <button 
+                    className="text-red-700 hover:text-red-900"
+                    onClick={() => copyToClipboard("routes.shopset.net")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -250,10 +254,27 @@ const DomainCard: React.FC<DomainCardProps> = ({
                     <li>Domain sağlayıcınızın kontrol paneline giriş yapın</li>
                     <li>DNS ayarları veya DNS yönetimi bölümünü bulun</li>
                     <li>Yeni bir CNAME kaydı ekleyin</li>
-                    <li>Host alanına <span className="font-mono bg-amber-50 px-1 rounded">@</span> veya domaininizi yazın</li>
-                    <li>Değer/Hedef alanına <span className="font-mono bg-amber-50 px-1 rounded">routes.storehub.app</span> yazın</li>
+                    <li>
+                      Host alanına <code className="font-mono bg-amber-50 px-1 rounded">@</code> veya <code className="font-mono bg-amber-50 px-1 rounded">www</code> yazın
+                      <button 
+                        className="ml-1 text-amber-700 hover:text-amber-900"
+                        onClick={() => copyToClipboard("@")}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    </li>
+                    <li>
+                      Değer/Hedef alanına <code className="font-mono bg-amber-50 px-1 rounded">routes.shopset.net</code> yazın
+                      <button 
+                        className="ml-1 text-amber-700 hover:text-amber-900"
+                        onClick={() => copyToClipboard("routes.shopset.net")}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    </li>
                     <li>TTL değerini otomatik veya 3600 olarak bırakın</li>
                     <li>Kaydedin ve DNS değişikliklerinin yayılması için bekleyin (24-48 saat sürebilir)</li>
+                    <li className="font-semibold">Doğrulama tamamlandıktan sonra, temanız alan adınızda görünecektir</li>
                   </ol>
                 </div>
               </div>

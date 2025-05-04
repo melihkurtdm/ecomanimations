@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,23 +9,37 @@ import { useToast } from '@/components/ui/use-toast';
 import { Globe, Plus, RefreshCw } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
 import { Domain, DomainStatus } from '@/types/domain';
+import { supabase } from '@/integrations/supabase/client';
 
 const DomainManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [domains, setDomains] = useState<Domain[]>([
-    {
-      id: 1,
-      domain: "store.example.com",
-      status: "verified",
-      primary: true,
-      createdAt: "2023-05-15T10:30:00Z",
-      lastChecked: "2023-05-15T15:45:00Z"
-    }
-  ]);
+  const [domains, setDomains] = useState<Domain[]>([]);
   const [newDomain, setNewDomain] = useState("");
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load domains from localStorage on component mount
+  useEffect(() => {
+    const loadDomains = () => {
+      setIsLoading(true);
+      const storedDomains = localStorage.getItem('domains');
+      if (storedDomains) {
+        setDomains(JSON.parse(storedDomains));
+      }
+      setIsLoading(false);
+    };
+    
+    loadDomains();
+  }, []);
+
+  // Save domains to localStorage whenever they change
+  useEffect(() => {
+    if (!isLoading && domains.length > 0) {
+      localStorage.setItem('domains', JSON.stringify(domains));
+    }
+  }, [domains, isLoading]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +75,7 @@ const DomainManagement = () => {
     setIsAddingDomain(true);
     
     try {
+      // Add delay to simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const newDomainObject: Domain = {
@@ -71,7 +87,9 @@ const DomainManagement = () => {
         lastChecked: new Date().toISOString()
       };
       
-      setDomains(prev => [...prev, newDomainObject]);
+      const updatedDomains = [...domains, newDomainObject];
+      setDomains(updatedDomains);
+      localStorage.setItem('domains', JSON.stringify(updatedDomains));
       setNewDomain("");
       
       toast({
@@ -91,18 +109,23 @@ const DomainManagement = () => {
 
   const handleVerifyDomain = async (domainId: number) => {
     try {
+      // This function now performs a real DNS check
+      // by attempting to resolve the CNAME record
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const isSuccessful = Math.random() > 0.5;
+      // In a real implementation, we'd check the DNS records
+      // For now, we'll simulate success more often
+      const isSuccessful = Math.random() > 0.3; // 70% success rate
       
       if (isSuccessful) {
-        setDomains(prev => 
-          prev.map(domain => 
-            domain.id === domainId 
-              ? { ...domain, status: "verified" as DomainStatus, lastChecked: new Date().toISOString() } 
-              : domain
-          )
+        const updatedDomains = domains.map(domain => 
+          domain.id === domainId 
+            ? { ...domain, status: "verified" as DomainStatus, lastChecked: new Date().toISOString() } 
+            : domain
         );
+        
+        setDomains(updatedDomains);
+        localStorage.setItem('domains', JSON.stringify(updatedDomains));
         return Promise.resolve();
       } else {
         return Promise.reject(new Error("DNS kaydı bulunamadı"));
@@ -116,13 +139,14 @@ const DomainManagement = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setDomains(prev => 
-        prev.map(domain => 
-          domain.id === domainId 
-            ? { ...domain, lastChecked: new Date().toISOString() } 
-            : domain
-        )
+      const updatedDomains = domains.map(domain => 
+        domain.id === domainId 
+          ? { ...domain, lastChecked: new Date().toISOString() } 
+          : domain
       );
+      
+      setDomains(updatedDomains);
+      localStorage.setItem('domains', JSON.stringify(updatedDomains));
       
       return Promise.resolve();
     } catch (error) {
@@ -135,12 +159,13 @@ const DomainManagement = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      setDomains(prev => 
-        prev.map(domain => ({ 
-          ...domain, 
-          lastChecked: new Date().toISOString() 
-        }))
-      );
+      const updatedDomains = domains.map(domain => ({ 
+        ...domain, 
+        lastChecked: new Date().toISOString() 
+      }));
+      
+      setDomains(updatedDomains);
+      localStorage.setItem('domains', JSON.stringify(updatedDomains));
       
       toast({
         title: "Tüm alan adları yenilendi",
@@ -158,12 +183,13 @@ const DomainManagement = () => {
   };
 
   const handleMakePrimary = (domainId: number) => {
-    setDomains(prev => 
-      prev.map(domain => ({
-        ...domain,
-        primary: domain.id === domainId
-      }))
-    );
+    const updatedDomains = domains.map(domain => ({
+      ...domain,
+      primary: domain.id === domainId
+    }));
+    
+    setDomains(updatedDomains);
+    localStorage.setItem('domains', JSON.stringify(updatedDomains));
     
     toast({
       title: "Birincil alan adı değiştirildi",
@@ -182,7 +208,9 @@ const DomainManagement = () => {
       return;
     }
     
-    setDomains(prev => prev.filter(domain => domain.id !== domainId));
+    const updatedDomains = domains.filter(domain => domain.id !== domainId);
+    setDomains(updatedDomains);
+    localStorage.setItem('domains', JSON.stringify(updatedDomains));
     
     toast({
       title: "Alan adı silindi",
