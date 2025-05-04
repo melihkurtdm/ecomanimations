@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,7 +27,57 @@ import StoreAnalytics from "./pages/StoreAnalytics";
 import AIContentGenerator from "./pages/AIContentGenerator";
 import VideoCreator from "./pages/VideoCreator";
 
+// Create query client for React Query
 const queryClient = new QueryClient();
+
+// Hide Lovable badge
+if (typeof document !== "undefined") {
+  // Remove existing badge on load
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      const lovableBadge = document.querySelector('.lovable-badge');
+      if (lovableBadge) {
+        lovableBadge.remove();
+      }
+      
+      // Also look for badges with different class names
+      const possibleBadges = document.querySelectorAll('[class*="lovable"]');
+      possibleBadges.forEach(badge => {
+        if (badge.tagName === 'A' || badge.tagName === 'DIV') {
+          badge.remove();
+        }
+      });
+    }, 1000);
+  });
+  
+  // Create observer to continuously remove badge if it reappears
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.addedNodes.length) {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            const element = node as Element;
+            if (
+              element.classList.contains('lovable-badge') || 
+              (element.className && typeof element.className === 'string' && element.className.includes('lovable'))
+            ) {
+              element.remove();
+            }
+          }
+        });
+      }
+    }
+  });
+  
+  // Start observing the body for changes
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  } else {
+    window.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
+}
 
 function App() {
   return (

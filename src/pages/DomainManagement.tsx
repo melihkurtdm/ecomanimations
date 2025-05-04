@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,11 +8,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { Globe, Plus, RefreshCw } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
 import { Domain, DomainStatus } from '@/types/domain';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 const DomainManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const userId = user?.id || 'anonymous';
+  
   const [domains, setDomains] = useState<Domain[]>([]);
   const [newDomain, setNewDomain] = useState("");
   const [isAddingDomain, setIsAddingDomain] = useState(false);
@@ -24,7 +27,8 @@ const DomainManagement = () => {
   useEffect(() => {
     const loadDomains = () => {
       setIsLoading(true);
-      const storedDomains = localStorage.getItem('domains');
+      // Use user ID as part of the storage key to keep domains separate between users
+      const storedDomains = localStorage.getItem(`domains_${userId}`);
       if (storedDomains) {
         setDomains(JSON.parse(storedDomains));
       }
@@ -32,14 +36,14 @@ const DomainManagement = () => {
     };
     
     loadDomains();
-  }, []);
+  }, [userId]);
 
   // Save domains to localStorage whenever they change
   useEffect(() => {
     if (!isLoading && domains.length > 0) {
-      localStorage.setItem('domains', JSON.stringify(domains));
+      localStorage.setItem(`domains_${userId}`, JSON.stringify(domains));
     }
-  }, [domains, isLoading]);
+  }, [domains, isLoading, userId]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,12 +88,13 @@ const DomainManagement = () => {
         status: "pending",
         primary: domains.length === 0,
         createdAt: new Date().toISOString(),
-        lastChecked: new Date().toISOString()
+        lastChecked: new Date().toISOString(),
+        isCustomDomain: true
       };
       
       const updatedDomains = [...domains, newDomainObject];
       setDomains(updatedDomains);
-      localStorage.setItem('domains', JSON.stringify(updatedDomains));
+      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
       setNewDomain("");
       
       toast({
@@ -125,7 +130,7 @@ const DomainManagement = () => {
         );
         
         setDomains(updatedDomains);
-        localStorage.setItem('domains', JSON.stringify(updatedDomains));
+        localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
         return Promise.resolve();
       } else {
         return Promise.reject(new Error("DNS kaydı bulunamadı"));
@@ -146,7 +151,7 @@ const DomainManagement = () => {
       );
       
       setDomains(updatedDomains);
-      localStorage.setItem('domains', JSON.stringify(updatedDomains));
+      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
       
       return Promise.resolve();
     } catch (error) {
@@ -165,7 +170,7 @@ const DomainManagement = () => {
       }));
       
       setDomains(updatedDomains);
-      localStorage.setItem('domains', JSON.stringify(updatedDomains));
+      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
       
       toast({
         title: "Tüm alan adları yenilendi",
@@ -189,7 +194,7 @@ const DomainManagement = () => {
     }));
     
     setDomains(updatedDomains);
-    localStorage.setItem('domains', JSON.stringify(updatedDomains));
+    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
     
     toast({
       title: "Birincil alan adı değiştirildi",
@@ -210,7 +215,7 @@ const DomainManagement = () => {
     
     const updatedDomains = domains.filter(domain => domain.id !== domainId);
     setDomains(updatedDomains);
-    localStorage.setItem('domains', JSON.stringify(updatedDomains));
+    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
     
     toast({
       title: "Alan adı silindi",

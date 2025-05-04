@@ -10,13 +10,14 @@ import UserProfile from '@/components/dashboard/UserProfile';
 import LoadingScreen from '@/components/ui/loading-screen';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, RotateCw, Globe } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userStore, setUserStore] = useState<any>(null);
+  const [isPulsing, setIsPulsing] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -35,6 +36,17 @@ const Dashboard = () => {
       }
     }
   }, [user, navigate]);
+
+  // Add pulsing animation effect
+  useEffect(() => {
+    if (userStore) {
+      const interval = setInterval(() => {
+        setIsPulsing(prev => !prev);
+      }, 2000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [userStore]);
 
   const getRecentActivity = () => {
     // Simüle edilmiş etkinlik verileri
@@ -107,6 +119,19 @@ const Dashboard = () => {
     },
     tap: {
       scale: 0.95
+    },
+    pulse: {
+      scale: [1, 1.05, 1],
+      boxShadow: [
+        "0px 0px 0px rgba(0, 0, 0, 0.1)",
+        "0px 5px 15px rgba(0, 0, 0, 0.2)",
+        "0px 0px 0px rgba(0, 0, 0, 0.1)"
+      ],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        repeatType: "reverse"
+      }
     }
   };
 
@@ -138,14 +163,16 @@ const Dashboard = () => {
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
+              animate={isPulsing ? "pulse" : ""}
             >
               <Button 
                 onClick={handleVisitStore}
                 size="lg"
-                className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md"
+                className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md flex items-center gap-2 px-6 py-3"
               >
+                <Globe className="h-5 w-5 animate-pulse" />
                 Mağazanızı Ziyaret Edin
-                <ExternalLink className="ml-2 h-4 w-4" />
+                <ExternalLink className="h-4 w-4 ml-1" />
               </Button>
             </motion.div>
           </motion.div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -184,7 +183,7 @@ const StoreSetup = () => {
     let domainData = { ...data };
     
     if (useCustomDomain) {
-      // When using custom domain, validate customDomain but make domain optional
+      // When using custom domain, validate customDomain but don't validate domain field
       if (!data.customDomain || data.customDomain.length < 3) {
         basicForm.setError('customDomain', {
           type: 'manual',
@@ -192,13 +191,15 @@ const StoreSetup = () => {
         });
         return;
       }
+      
+      // Set domain to undefined and keep customDomain
       domainData = {
         ...data,
-        customDomain: data.customDomain,
-        domain: undefined, // Don't use subdomain when custom domain is selected
+        domain: undefined,  // Clear the subdomain field
+        customDomain: data.customDomain
       };
     } else {
-      // When using subdomain, validate domain but make customDomain optional
+      // When using subdomain, validate domain but don't validate customDomain field
       if (!data.domain || data.domain.length < 3) {
         basicForm.setError('domain', {
           type: 'manual',
@@ -206,10 +207,12 @@ const StoreSetup = () => {
         });
         return;
       }
+      
+      // Set customDomain to undefined and keep domain
       domainData = {
         ...data,
-        domain: data.domain,
-        customDomain: undefined, // Don't use custom domain when subdomain is selected
+        customDomain: undefined,  // Clear the custom domain field
+        domain: data.domain
       };
     }
 
@@ -475,7 +478,7 @@ const StoreSetup = () => {
                           className="h-4 w-4"
                         />
                         <label htmlFor="useDefaultDomain" className="text-sm font-medium">
-                          Ücretsiz alt alan adı kullan
+                          ��cretsiz alt alan adı kullan
                         </label>
                       </div>
                       
