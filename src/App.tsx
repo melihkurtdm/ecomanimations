@@ -30,42 +30,57 @@ import VideoCreator from "./pages/VideoCreator";
 // Create query client for React Query
 const queryClient = new QueryClient();
 
-// Hide Lovable badge
+// Hide Lovable badge and edit button
 if (typeof document !== "undefined") {
-  // Remove existing badge on load
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      const lovableBadge = document.querySelector('.lovable-badge');
-      if (lovableBadge) {
-        lovableBadge.remove();
+  // Function to remove any Lovable-related elements
+  const removeLovableBadges = () => {
+    // Remove badges with 'lovable' in class name
+    const possibleBadges = document.querySelectorAll('[class*="lovable"]');
+    possibleBadges.forEach(badge => badge.remove());
+    
+    // Remove any element containing "Edit with Lovable" text
+    document.querySelectorAll('*').forEach(el => {
+      if (el.textContent && el.textContent.includes('Edit with Lovable')) {
+        el.remove();
       }
-      
-      // Also look for badges with different class names
-      const possibleBadges = document.querySelectorAll('[class*="lovable"]');
-      possibleBadges.forEach(badge => {
-        if (badge.tagName === 'A' || badge.tagName === 'DIV') {
-          badge.remove();
-        }
-      });
-    }, 1000);
+    });
+
+    // Remove any anchors that might be related
+    document.querySelectorAll('a').forEach(link => {
+      if (link.href && link.href.includes('lovable.app')) {
+        link.remove();
+      }
+    });
+  };
+
+  // Run immediately
+  setTimeout(removeLovableBadges, 100);
+  setTimeout(removeLovableBadges, 500);
+  setTimeout(removeLovableBadges, 1000);
+  setTimeout(removeLovableBadges, 2000);
+  setTimeout(removeLovableBadges, 5000);
+  
+  // Also run on page load
+  window.addEventListener("load", () => {
+    removeLovableBadges();
+    setTimeout(removeLovableBadges, 100);
+    setTimeout(removeLovableBadges, 500);
+    setTimeout(removeLovableBadges, 1000);
   });
   
   // Create observer to continuously remove badge if it reappears
   const observer = new MutationObserver((mutations) => {
+    let needsCleanup = false;
+    
     for (const mutation of mutations) {
       if (mutation.addedNodes.length) {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === 1) { // Element node
-            const element = node as Element;
-            if (
-              element.classList.contains('lovable-badge') || 
-              (element.className && typeof element.className === 'string' && element.className.includes('lovable'))
-            ) {
-              element.remove();
-            }
-          }
-        });
+        needsCleanup = true;
+        break;
       }
+    }
+    
+    if (needsCleanup) {
+      removeLovableBadges();
     }
   });
   

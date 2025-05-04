@@ -80,6 +80,7 @@ const StoreSetup = () => {
   const [formData, setFormData] = useState<Partial<StoreSetupForm>>({});
   const [useCustomDomain, setUseCustomDomain] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [submittingBasicForm, setSubmittingBasicForm] = useState(false);
   
   // Basic Store Info Form
   const basicForm = useForm<z.infer<typeof storeFormSchema>>({
@@ -178,59 +179,75 @@ const StoreSetup = () => {
     });
   };
 
-  const handleBasicSubmit = (data: z.infer<typeof storeFormSchema>) => {
-    // Handle domain selection based on which option was chosen
-    let domainData = { ...data };
-    
-    if (useCustomDomain) {
-      // When using custom domain, validate customDomain but don't validate domain field
-      if (!data.customDomain || data.customDomain.length < 3) {
-        basicForm.setError('customDomain', {
-          type: 'manual',
-          message: 'Özel alan adı en az 3 karakter olmalıdır.',
-        });
-        return;
-      }
-      
-      // Set domain to undefined and keep customDomain
-      domainData = {
-        ...data,
-        domain: undefined,  // Clear the subdomain field
-        customDomain: data.customDomain
-      };
-    } else {
-      // When using subdomain, validate domain but don't validate customDomain field
-      if (!data.domain || data.domain.length < 3) {
-        basicForm.setError('domain', {
-          type: 'manual',
-          message: 'Alt alan adı en az 3 karakter olmalıdır.',
-        });
-        return;
-      }
-      
-      // Set customDomain to undefined and keep domain
-      domainData = {
-        ...data,
-        customDomain: undefined,  // Clear the custom domain field
-        domain: data.domain
-      };
-    }
+  const handleBasicSubmit = async (data: z.infer<typeof storeFormSchema>) => {
+    try {
+      setSubmittingBasicForm(true);
 
-    setFormData({...formData, ...domainData});
-    setCurrentStep('shipping');
-    
-    // Save progress to localStorage
-    if (user) {
-      localStorage.setItem(`store_${user.id}`, JSON.stringify({
-        ...formData, 
-        ...domainData,
-      }));
+      // Handle domain selection based on which option was chosen
+      let domainData = { ...data };
+      
+      if (useCustomDomain) {
+        // When using custom domain, validate customDomain but don't validate domain field
+        if (!data.customDomain || data.customDomain.length < 3) {
+          basicForm.setError('customDomain', {
+            type: 'manual',
+            message: 'Özel alan adı en az 3 karakter olmalıdır.',
+          });
+          setSubmittingBasicForm(false);
+          return;
+        }
+        
+        // Set domain to undefined and keep customDomain
+        domainData = {
+          ...data,
+          domain: undefined,  // Clear the subdomain field
+          customDomain: data.customDomain
+        };
+      } else {
+        // When using subdomain, validate domain but don't validate customDomain field
+        if (!data.domain || data.domain.length < 3) {
+          basicForm.setError('domain', {
+            type: 'manual',
+            message: 'Alt alan adı en az 3 karakter olmalıdır.',
+          });
+          setSubmittingBasicForm(false);
+          return;
+        }
+        
+        // Set customDomain to undefined and keep domain
+        domainData = {
+          ...data,
+          customDomain: undefined,  // Clear the custom domain field
+          domain: data.domain
+        };
+      }
+
+      setFormData({...formData, ...domainData});
+      
+      // Save progress to localStorage
+      if (user) {
+        localStorage.setItem(`store_${user.id}`, JSON.stringify({
+          ...formData, 
+          ...domainData,
+        }));
+      }
+      
+      toast({
+        title: "Temel bilgiler kaydedildi",
+        description: "Şimdi kargo ayarlarını yapılandırabilirsiniz.",
+      });
+      
+      setCurrentStep('shipping');
+    } catch (error) {
+      console.error("Error submitting basic form:", error);
+      toast({
+        title: "Hata",
+        description: "Form kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingBasicForm(false);
     }
-    
-    toast({
-      title: "Temel bilgiler kaydedildi",
-      description: "Şimdi kargo ayarlarını yapılandırabilirsiniz.",
-    });
   };
 
   const handleShippingSubmit = (data: z.infer<typeof shippingFormSchema>) => {
@@ -478,7 +495,7 @@ const StoreSetup = () => {
                           className="h-4 w-4"
                         />
                         <label htmlFor="useDefaultDomain" className="text-sm font-medium">
-                          ��cretsiz alt alan adı kullan
+                          Ücretsiz alt alan adı kullan
                         </label>
                       </div>
                       
@@ -549,9 +566,21 @@ const StoreSetup = () => {
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit">
-                      İleri
-                      <ChevronRight className="ml-2 h-4 w-4" />
+                    <Button 
+                      type="submit" 
+                      disabled={submittingBasicForm}
+                    >
+                      {submittingBasicForm ? (
+                        <>
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                          İşleniyor...
+                        </>
+                      ) : (
+                        <>
+                          İleri
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>
@@ -609,7 +638,7 @@ const StoreSetup = () => {
                           </div>
                         </FormControl>
                         <FormDescription>
-                          Standart kargo ücreti.
+                          Standart kargo ��creti.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

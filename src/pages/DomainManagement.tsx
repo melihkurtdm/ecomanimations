@@ -9,7 +9,6 @@ import { Globe, Plus, RefreshCw } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
 import { Domain, DomainStatus } from '@/types/domain';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 const DomainManagement = () => {
   const navigate = useNavigate();
@@ -25,23 +24,54 @@ const DomainManagement = () => {
 
   // Load domains from localStorage on component mount
   useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
     const loadDomains = () => {
       setIsLoading(true);
       // Use user ID as part of the storage key to keep domains separate between users
       const storedDomains = localStorage.getItem(`domains_${userId}`);
       if (storedDomains) {
-        setDomains(JSON.parse(storedDomains));
+        try {
+          const parsedDomains = JSON.parse(storedDomains);
+          setDomains(parsedDomains);
+        } catch (error) {
+          console.error("Error parsing stored domains:", error);
+          setDomains([]);
+        }
       }
       setIsLoading(false);
     };
     
     loadDomains();
-  }, [userId]);
+  }, [userId, user, navigate]);
 
   // Save domains to localStorage whenever they change
   useEffect(() => {
-    if (!isLoading && domains.length > 0) {
+    if (!isLoading && domains.length >= 0 && userId !== 'anonymous') {
       localStorage.setItem(`domains_${userId}`, JSON.stringify(domains));
+      
+      // Also update the store data if there's a primary domain
+      const primaryDomain = domains.find(domain => domain.primary);
+      const storedStore = localStorage.getItem(`store_${userId}`);
+      
+      if (storedStore && primaryDomain) {
+        try {
+          const storeData = JSON.parse(storedStore);
+          if (primaryDomain.isCustomDomain) {
+            storeData.customDomain = primaryDomain.domain;
+            storeData.domain = undefined;
+          } else {
+            storeData.domain = primaryDomain.domain;
+            storeData.customDomain = undefined;
+          }
+          localStorage.setItem(`store_${userId}`, JSON.stringify(storeData));
+        } catch (error) {
+          console.error("Error updating store with domain:", error);
+        }
+      }
     }
   }, [domains, isLoading, userId]);
 
@@ -195,6 +225,27 @@ const DomainManagement = () => {
     
     setDomains(updatedDomains);
     localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    
+    // Update store with primary domain
+    const primaryDomain = updatedDomains.find(domain => domain.id === domainId);
+    if (primaryDomain) {
+      const storedStore = localStorage.getItem(`store_${userId}`);
+      if (storedStore) {
+        try {
+          const storeData = JSON.parse(storedStore);
+          if (primaryDomain.isCustomDomain) {
+            storeData.customDomain = primaryDomain.domain;
+            storeData.domain = undefined;
+          } else {
+            storeData.domain = primaryDomain.domain;
+            storeData.customDomain = undefined;
+          }
+          localStorage.setItem(`store_${userId}`, JSON.stringify(storeData));
+        } catch (error) {
+          console.error("Error updating store with domain:", error);
+        }
+      }
+    }
     
     toast({
       title: "Birincil alan adı değiştirildi",
