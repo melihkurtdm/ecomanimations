@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -202,7 +203,8 @@ const StoreSetup = () => {
         domainData = {
           ...data,
           domain: undefined,  // Clear the subdomain field
-          customDomain: data.customDomain
+          customDomain: data.customDomain.trim().toLowerCase()
+            .replace(/^(https?:\/\/)?(www\.)?/i, '') // Clean up URL prefixes
         };
       } else {
         // When using subdomain, validate domain
@@ -219,7 +221,7 @@ const StoreSetup = () => {
         domainData = {
           ...data,
           customDomain: undefined,  // Clear the custom domain field
-          domain: data.domain
+          domain: data.domain.trim().toLowerCase() // Clean up and normalize input
         };
       }
 

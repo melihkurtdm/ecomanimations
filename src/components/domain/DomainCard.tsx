@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -42,7 +41,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
   status,
   isPrimary,
   createdAt,
-  isCustomDomain = false,
+  isCustomDomain = true, // Default to true for custom domains
   onVerify,
   onMakePrimary,
   onDelete,
@@ -156,8 +155,22 @@ const DomainCard: React.FC<DomainCardProps> = ({
           </Tooltip>
         </TooltipProvider>
       );
+    } else {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Globe className="h-4 w-4 text-purple-500 ml-1" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Shopset Alt Alan Adı</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
     }
-    return null;
   };
 
   const getFullDomainDisplay = () => {

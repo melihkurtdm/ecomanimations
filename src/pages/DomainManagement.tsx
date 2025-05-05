@@ -102,6 +102,7 @@ const DomainManagement = () => {
       return;
     }
     
+    // Check if domain already exists
     if (domains.some(d => d.domain === cleanedDomain)) {
       toast({
         title: "Alan adı zaten mevcut",
@@ -109,6 +110,14 @@ const DomainManagement = () => {
         variant: "destructive",
       });
       return;
+    }
+    
+    // Check if domain ends with .shopset.net - if so, mark as subdomain
+    const isCustomDomain = !cleanedDomain.endsWith('.shopset.net');
+    
+    // If it's a subdomain but entered with .shopset.net, remove it
+    if (!isCustomDomain) {
+      cleanedDomain = cleanedDomain.replace(/\.shopset\.net$/i, '');
     }
     
     setIsAddingDomain(true);
@@ -124,7 +133,7 @@ const DomainManagement = () => {
         primary: domains.length === 0,
         createdAt: new Date().toISOString(),
         lastChecked: new Date().toISOString(),
-        isCustomDomain: true,
+        isCustomDomain: isCustomDomain,
         dnsSettings: {
           type: "CNAME",
           host: "@",
@@ -321,6 +330,9 @@ const DomainManagement = () => {
                     className="flex-grow"
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Tam alan adını girin (örn: mağazanız.com). Alt alan adı için sadece ön eki girin.
+                </p>
               </div>
               <div className="pt-6">
                 <Button 
@@ -429,6 +441,42 @@ const DomainManagement = () => {
                   <span className="font-medium">Doğrulama bekleyin:</span> DNS ayarlarının dünya genelinde yayılması 24-48 saate kadar sürebilir. Bu süre içinde "Doğrula" butonunu kullanarak alan adınızın durumunu kontrol edebilirsiniz.
                 </li>
               </ol>
+              
+              <div className="mt-6 bg-blue-50 p-4 rounded-md">
+                <h3 className="font-medium text-blue-800 mb-2">Popüler Domain Sağlayıcıları için Adım Adım Rehber</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-blue-700">Namecheap için DNS Ayarları:</h4>
+                    <ol className="list-decimal list-inside ml-2 text-sm text-blue-900">
+                      <li>Namecheap hesabınıza giriş yapın</li>
+                      <li>"Domain List" sayfasına gidin ve domaininizin yanındaki "Manage" butonuna tıklayın</li>
+                      <li>"Advanced DNS" sekmesine tıklayın</li>
+                      <li>"Add New Record" butonuna tıklayın</li>
+                      <li>Type: CNAME Record seçin</li>
+                      <li>Host: @ veya www yazın</li>
+                      <li>Value: routes.shopset.net yazın</li>
+                      <li>TTL: Automatic bırakın</li>
+                      <li>"Save All Changes" butonuna tıklayın</li>
+                    </ol>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-blue-700">GoDaddy için DNS Ayarları:</h4>
+                    <ol className="list-decimal list-inside ml-2 text-sm text-blue-900">
+                      <li>GoDaddy hesabınıza giriş yapın</li>
+                      <li>"Domains" sayfasına gidin ve domaininize tıklayın</li>
+                      <li>"DNS" bölümüne gidin</li>
+                      <li>"Records" altında "Add" butonuna tıklayın</li>
+                      <li>Type: CNAME seçin</li>
+                      <li>Name: @ veya www yazın</li>
+                      <li>Value: routes.shopset.net yazın</li>
+                      <li>TTL: 1 Hour seçin</li>
+                      <li>"Save" butonuna tıklayın</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

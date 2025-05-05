@@ -107,12 +107,26 @@ const Dashboard = () => {
     // Check for verified domains first
     const primaryDomain = verifiedDomains.find(domain => domain.primary === true);
     if (primaryDomain) {
-      storeUrl = `https://${primaryDomain.domain}`;
+      // For custom domains use https://domain.com
+      if (primaryDomain.isCustomDomain) {
+        storeUrl = `https://${primaryDomain.domain}`;
+      } else {
+        // For shopset subdomains
+        storeUrl = `https://${primaryDomain.domain}.shopset.net`;
+      }
     } else if (verifiedDomains.length > 0) {
-      storeUrl = `https://${verifiedDomains[0].domain}`;
+      // If there's no primary but there are verified domains, use the first one
+      const firstVerified = verifiedDomains[0];
+      if (firstVerified.isCustomDomain) {
+        storeUrl = `https://${firstVerified.domain}`;
+      } else {
+        storeUrl = `https://${firstVerified.domain}.shopset.net`;
+      }
     } else if (userStore.customDomain) {
+      // If there are no verified domains but there's a custom domain in store settings
       storeUrl = `https://${userStore.customDomain}`;
     } else if (userStore.domain) {
+      // As a last resort, use the subdomain from store settings
       storeUrl = `https://${userStore.domain}.shopset.net`;
     }
     
@@ -151,7 +165,7 @@ const Dashboard = () => {
     }
   };
 
-  // Fix the TypeScript error with repeatType by specifying the literal string type
+  // Fix the TypeScript error with repeatType by using proper literal types
   const buttonVariants = {
     hover: {
       scale: 1.05,
@@ -175,7 +189,7 @@ const Dashboard = () => {
       transition: {
         duration: 2,
         repeat: Infinity,
-        repeatType: "reverse" as const // Type assertion to fix the TypeScript error
+        repeatType: "reverse" as "reverse" | "loop" | "mirror"
       }
     }
   };
