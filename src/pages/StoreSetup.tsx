@@ -91,6 +91,7 @@ const StoreSetup = () => {
       domain: formData.domain || "",
       customDomain: formData.customDomain || "",
     },
+    mode: "onChange"
   });
 
   // Shipping Form
@@ -187,7 +188,7 @@ const StoreSetup = () => {
       let domainData = { ...data };
       
       if (useCustomDomain) {
-        // When using custom domain, validate customDomain but don't validate domain field
+        // When using custom domain, validate customDomain
         if (!data.customDomain || data.customDomain.length < 3) {
           basicForm.setError('customDomain', {
             type: 'manual',
@@ -204,7 +205,7 @@ const StoreSetup = () => {
           customDomain: data.customDomain
         };
       } else {
-        // When using subdomain, validate domain but don't validate customDomain field
+        // When using subdomain, validate domain
         if (!data.domain || data.domain.length < 3) {
           basicForm.setError('domain', {
             type: 'manual',
@@ -222,14 +223,13 @@ const StoreSetup = () => {
         };
       }
 
-      setFormData({...formData, ...domainData});
+      // Update form data with domain information
+      const updatedFormData = {...formData, ...domainData};
+      setFormData(updatedFormData);
       
       // Save progress to localStorage
       if (user) {
-        localStorage.setItem(`store_${user.id}`, JSON.stringify({
-          ...formData, 
-          ...domainData,
-        }));
+        localStorage.setItem(`store_${user.id}`, JSON.stringify(updatedFormData));
       }
       
       toast({

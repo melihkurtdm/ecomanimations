@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,8 +88,12 @@ const DomainManagement = () => {
       return;
     }
     
+    // Domain doğrulama regex'i - www. veya http:// içerenleri temizle
+    let cleanedDomain = newDomain.trim().toLowerCase();
+    cleanedDomain = cleanedDomain.replace(/^(https?:\/\/)?(www\.)?/i, '');
+    
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
-    if (!domainRegex.test(newDomain)) {
+    if (!domainRegex.test(cleanedDomain)) {
       toast({
         title: "Geçersiz alan adı formatı",
         description: "Lütfen geçerli bir alan adı girin (örn: mağazanız.com).",
@@ -97,7 +102,7 @@ const DomainManagement = () => {
       return;
     }
     
-    if (domains.some(d => d.domain === newDomain)) {
+    if (domains.some(d => d.domain === cleanedDomain)) {
       toast({
         title: "Alan adı zaten mevcut",
         description: "Bu alan adı zaten eklenmiş.",
@@ -114,12 +119,17 @@ const DomainManagement = () => {
       
       const newDomainObject: Domain = {
         id: Date.now(),
-        domain: newDomain,
+        domain: cleanedDomain,
         status: "pending",
         primary: domains.length === 0,
         createdAt: new Date().toISOString(),
         lastChecked: new Date().toISOString(),
-        isCustomDomain: true
+        isCustomDomain: true,
+        dnsSettings: {
+          type: "CNAME",
+          host: "@",
+          value: "routes.shopset.net"
+        }
       };
       
       const updatedDomains = [...domains, newDomainObject];
@@ -408,7 +418,12 @@ const DomainManagement = () => {
                   <span className="font-medium">DNS ayarlarına erişin:</span> Alan adı sağlayıcınızın kontrol panelinde DNS ayarlarına gidin.
                 </li>
                 <li>
-                  <span className="font-medium">CNAME kaydı ekleyin:</span> Yeni bir CNAME kaydı oluşturun ve hedef/değer alanına <span className="bg-gray-100 text-gray-800 text-sm font-mono rounded px-1 py-0.5">routes.storehub.app</span> değerini girin.
+                  <span className="font-medium">CNAME kaydı ekleyin:</span> Yeni bir CNAME kaydı oluşturun:
+                  <ul className="mt-2 space-y-1 ml-4">
+                    <li><strong>Host/Name:</strong> @ veya www</li>
+                    <li><strong>Value/Target:</strong> <span className="bg-gray-100 text-gray-800 text-sm font-mono rounded px-1 py-0.5">routes.shopset.net</span></li>
+                    <li><strong>TTL:</strong> Otomatik veya 3600</li>
+                  </ul>
                 </li>
                 <li>
                   <span className="font-medium">Doğrulama bekleyin:</span> DNS ayarlarının dünya genelinde yayılması 24-48 saate kadar sürebilir. Bu süre içinde "Doğrula" butonunu kullanarak alan adınızın durumunu kontrol edebilirsiniz.

@@ -43,12 +43,17 @@ const Dashboard = () => {
       if (storedDomains) {
         try {
           const domainsData = JSON.parse(storedDomains);
-          const verified = domainsData.filter(domain => domain.status === 'verified');
+          const verified = domainsData.filter((domain: any) => domain.status === 'verified');
           setVerifiedDomains(verified);
         } catch (error) {
           console.error("Error parsing domains data:", error);
         }
       }
+      
+      // Delay hiding loading screen for better UX
+      setTimeout(() => {
+        setLoading(false);
+      }, 800);
     }
   }, [user, navigate]);
 
@@ -146,6 +151,7 @@ const Dashboard = () => {
     }
   };
 
+  // Fix the TypeScript error with repeatType by specifying the literal string type
   const buttonVariants = {
     hover: {
       scale: 1.05,
@@ -169,7 +175,7 @@ const Dashboard = () => {
       transition: {
         duration: 2,
         repeat: Infinity,
-        repeatType: "reverse" as "reverse" | "loop" | "mirror"
+        repeatType: "reverse" as const // Type assertion to fix the TypeScript error
       }
     }
   };
