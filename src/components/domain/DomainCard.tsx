@@ -17,13 +17,13 @@ import {
   RotateCw, 
   Trash2,
   RefreshCcw,
-  ArrowUpRight,
   Copy,
   Globe
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { DomainStatus } from '@/types/domain';
+import { testDomainAccess } from '@/services/domainService';
 
 interface DomainCardProps {
   domain: string;
@@ -31,6 +31,7 @@ interface DomainCardProps {
   isPrimary: boolean;
   createdAt: string;
   isCustomDomain?: boolean;
+  connectedStore?: string;
   onVerify: () => Promise<void>;
   onMakePrimary: () => void;
   onDelete: () => void;
@@ -43,6 +44,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
   isPrimary,
   createdAt,
   isCustomDomain = true, // Default to true for custom domains
+  connectedStore,
   onVerify,
   onMakePrimary,
   onDelete,
@@ -56,6 +58,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
   const handleVerifyDomain = async () => {
     try {
       setIsVerifying(true);
+      console.log("Starting domain verification for:", domain);
       // Perform the actual verification process
       await onVerify();
       
@@ -65,6 +68,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
         variant: "default",
       });
     } catch (error) {
+      console.error("Error verifying domain:", error);
       toast({
         title: "Doğrulama hatası",
         description: "Alan adınız doğrulanırken bir hata oluştu. Lütfen DNS ayarlarınızı kontrol edin.",
@@ -86,6 +90,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
         description: "Alan adı durumu yenilendi.",
       });
     } catch (error) {
+      console.error("Error refreshing domain:", error);
       toast({
         title: "Yenileme hatası",
         description: "Alan adı durumu yenilenirken bir hata oluştu.",
@@ -96,16 +101,42 @@ const DomainCard: React.FC<DomainCardProps> = ({
     }
   };
 
-  const handleExternalVisit = () => {
+  const handleExternalVisit = async () => {
     setIsChecking(true);
-    // Check if domain is actually accessible
-    const url = isCustomDomain ? `https://${domain}` : `https://${domain}.shopset.net`;
+    console.log("Testing domain access for:", domain, "isCustomDomain:", isCustomDomain);
     
-    // Simulate a check that the site is ready before opening
-    setTimeout(() => {
-      window.open(url, '_blank');
+    try {
+      // Check if domain is actually accessible
+      const url = isCustomDomain ? `https://${domain}` : `https://${domain}.shopset.net`;
+      console.log("Attempting to visit URL:", url);
+      
+      // Test the domain access first
+      const isAccessible = await testDomainAccess(domain, isCustomDomain);
+      
+      if (isAccessible) {
+        // Open in a new tab if accessible
+        window.open(url, '_blank');
+        toast({
+          title: "Site Açılıyor",
+          description: `${url} adresine yönlendiriliyorsunuz.`,
+        });
+      } else {
+        toast({
+          title: "Site Henüz Hazır Değil",
+          description: "Site henüz yayında değil veya erişilemez durumda.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error visiting domain:", error);
+      toast({
+        title: "Erişim Hatası",
+        description: "Siteye erişim sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
       setIsChecking(false);
-    }, 500);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -214,6 +245,11 @@ const DomainCard: React.FC<DomainCardProps> = ({
               <span className="text-xs">
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: tr })} eklendi
               </span>
+              {connectedStore && (
+                <span className="text-xs text-blue-600">
+                  • <strong>{connectedStore}</strong> mağazasına bağlı
+                </span>
+              )}
             </div>
           </div>
           
@@ -250,7 +286,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               </Button>
             )}
             
-            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit} disabled={isChecking}>
+            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit} disabled={isChecking || status !== 'verified'}>
               {isChecking ? (
                 <>
                   <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
@@ -327,6 +363,22 @@ const DomainCard: React.FC<DomainCardProps> = ({
                     <li className="font-semibold">Doğrulama tamamlandıktan sonra, temanız alan adınızda görünecektir</li>
                   </ol>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {status === 'verified' && (
+          <div className="px-4 py-3 bg-green-50 border-t border-green-200 text-sm text-green-800">
+            <div className="flex">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+              <div>
+                <p>Alan adınız doğrulandı! Artık mağazanız bu adreste görüntülenecektir.</p>
+                {connectedStore ? (
+                  <p className="mt-1"><strong>{connectedStore}</strong> mağazası bu alan adı üzerinden erişilebilir.</p>
+                ) : (
+                  <p className="mt-1 text-amber-600">Henüz bir mağazaya bağlı değil. Mağaza kurulumunu tamamlayın.</p>
+                )}
               </div>
             </div>
           </div>

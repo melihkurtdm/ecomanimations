@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,6 +82,7 @@ const StoreSetup = () => {
   const [useCustomDomain, setUseCustomDomain] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [submittingBasicForm, setSubmittingBasicForm] = useState(false);
+  const [verifiedDomains, setVerifiedDomains] = useState<any[]>([]);
   
   // Basic Store Info Form
   const basicForm = useForm<z.infer<typeof storeFormSchema>>({
@@ -126,8 +128,47 @@ const StoreSetup = () => {
     } else if (user) {
       // Check if user already has a store
       checkExistingStore();
+      
+      // Load verified domains
+      loadVerifiedDomains();
     }
   }, [user, isLoading, navigate]);
+  
+  // Load verified domains from localStorage
+  const loadVerifiedDomains = () => {
+    if (!user) return;
+    
+    const storedDomains = localStorage.getItem(`domains_${user.id}`);
+    if (storedDomains) {
+      try {
+        const domainsData = JSON.parse(storedDomains);
+        const verified = domainsData.filter((domain: any) => domain.status === 'verified');
+        setVerifiedDomains(verified);
+        console.log("Loaded verified domains:", verified);
+        
+        // If there are verified domains and we're in the basic step,
+        // pre-fill with the primary domain or first verified domain
+        if (verified.length > 0 && currentStep === 'basic') {
+          const primaryDomain = verified.find((d: any) => d.primary) || verified[0];
+          
+          if (primaryDomain) {
+            if (primaryDomain.isCustomDomain) {
+              setUseCustomDomain(true);
+              basicForm.setValue('customDomain', primaryDomain.domain);
+              basicForm.setValue('domain', '');
+            } else {
+              setUseCustomDomain(false);
+              basicForm.setValue('domain', primaryDomain.domain);
+              basicForm.setValue('customDomain', '');
+            }
+            console.log("Pre-filled domain form with:", primaryDomain);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing domains data:", error);
+      }
+    }
+  };
 
   // Check if the user already has a store
   const checkExistingStore = async () => {
@@ -233,10 +274,23 @@ const StoreSetup = () => {
       const updatedFormData = {...formData, ...domainData};
       setFormData(updatedFormData);
       
+      // Use verified domains if available
+      if (verifiedDomains.length > 0) {
+        // Check if we have a match with verified domains
+        const primaryDomain = verifiedDomains.find((d: any) => d.primary === true);
+        const matchedDomain = primaryDomain || verifiedDomains[0];
+        
+        if (matchedDomain) {
+          console.log("Using verified domain:", matchedDomain);
+          // Save domain information in the form data for later
+          updatedFormData.verifiedDomain = matchedDomain;
+        }
+      }
+      
       // Save progress to localStorage
       if (user) {
         localStorage.setItem(`store_${user.id}`, JSON.stringify(updatedFormData));
-        console.log("Store data saved to localStorage");
+        console.log("Store data saved to localStorage:", updatedFormData);
       }
       
       toast({
@@ -259,6 +313,7 @@ const StoreSetup = () => {
   };
 
   const handleShippingSubmit = (data: z.infer<typeof shippingFormSchema>) => {
+    console.log("Shipping form submitted:", data);
     setFormData({...formData, ...data});
     setCurrentStep('payment');
     
@@ -277,6 +332,7 @@ const StoreSetup = () => {
   };
 
   const handlePaymentSubmit = async (data: z.infer<typeof paymentFormSchema>) => {
+    console.log("Payment form submitted:", data);
     setFormData({...formData, ...data});
     setIsSaving(true);
     
@@ -292,6 +348,7 @@ const StoreSetup = () => {
     // Save to localStorage
     if (user) {
       localStorage.setItem(`store_${user.id}`, JSON.stringify(storeData));
+      console.log("Complete store data saved:", storeData);
     }
     
     toast({
@@ -300,36 +357,30 @@ const StoreSetup = () => {
     });
     
     try {
-      // Here you would also save to your backend/database
-      // For example with Supabase (commented out for now):
-      /*
-      if (user) {
-        await supabase
-          .from('stores')
-          .upsert({
-            user_id: user.id,
-            store_name: storeData.storeName,
-            store_description: storeData.storeDescription,
-            domain: storeData.domain,
-            custom_domain: storeData.customDomain,
-            shipping_settings: {
-              name: storeData.shippingName,
-              cost: storeData.shippingCost,
-              free_threshold: storeData.freeShippingThreshold
-            },
-            payment_settings: {
-              currency: storeData.currency,
-              accept_credit_card: storeData.acceptCreditCard,
-              accept_pay_at_door: storeData.acceptPayAtDoor,
-              accept_bank_transfer: storeData.acceptBankTransfer
-            },
-            created_at: new Date()
+      // Apply the verified domain if available
+      if (storeData.verifiedDomain) {
+        console.log("Applying verified domain to store:", storeData.verifiedDomain);
+        // Simulate API delay for domain publication
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Update the domain's status to indicate it's connected to this store
+        const storedDomains = localStorage.getItem(`domains_${user?.id}`);
+        if (storedDomains) {
+          const domains = JSON.parse(storedDomains);
+          const updatedDomains = domains.map((d: any) => {
+            if (d.domain === storeData.verifiedDomain.domain) {
+              return { ...d, connectedStore: storeData.storeName };
+            }
+            return d;
           });
+          
+          localStorage.setItem(`domains_${user?.id}`, JSON.stringify(updatedDomains));
+          console.log("Updated domain with store connection:", updatedDomains);
+        }
       }
-      */
       
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setCurrentStep('complete');
     } catch (error) {
@@ -574,6 +625,26 @@ const StoreSetup = () => {
                         />
                       )}
                     </div>
+                    
+                    {verifiedDomains.length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                        <h4 className="text-sm font-medium text-blue-700 mb-1">
+                          Doğrulanmış Alan Adlarınız
+                        </h4>
+                        <p className="text-xs text-blue-600 mb-2">
+                          Alan Adları bölümünde doğrulanmış alan adlarınız bulunmaktadır. Mağazanız bu domainde yayınlanacaktır.
+                        </p>
+                        <ul className="text-xs text-blue-800">
+                          {verifiedDomains.map((domain: any, index: number) => (
+                            <li key={index} className="flex items-center">
+                              <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+                              {domain.isCustomDomain ? domain.domain : `${domain.domain}.shopset.net`}
+                              {domain.primary && <span className="ml-1 text-xs text-yellow-600">(Birincil)</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex justify-end">
@@ -649,7 +720,7 @@ const StoreSetup = () => {
                           </div>
                         </FormControl>
                         <FormDescription>
-                          Standart kargo ��creti.
+                          Standart kargo ücreti.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
