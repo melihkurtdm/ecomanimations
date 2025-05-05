@@ -184,13 +184,15 @@ const StoreSetup = () => {
   const handleBasicSubmit = async (data: z.infer<typeof storeFormSchema>) => {
     try {
       setSubmittingBasicForm(true);
-
+      console.log("Form submission started with data:", data);
+      
       // Handle domain selection based on which option was chosen
       let domainData = { ...data };
       
       if (useCustomDomain) {
         // When using custom domain, validate customDomain
         if (!data.customDomain || data.customDomain.length < 3) {
+          console.log("Custom domain validation failed");
           basicForm.setError('customDomain', {
             type: 'manual',
             message: 'Özel alan adı en az 3 karakter olmalıdır.',
@@ -206,9 +208,11 @@ const StoreSetup = () => {
           customDomain: data.customDomain.trim().toLowerCase()
             .replace(/^(https?:\/\/)?(www\.)?/i, '') // Clean up URL prefixes
         };
+        console.log("Custom domain data prepared:", domainData);
       } else {
         // When using subdomain, validate domain
         if (!data.domain || data.domain.length < 3) {
+          console.log("Subdomain validation failed");
           basicForm.setError('domain', {
             type: 'manual',
             message: 'Alt alan adı en az 3 karakter olmalıdır.',
@@ -223,6 +227,7 @@ const StoreSetup = () => {
           customDomain: undefined,  // Clear the custom domain field
           domain: data.domain.trim().toLowerCase() // Clean up and normalize input
         };
+        console.log("Subdomain data prepared:", domainData);
       }
 
       // Update form data with domain information
@@ -232,6 +237,7 @@ const StoreSetup = () => {
       // Save progress to localStorage
       if (user) {
         localStorage.setItem(`store_${user.id}`, JSON.stringify(updatedFormData));
+        console.log("Store data saved to localStorage");
       }
       
       toast({
@@ -239,6 +245,7 @@ const StoreSetup = () => {
         description: "Şimdi kargo ayarlarını yapılandırabilirsiniz.",
       });
       
+      console.log("Moving to shipping step");
       setCurrentStep('shipping');
     } catch (error) {
       console.error("Error submitting basic form:", error);
@@ -447,7 +454,11 @@ const StoreSetup = () => {
             </CardHeader>
             <CardContent>
               <Form {...basicForm}>
-                <form onSubmit={basicForm.handleSubmit(handleBasicSubmit)} className="space-y-6">
+                <form id="basicStoreForm" onSubmit={(e) => {
+                  e.preventDefault();
+                  console.log("Form submitted");
+                  basicForm.handleSubmit(handleBasicSubmit)(e);
+                }} className="space-y-6">
                   <FormField
                     control={basicForm.control}
                     name="storeName"

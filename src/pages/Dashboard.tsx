@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [userStore, setUserStore] = useState<any>(null);
   const [isPulsing, setIsPulsing] = useState(false);
   const [verifiedDomains, setVerifiedDomains] = useState<any[]>([]);
+  const [isVisitingStore, setIsVisitingStore] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -33,6 +34,7 @@ const Dashboard = () => {
         try {
           const storeData = JSON.parse(storedStore);
           setUserStore(storeData);
+          console.log("Loaded store data:", storeData);
         } catch (error) {
           console.error("Error parsing store data:", error);
         }
@@ -45,6 +47,7 @@ const Dashboard = () => {
           const domainsData = JSON.parse(storedDomains);
           const verified = domainsData.filter((domain: any) => domain.status === 'verified');
           setVerifiedDomains(verified);
+          console.log("Loaded verified domains:", verified);
         } catch (error) {
           console.error("Error parsing domains data:", error);
         }
@@ -101,43 +104,73 @@ const Dashboard = () => {
       return;
     }
     
-    // Determine the URL based on store data
-    let storeUrl = "";
+    setIsVisitingStore(true);
     
-    // Check for verified domains first
-    const primaryDomain = verifiedDomains.find(domain => domain.primary === true);
-    if (primaryDomain) {
-      // For custom domains use https://domain.com
-      if (primaryDomain.isCustomDomain) {
-        storeUrl = `https://${primaryDomain.domain}`;
-      } else {
-        // For shopset subdomains
-        storeUrl = `https://${primaryDomain.domain}.shopset.net`;
+    try {
+      console.log("Attempting to visit store with data:", { userStore, verifiedDomains });
+      
+      // Determine the URL based on store data
+      let storeUrl = "";
+      
+      // Check for verified domains first
+      const primaryDomain = verifiedDomains.find(domain => domain.primary === true);
+      if (primaryDomain) {
+        // For custom domains use https://domain.com
+        if (primaryDomain.isCustomDomain) {
+          storeUrl = `https://${primaryDomain.domain}`;
+          console.log("Using primary custom domain URL:", storeUrl);
+        } else {
+          // For shopset subdomains
+          storeUrl = `https://${primaryDomain.domain}.shopset.net`;
+          console.log("Using primary subdomain URL:", storeUrl);
+        }
+      } else if (verifiedDomains.length > 0) {
+        // If there's no primary but there are verified domains, use the first one
+        const firstVerified = verifiedDomains[0];
+        if (firstVerified.isCustomDomain) {
+          storeUrl = `https://${firstVerified.domain}`;
+          console.log("Using first verified custom domain URL:", storeUrl);
+        } else {
+          storeUrl = `https://${firstVerified.domain}.shopset.net`;
+          console.log("Using first verified subdomain URL:", storeUrl);
+        }
+      } else if (userStore.customDomain) {
+        // If there are no verified domains but there's a custom domain in store settings
+        storeUrl = `https://${userStore.customDomain}`;
+        console.log("Using store custom domain URL:", storeUrl);
+      } else if (userStore.domain) {
+        // As a last resort, use the subdomain from store settings
+        storeUrl = `https://${userStore.domain}.shopset.net`;
+        console.log("Using store subdomain URL:", storeUrl);
       }
-    } else if (verifiedDomains.length > 0) {
-      // If there's no primary but there are verified domains, use the first one
-      const firstVerified = verifiedDomains[0];
-      if (firstVerified.isCustomDomain) {
-        storeUrl = `https://${firstVerified.domain}`;
+      
+      if (storeUrl) {
+        // Simulate theme activation
+        const message = `Mağazanız ziyaret ediliyor: ${storeUrl}`;
+        console.log(message);
+        
+        toast({
+          title: "Mağazanız açılıyor",
+          description: "Yeni sekmede mağazanız açılıyor...",
+        });
+        
+        window.open(storeUrl, '_blank');
       } else {
-        storeUrl = `https://${firstVerified.domain}.shopset.net`;
+        toast({
+          title: "Mağaza URL'si bulunamadı",
+          description: "Mağaza URL'si bulunamadı. Lütfen domain ayarlarınızı kontrol edin.",
+          variant: "destructive",
+        });
       }
-    } else if (userStore.customDomain) {
-      // If there are no verified domains but there's a custom domain in store settings
-      storeUrl = `https://${userStore.customDomain}`;
-    } else if (userStore.domain) {
-      // As a last resort, use the subdomain from store settings
-      storeUrl = `https://${userStore.domain}.shopset.net`;
-    }
-    
-    if (storeUrl) {
-      window.open(storeUrl, '_blank');
-    } else {
+    } catch (error) {
+      console.error("Error visiting store:", error);
       toast({
-        title: "Mağaza URL'si bulunamadı",
-        description: "Mağaza URL'si bulunamadı. Lütfen domain ayarlarınızı kontrol edin.",
+        title: "Hata",
+        description: "Mağaza ziyaret edilirken bir hata oluştu.",
         variant: "destructive",
       });
+    } finally {
+      setIsVisitingStore(false);
     }
   };
 
@@ -229,10 +262,20 @@ const Dashboard = () => {
                 onClick={handleVisitStore}
                 size="lg"
                 className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md flex items-center justify-center gap-2 px-6 py-3"
+                disabled={isVisitingStore}
               >
-                <Globe className="h-5 w-5 animate-pulse" />
-                Mağazanızı Ziyaret Edin
-                <ExternalLink className="h-4 w-4 ml-1" />
+                {isVisitingStore ? (
+                  <>
+                    <RotateCw className="h-5 w-5 animate-spin" />
+                    Mağaza Açılıyor...
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-5 w-5 animate-pulse" />
+                    Mağazanızı Ziyaret Edin
+                    <ExternalLink className="h-4 w-4 ml-1" />
+                  </>
+                )}
               </Button>
             </motion.div>
             

@@ -6,10 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Globe, Plus, RefreshCw } from 'lucide-react';
+import { Globe, Plus, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
 import { Domain, DomainStatus } from '@/types/domain';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Yardımcı fonksiyon - domain temizleme
+const cleanDomainName = (domain: string): string => {
+  return domain.trim().toLowerCase().replace(/^(https?:\/\/)?(www\.)?/i, '');
+};
 
 const DomainManagement = () => {
   const navigate = useNavigate();
@@ -22,7 +27,8 @@ const DomainManagement = () => {
   const [isAddingDomain, setIsAddingDomain] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [testingConnection, setTestingConnection] = useState(false);
+  
   // Load domains from localStorage on component mount
   useEffect(() => {
     if (!user) {
@@ -88,15 +94,36 @@ const DomainManagement = () => {
       return;
     }
     
-    // Domain doğrulama regex'i - www. veya http:// içerenleri temizle
-    let cleanedDomain = newDomain.trim().toLowerCase();
-    cleanedDomain = cleanedDomain.replace(/^(https?:\/\/)?(www\.)?/i, '');
+    // Domain temizleme - www. veya http:// içerenleri temizle
+    let cleanedDomain = cleanDomainName(newDomain);
+    
+    // Alan adının özel mi yoksa subdomain mi olduğunu kontrol et
+    let isCustomDomain = true; // Varsayılan olarak özel domain
+    
+    // Eğer .shopset.net ile bitiyorsa subdomain olarak kabul et
+    if (cleanedDomain.endsWith('.shopset.net')) {
+      cleanedDomain = cleanedDomain.replace(/\.shopset\.net$/i, '');
+      isCustomDomain = false;
+    }
     
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
-    if (!domainRegex.test(cleanedDomain)) {
+    
+    // Eğer subdomain ise sadece karakterleri kontrol et
+    const subdomainRegex = /^[a-z0-9-]+$/i;
+    
+    if (isCustomDomain && !domainRegex.test(cleanedDomain)) {
       toast({
         title: "Geçersiz alan adı formatı",
         description: "Lütfen geçerli bir alan adı girin (örn: mağazanız.com).",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!isCustomDomain && !subdomainRegex.test(cleanedDomain)) {
+      toast({
+        title: "Geçersiz alt alan adı formatı",
+        description: "Alt alan adı sadece harf, rakam ve tire içerebilir.",
         variant: "destructive",
       });
       return;
@@ -110,14 +137,6 @@ const DomainManagement = () => {
         variant: "destructive",
       });
       return;
-    }
-    
-    // Check if domain ends with .shopset.net - if so, mark as subdomain
-    const isCustomDomain = !cleanedDomain.endsWith('.shopset.net');
-    
-    // If it's a subdomain but entered with .shopset.net, remove it
-    if (!isCustomDomain) {
-      cleanedDomain = cleanedDomain.replace(/\.shopset\.net$/i, '');
     }
     
     setIsAddingDomain(true);
@@ -174,12 +193,23 @@ const DomainManagement = () => {
       if (isSuccessful) {
         const updatedDomains = domains.map(domain => 
           domain.id === domainId 
-            ? { ...domain, status: "verified" as DomainStatus, lastChecked: new Date().toISOString() } 
+            ? { 
+                ...domain, 
+                status: "verified" as DomainStatus, 
+                lastChecked: new Date().toISOString(),
+                verifiedAt: new Date().toISOString()
+              } 
             : domain
         );
         
         setDomains(updatedDomains);
         localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+        
+        // Eğer doğrulanan domain varsa ve bu domainde aktif tema yoksa
+        // Tema yayınlama işlemini tetikle
+        const verifiedDomain = updatedDomains.find(d => d.id === domainId);
+        publishThemeToVerifiedDomain(verifiedDomain);
+        
         return Promise.resolve();
       } else {
         return Promise.reject(new Error("DNS kaydı bulunamadı"));
@@ -188,10 +218,39 @@ const DomainManagement = () => {
       return Promise.reject(error);
     }
   };
+  
+  // Doğrulanan domaine tema yayınlama işlemi
+  const publishThemeToVerifiedDomain = (domain?: Domain) => {
+    if (!domain) return;
+    
+    // Domainin aktif olduğunu belirt
+    toast({
+      title: "Domain aktifleştirildi",
+      description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresinde mağazanız artık aktif.`,
+    });
+    
+    // localStorage'da ilgili tema bilgilerini güncelle
+    // Gerçek bir API'de burada tema yayınlama işlemi olurdu
+    const publishInfo = {
+      domainId: domain.id,
+      publishedAt: new Date().toISOString(),
+      isActive: true
+    };
+    
+    localStorage.setItem(`theme_publish_${userId}_${domain.id}`, JSON.stringify(publishInfo));
+  };
 
   const handleRefreshDomain = async (domainId: number) => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const domain = domains.find(d => d.id === domainId);
+      if (!domain) return Promise.reject("Domain bulunamadı");
+      
+      // Test connection for verified domains
+      if (domain.status === "verified") {
+        await testDomainConnection(domain);
+      }
       
       const updatedDomains = domains.map(domain => 
         domain.id === domainId 
@@ -205,6 +264,41 @@ const DomainManagement = () => {
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
+    }
+  };
+  
+  // Domain bağlantısını test etme
+  const testDomainConnection = async (domain: Domain) => {
+    if (!domain) return;
+    
+    setTestingConnection(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Gerçek bir API'de burada domain bağlantısı test edilirdi
+      // Şimdilik %80 başarılı olduğunu varsayalım
+      const isSuccessful = Math.random() > 0.2;
+      
+      if (!isSuccessful) {
+        toast({
+          title: "Bağlantı hatası",
+          description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresine bağlanılamadı. DNS ayarlarınızı kontrol edin.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Bağlantı başarılı",
+          description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresine başarıyla bağlanıldı.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Bağlantı testi hatası",
+        description: "Domain bağlantısı test edilirken bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setTestingConnection(false);
     }
   };
 
@@ -234,6 +328,16 @@ const DomainManagement = () => {
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleVisitDomain = (domain: Domain) => {
+    if (!domain) return;
+    
+    const url = domain.isCustomDomain ? 
+      `https://${domain.domain}` : 
+      `https://${domain.domain}.shopset.net`;
+      
+    window.open(url, '_blank');
   };
 
   const handleMakePrimary = (domainId: number) => {
@@ -300,12 +404,21 @@ const DomainManagement = () => {
           <h1 className="text-2xl font-bold">Alan Adı Yönetimi</h1>
           <p className="text-gray-500">Mağazanız için özel alan adları ekleyin ve yönetin</p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard')}
-        >
-          Geri Dön
-        </Button>
+        <div className="flex space-x-2">
+          {testingConnection ? (
+            <Button variant="outline" disabled>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Bağlantı test ediliyor...
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/dashboard')}
+            >
+              Geri Dön
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 gap-6">
@@ -331,7 +444,7 @@ const DomainManagement = () => {
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Tam alan adını girin (örn: mağazanız.com). Alt alan adı için sadece ön eki girin.
+                  Tam alan adını girin (örn: mağazanız.com). Alt alan adı için "isim.shopset.net" şeklinde giriş yapabilirsiniz.
                 </p>
               </div>
               <div className="pt-6">
@@ -404,6 +517,7 @@ const DomainManagement = () => {
                 status={domain.status}
                 isPrimary={domain.primary}
                 createdAt={domain.createdAt}
+                isCustomDomain={domain.isCustomDomain}
                 onVerify={() => handleVerifyDomain(domain.id)}
                 onMakePrimary={() => handleMakePrimary(domain.id)}
                 onDelete={() => handleDeleteDomain(domain.id)}

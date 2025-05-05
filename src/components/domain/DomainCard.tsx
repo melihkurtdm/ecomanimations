@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -99,8 +100,12 @@ const DomainCard: React.FC<DomainCardProps> = ({
     setIsChecking(true);
     // Check if domain is actually accessible
     const url = isCustomDomain ? `https://${domain}` : `https://${domain}.shopset.net`;
-    window.open(url, '_blank');
-    setIsChecking(false);
+    
+    // Simulate a check that the site is ready before opening
+    setTimeout(() => {
+      window.open(url, '_blank');
+      setIsChecking(false);
+    }, 500);
   };
 
   const copyToClipboard = (text: string) => {
