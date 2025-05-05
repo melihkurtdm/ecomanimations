@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -182,12 +181,12 @@ const StoreSetup = () => {
   };
 
   const handleBasicSubmit = async (data: z.infer<typeof storeFormSchema>) => {
+    console.log("Form submission started with data:", data);
     try {
       setSubmittingBasicForm(true);
-      console.log("Form submission started with data:", data);
       
       // Handle domain selection based on which option was chosen
-      let domainData = { ...data };
+      let domainData: Partial<z.infer<typeof storeFormSchema>> = { ...data };
       
       if (useCustomDomain) {
         // When using custom domain, validate customDomain
@@ -454,11 +453,10 @@ const StoreSetup = () => {
             </CardHeader>
             <CardContent>
               <Form {...basicForm}>
-                <form id="basicStoreForm" onSubmit={(e) => {
-                  e.preventDefault();
-                  console.log("Form submitted");
-                  basicForm.handleSubmit(handleBasicSubmit)(e);
-                }} className="space-y-6">
+                <form 
+                  onSubmit={basicForm.handleSubmit(handleBasicSubmit)} 
+                  className="space-y-6"
+                >
                   <FormField
                     control={basicForm.control}
                     name="storeName"
