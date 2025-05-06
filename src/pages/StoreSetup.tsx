@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -69,10 +68,21 @@ const paymentFormSchema = z.object({
   acceptBankTransfer: z.boolean().optional(),
 });
 
+// Define the verified domain type
+type VerifiedDomainType = {
+  id: number;
+  domain: string;
+  status: string;
+  primary: boolean;
+  isCustomDomain: boolean;
+};
+
 // Combined type for all form fields
 type StoreSetupForm = z.infer<typeof storeFormSchema> & 
                       z.infer<typeof shippingFormSchema> & 
-                      z.infer<typeof paymentFormSchema>;
+                      z.infer<typeof paymentFormSchema> & {
+                        verifiedDomain?: VerifiedDomainType;
+                      };
 
 const StoreSetup = () => {
   const { user, isLoading } = useAuth();
@@ -177,24 +187,28 @@ const StoreSetup = () => {
     // Try to load store data from localStorage first
     const storedStore = localStorage.getItem(`store_${user.id}`);
     if (storedStore) {
-      const storeData = JSON.parse(storedStore);
-      setFormData(storeData);
-      
-      // Pre-fill the form with stored data
-      basicForm.reset({
-        storeName: storeData.storeName || "",
-        storeDescription: storeData.storeDescription || "",
-        domain: storeData.domain || "",
-        customDomain: storeData.customDomain || "",
-      });
-      
-      // If the store was completed, navigate to dashboard
-      if (storeData.isComplete) {
-        navigate('/dashboard');
-        toast({
-          title: "Mağazanız zaten kurulmuş",
-          description: "Mağaza ayarlarınızı dashboard üzerinden değiştirebilirsiniz.",
+      try {
+        const storeData = JSON.parse(storedStore);
+        setFormData(storeData);
+        
+        // Pre-fill the form with stored data
+        basicForm.reset({
+          storeName: storeData.storeName || "",
+          storeDescription: storeData.storeDescription || "",
+          domain: storeData.domain || "",
+          customDomain: storeData.customDomain || "",
         });
+        
+        // If the store was completed, navigate to dashboard
+        if (storeData.isComplete) {
+          navigate('/dashboard');
+          toast({
+            title: "Mağazanız zaten kurulmuş",
+            description: "Mağaza ayarlarınızı dashboard üzerinden değiştirebilirsiniz.",
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing stored store data:", error);
       }
     }
   };
@@ -271,8 +285,7 @@ const StoreSetup = () => {
       }
 
       // Update form data with domain information
-      const updatedFormData = {...formData, ...domainData};
-      setFormData(updatedFormData);
+      const updatedFormData: Partial<StoreSetupForm> = {...formData, ...domainData};
       
       // Use verified domains if available
       if (verifiedDomains.length > 0) {
@@ -283,9 +296,17 @@ const StoreSetup = () => {
         if (matchedDomain) {
           console.log("Using verified domain:", matchedDomain);
           // Save domain information in the form data for later
-          updatedFormData.verifiedDomain = matchedDomain;
+          updatedFormData.verifiedDomain = {
+            id: matchedDomain.id,
+            domain: matchedDomain.domain,
+            status: matchedDomain.status,
+            primary: matchedDomain.primary,
+            isCustomDomain: matchedDomain.isCustomDomain
+          };
         }
       }
+      
+      setFormData(updatedFormData);
       
       // Save progress to localStorage
       if (user) {
@@ -314,15 +335,13 @@ const StoreSetup = () => {
 
   const handleShippingSubmit = (data: z.infer<typeof shippingFormSchema>) => {
     console.log("Shipping form submitted:", data);
-    setFormData({...formData, ...data});
+    const updatedFormData = {...formData, ...data};
+    setFormData(updatedFormData);
     setCurrentStep('payment');
     
     // Save progress to localStorage
     if (user) {
-      localStorage.setItem(`store_${user.id}`, JSON.stringify({
-        ...formData, 
-        ...data,
-      }));
+      localStorage.setItem(`store_${user.id}`, JSON.stringify(updatedFormData));
     }
     
     toast({
@@ -333,13 +352,13 @@ const StoreSetup = () => {
 
   const handlePaymentSubmit = async (data: z.infer<typeof paymentFormSchema>) => {
     console.log("Payment form submitted:", data);
-    setFormData({...formData, ...data});
+    const updatedFormData = {...formData, ...data};
+    setFormData(updatedFormData);
     setIsSaving(true);
     
     // Combined store data
     const storeData = {
-      ...formData,
-      ...data,
+      ...updatedFormData,
       isComplete: true,
       userId: user?.id,
       createdAt: new Date().toISOString()
@@ -910,44 +929,4 @@ const StoreSetup = () => {
               </div>
               <CardTitle className="text-2xl">Mağazanız Hazır!</CardTitle>
               <CardDescription>
-                Tebrikler! Mağazanız başarıyla oluşturuldu. Şimdi ürünlerinizi ekleyebilir, mağazanızı özelleştirebilir ve satışa başlayabilirsiniz.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center space-y-6 p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                  <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToAddProducts}>
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <LayoutGrid className="h-8 w-8 text-brand-purple mb-2" />
-                      <h3 className="font-medium text-center">Ürün Ekle</h3>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToCustomizeTheme}>
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <Palette className="h-8 w-8 text-brand-purple mb-2" />
-                      <h3 className="font-medium text-center">Temayı Özelleştir</h3>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={goToViewStore}>
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <Store className="h-8 w-8 text-brand-purple mb-2" />
-                      <h3 className="font-medium text-center">Mağazayı Görüntüle</h3>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <Button size="lg" onClick={handleComplete}>
-                Dashboard'a Git
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-export default StoreSetup;
+                Tebrikler! Ma
