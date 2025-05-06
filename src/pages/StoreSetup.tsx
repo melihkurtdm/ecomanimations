@@ -929,4 +929,69 @@ const StoreSetup = () => {
               </div>
               <CardTitle className="text-2xl">Mağazanız Hazır!</CardTitle>
               <CardDescription>
-                Tebrikler! Ma
+                Tebrikler! Mağazanız başarıyla oluşturuldu. Şimdi ürün ekleyebilir, temanızı özelleştirebilir ve daha birçok şey yapabilirsiniz.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <LayoutGrid className="h-8 w-8 text-brand-purple mb-2" />
+                  <h3 className="font-medium">Ürün Ekle</h3>
+                  <p className="text-sm text-gray-500 text-center mt-1">
+                    Mağazanıza ürünler ekleyin ve satışa başlayın.
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    className="mt-4" 
+                    onClick={goToAddProducts}
+                  >
+                    Ürün Ekle
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <Palette className="h-8 w-8 text-brand-purple mb-2" />
+                  <h3 className="font-medium">Tema Özelleştir</h3>
+                  <p className="text-sm text-gray-500 text-center mt-1">
+                    Mağazanızın görünümünü özelleştirin.
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    className="mt-4" 
+                    onClick={goToCustomizeTheme}
+                  >
+                    Temayı Düzenle
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col items-center p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <Store className="h-8 w-8 text-brand-purple mb-2" />
+                  <h3 className="font-medium">Mağazanızı Görün</h3>
+                  <p className="text-sm text-gray-500 text-center mt-1">
+                    Mağazanızın müşterilere nasıl göründüğünü inceleyin.
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    className="mt-4" 
+                    onClick={goToViewStore}
+                  >
+                    Mağazayı Görüntüle
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-center mt-6">
+                <Button onClick={handleComplete}>
+                  Dashboard'a Dön
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+export default StoreSetup;
