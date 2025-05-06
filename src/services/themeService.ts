@@ -87,6 +87,9 @@ export const publishThemeToDomain = async (
       console.log(`Domain ${domain} updated with published theme status`);
     }
     
+    // Also check if we need to update the Namecheap API status
+    updateNamecheapApiStatus(userId, domain, true);
+    
     return true;
   } catch (error) {
     console.error("Error publishing theme to domain:", error);
@@ -223,6 +226,32 @@ export const getThemeStatusForDomain = (userId: string, domainName: string): {
   }
 };
 
+// Check DNS propagation with an advanced method
+export const checkDnsPropagation = async (domain: string): Promise<boolean> => {
+  console.log(`Checking DNS propagation for ${domain}`);
+  
+  try {
+    // In a real implementation, this would make an API call to check DNS
+    // For now, we'll simulate success with a higher probability (80%)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const isSuccessful = Math.random() > 0.2; // 80% success rate
+    console.log(`DNS propagation check result for ${domain}: ${isSuccessful ? 'Success' : 'Failed'}`);
+    
+    // Update the Namecheap API status in localStorage
+    const userData = localStorage.getItem('currentUser');
+    if (userData) {
+      const user = JSON.parse(userData);
+      updateNamecheapApiStatus(user.id, domain, isSuccessful);
+    }
+    
+    return isSuccessful;
+  } catch (error) {
+    console.error("Error checking DNS propagation:", error);
+    return false;
+  }
+};
+
 // Debug function to check all publications
 export const debugThemePublications = (userId: string): void => {
   try {
@@ -236,5 +265,106 @@ export const debugThemePublications = (userId: string): void => {
     console.log("STORE:", store ? JSON.parse(store) : "No store");
   } catch (error) {
     console.error("Error in debug function:", error);
+  }
+};
+
+// Force publish a theme to a domain
+export const forcePublishTheme = async (userId: string, domainName: string): Promise<boolean> => {
+  try {
+    console.log(`Force publishing theme to domain ${domainName}`);
+    
+    // Check if we have a verified domain
+    const storedDomains = localStorage.getItem(`domains_${userId}`);
+    if (!storedDomains) {
+      toast({
+        title: "Domain Bulunamadı",
+        description: "Bu kullanıcıya ait domain bulunamadı.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    const domains = JSON.parse(storedDomains);
+    const domainToPublish = domains.find((d: any) => d.domain === domainName);
+    
+    if (!domainToPublish) {
+      toast({
+        title: "Domain Bulunamadı",
+        description: "Bu domain bulunamadı.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Force the domain to verified status
+    domainToPublish.status = 'verified';
+    domainToPublish.verifiedAt = new Date().toISOString();
+    domainToPublish.lastChecked = new Date().toISOString();
+    
+    // Update the domain in the array
+    const updatedDomains = domains.map((d: any) => 
+      d.id === domainToPublish.id ? domainToPublish : d
+    );
+    
+    // Save the updated domains
+    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    
+    // Now publish the theme
+    return await simulateThemePublicationProcess(userId, domainName);
+  } catch (error) {
+    console.error("Error force publishing theme:", error);
+    toast({
+      title: "Tema Yayınlama Hatası",
+      description: "Tema zorla yayınlanırken bir hata oluştu.",
+      variant: "destructive"
+    });
+    return false;
+  }
+};
+
+// Update Namecheap API status
+const updateNamecheapApiStatus = (userId: string, domain: string, isConnected: boolean): void => {
+  try {
+    // Store the Namecheap API connection status
+    const namecheapStatus = localStorage.getItem(`namecheap_api_${userId}`) || '{}';
+    const status = JSON.parse(namecheapStatus);
+    
+    status[domain] = {
+      isConnected,
+      lastChecked: new Date().toISOString(),
+      apiStatus: isConnected ? 'connected' : 'disconnected'
+    };
+    
+    localStorage.setItem(`namecheap_api_${userId}`, JSON.stringify(status));
+    console.log(`Updated Namecheap API status for ${domain}: ${isConnected ? 'connected' : 'disconnected'}`);
+  } catch (error) {
+    console.error("Error updating Namecheap API status:", error);
+  }
+};
+
+// Get Namecheap API status for a domain
+export const getNamecheapApiStatus = (userId: string, domain: string): {
+  isConnected: boolean;
+  lastChecked?: string;
+  apiStatus: 'connected' | 'disconnected' | 'pending';
+} => {
+  try {
+    const namecheapStatus = localStorage.getItem(`namecheap_api_${userId}`) || '{}';
+    const status = JSON.parse(namecheapStatus);
+    
+    if (!status[domain]) {
+      return {
+        isConnected: false,
+        apiStatus: 'pending'
+      };
+    }
+    
+    return status[domain];
+  } catch (error) {
+    console.error("Error getting Namecheap API status:", error);
+    return {
+      isConnected: false,
+      apiStatus: 'disconnected'
+    };
   }
 };

@@ -19,13 +19,14 @@ import {
   RefreshCcw,
   Copy,
   Globe,
-  Palette
+  Palette,
+  Link
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { DomainStatus } from '@/types/domain';
-import { testDomainAccess } from '@/services/domainService';
-import { getThemeStatusForDomain, simulateThemePublicationProcess } from '@/services/themeService';
+import { testDomainAccess, configureDnsViaNamecheapApi } from '@/services/domainService';
+import { getThemeStatusForDomain, simulateThemePublicationProcess, forcePublishTheme, getNamecheapApiStatus } from '@/services/themeService';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DomainCardProps {
@@ -36,10 +37,12 @@ interface DomainCardProps {
   isCustomDomain?: boolean;
   connectedStore?: string;
   hasPublishedTheme?: boolean;
+  namecheapConnected?: boolean;
   onVerify: () => Promise<void>;
   onMakePrimary: () => void;
   onDelete: () => void;
   onRefresh?: () => void;
+  onConnectNamecheap?: () => void;
 }
 
 const DomainCard: React.FC<DomainCardProps> = ({
@@ -50,10 +53,12 @@ const DomainCard: React.FC<DomainCardProps> = ({
   isCustomDomain = true, // Default to true for custom domains
   connectedStore,
   hasPublishedTheme,
+  namecheapConnected,
   onVerify,
   onMakePrimary,
   onDelete,
-  onRefresh
+  onRefresh,
+  onConnectNamecheap
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -61,17 +66,31 @@ const DomainCard: React.FC<DomainCardProps> = ({
   const [isChecking, setIsChecking] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isConfiguringDns, setIsConfiguringDns] = useState(false);
+  const [isForcePublishing, setIsForcePublishing] = useState(false);
   const [themeStatus, setThemeStatus] = useState<{
     hasPublishedTheme: boolean;
     publishedAt?: string;
     themeName?: string;
   }>({ hasPublishedTheme: false });
+  const [namecheapApiStatus, setNamecheapApiStatus] = useState<{
+    isConnected: boolean;
+    lastChecked?: string;
+    apiStatus: 'connected' | 'disconnected' | 'pending';
+  }>({ isConnected: false, apiStatus: 'pending' });
 
   // Load theme status for this domain
   useEffect(() => {
     if (user && status === 'verified') {
       const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
       setThemeStatus(domainThemeStatus);
+    }
+    
+    // Also load Namecheap API status
+    if (user) {
+      const apiStatus = getNamecheapApiStatus(user.id, domain);
+      setNamecheapApiStatus(apiStatus);
+      console.log(`Namecheap API status for ${domain}:`, apiStatus);
     }
   }, [domain, status, user]);
 
@@ -110,6 +129,12 @@ const DomainCard: React.FC<DomainCardProps> = ({
       if (user && status === 'verified') {
         const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
         setThemeStatus(domainThemeStatus);
+      }
+      
+      // Also refresh Namecheap API status
+      if (user) {
+        const apiStatus = getNamecheapApiStatus(user.id, domain);
+        setNamecheapApiStatus(apiStatus);
       }
       
       toast({
@@ -195,6 +220,69 @@ const DomainCard: React.FC<DomainCardProps> = ({
     }
   };
 
+  const handleForcePublish = async () => {
+    if (!user) return;
+    
+    setIsForcePublishing(true);
+    try {
+      const success = await forcePublishTheme(user.id, domain);
+      
+      if (success) {
+        // Refresh theme status
+        const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
+        setThemeStatus(domainThemeStatus);
+        
+        toast({
+          title: "Tema Zorla Yayınlandı",
+          description: `Temanız ${domain} adresinde zorla yayınlandı.`,
+        });
+        
+        // Also refresh the domain status
+        if (onRefresh) {
+          await onRefresh();
+        }
+      }
+    } catch (error) {
+      console.error("Error force publishing theme:", error);
+      toast({
+        title: "Tema Zorla Yayınlama Hatası",
+        description: "Tema zorla yayınlanırken bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsForcePublishing(false);
+    }
+  };
+
+  const handleConfigureDnsViaNamecheap = async () => {
+    if (!user) return;
+    
+    setIsConfiguringDns(true);
+    try {
+      const success = await configureDnsViaNamecheapApi(user.id, domain);
+      
+      if (success) {
+        // Refresh the domain status
+        if (onRefresh) {
+          await onRefresh();
+        }
+        
+        // Refresh Namecheap API status
+        const apiStatus = getNamecheapApiStatus(user.id, domain);
+        setNamecheapApiStatus(apiStatus);
+      }
+    } catch (error) {
+      console.error("Error configuring DNS via Namecheap API:", error);
+      toast({
+        title: "DNS Yapılandırma Hatası",
+        description: "Namecheap API üzerinden DNS ayarları yapılandırılırken bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConfiguringDns(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -249,6 +337,19 @@ const DomainCard: React.FC<DomainCardProps> = ({
         Tema Yayınlanmadı
       </Badge>
     );
+  };
+
+  const getNamecheapBadge = () => {
+    if (namecheapApiStatus.isConnected || namecheapConnected) {
+      return (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Link className="h-3 w-3 mr-1" />
+          Namecheap Bağlı
+        </Badge>
+      );
+    }
+    
+    return null;
   };
 
   const getDomainTypeIndicator = () => {
@@ -319,6 +420,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 mb-3 sm:mb-0">
               {getStatusBadge()}
               {getThemeBadge()}
+              {getNamecheapBadge()}
               <span className="text-xs">
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: tr })} eklendi
               </span>
@@ -353,6 +455,27 @@ const DomainCard: React.FC<DomainCardProps> = ({
                     <RefreshCcw className="h-4 w-4" />
                   )}
                 </Button>
+                
+                {/* Namecheap API Configuration Button */}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleConfigureDnsViaNamecheap} 
+                  disabled={isConfiguringDns || !isCustomDomain}
+                  className="text-blue-600"
+                >
+                  {isConfiguringDns ? (
+                    <>
+                      <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                      Yapılandırılıyor...
+                    </>
+                  ) : (
+                    <>
+                      <Link className="h-4 w-4 mr-1" />
+                      Namecheap ile Yapılandır
+                    </>
+                  )}
+                </Button>
               </>
             )}
             
@@ -367,6 +490,28 @@ const DomainCard: React.FC<DomainCardProps> = ({
                   <>
                     <Palette className="h-4 w-4 mr-1" />
                     Tema Yayınla
+                  </>
+                )}
+              </Button>
+            )}
+            
+            {status !== 'verified' && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={handleForcePublish} 
+                disabled={isForcePublishing}
+                className="text-amber-600"
+              >
+                {isForcePublishing ? (
+                  <>
+                    <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                    Zorla Yayınlanıyor...
+                  </>
+                ) : (
+                  <>
+                    <Palette className="h-4 w-4 mr-1" />
+                    Zorla Yayınla
                   </>
                 )}
               </Button>
@@ -416,6 +561,27 @@ const DomainCard: React.FC<DomainCardProps> = ({
                     <Copy className="h-4 w-4" />
                   </button>
                 </div>
+                <div className="mt-3">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={handleConfigureDnsViaNamecheap} 
+                    disabled={isConfiguringDns || !isCustomDomain}
+                    className="text-blue-600"
+                  >
+                    {isConfiguringDns ? (
+                      <>
+                        <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                        Yapılandırılıyor...
+                      </>
+                    ) : (
+                      <>
+                        <Link className="h-4 w-4 mr-1" />
+                        Namecheap ile Otomatik Yapılandır
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -455,6 +621,29 @@ const DomainCard: React.FC<DomainCardProps> = ({
                     <li>Kaydedin ve DNS değişikliklerinin yayılması için bekleyin (24-48 saat sürebilir)</li>
                     <li className="font-semibold">Doğrulama tamamlandıktan sonra, temanız alan adınızda görünecektir</li>
                   </ol>
+                  
+                  <div className="mt-3 border-t border-amber-200 pt-2">
+                    <p className="font-medium mb-1">Namecheap üzerinde otomatik yapılandırmak ister misiniz?</p>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={handleConfigureDnsViaNamecheap} 
+                      disabled={isConfiguringDns || !isCustomDomain}
+                      className="text-blue-600"
+                    >
+                      {isConfiguringDns ? (
+                        <>
+                          <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                          Yapılandırılıyor...
+                        </>
+                      ) : (
+                        <>
+                          <Link className="h-4 w-4 mr-1" />
+                          Namecheap ile Otomatik Yapılandır
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

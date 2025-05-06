@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Globe, Plus, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
+import { Globe, Plus, RefreshCw, ExternalLink, Loader2, Link } from 'lucide-react';
 import DomainCard from '@/components/domain/DomainCard';
+import NamecheapIntegrationDialog from '@/components/domain/NamecheapIntegrationDialog';
 import { Domain, DomainStatus } from '@/types/domain';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  getUserDomains, 
+  addDomain, 
+  updateDomain, 
+  deleteDomain, 
+  verifyDomain, 
+  getNamecheapApiConfig
+} from '@/services/domainService';
+import { checkDnsPropagation } from '@/services/themeService';
 
 // Yardımcı fonksiyon - domain temizleme
 const cleanDomainName = (domain: string): string => {
@@ -28,6 +37,8 @@ const DomainManagement = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [testingConnection, setTestingConnection] = useState(false);
+  const [namecheapDialogOpen, setNamecheapDialogOpen] = useState(false);
+  const [hasNamecheapConfig, setHasNamecheapConfig] = useState(false);
   
   // Load domains from localStorage on component mount
   useEffect(() => {
@@ -39,20 +50,19 @@ const DomainManagement = () => {
     const loadDomains = () => {
       setIsLoading(true);
       // Use user ID as part of the storage key to keep domains separate between users
-      const storedDomains = localStorage.getItem(`domains_${userId}`);
-      if (storedDomains) {
-        try {
-          const parsedDomains = JSON.parse(storedDomains);
-          setDomains(parsedDomains);
-        } catch (error) {
-          console.error("Error parsing stored domains:", error);
-          setDomains([]);
-        }
-      }
+      const loadedDomains = getUserDomains(userId);
+      setDomains(loadedDomains);
       setIsLoading(false);
     };
     
+    // Check if user has Namecheap API config
+    const checkNamecheapConfig = () => {
+      const config = getNamecheapApiConfig(userId);
+      setHasNamecheapConfig(!!config);
+    };
+    
     loadDomains();
+    checkNamecheapConfig();
   }, [userId, user, navigate]);
 
   // Save domains to localStorage whenever they change
@@ -145,30 +155,33 @@ const DomainManagement = () => {
       // Add delay to simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const newDomainObject: Domain = {
-        id: Date.now(),
+      const newDomainObject = addDomain(userId, {
         domain: cleanedDomain,
         status: "pending",
         primary: domains.length === 0,
-        createdAt: new Date().toISOString(),
-        lastChecked: new Date().toISOString(),
         isCustomDomain: isCustomDomain,
         dnsSettings: {
           type: "CNAME",
           host: "@",
           value: "routes.shopset.net"
         }
-      };
+      });
       
-      const updatedDomains = [...domains, newDomainObject];
-      setDomains(updatedDomains);
-      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+      setDomains(prevDomains => [...prevDomains, newDomainObject]);
       setNewDomain("");
       
       toast({
         title: "Alan adı eklendi",
         description: "Alan adı başarıyla eklendi. Şimdi DNS ayarlarını yapılandırmanız gerekiyor.",
       });
+      
+      // If Namecheap API is configured, ask if they want to automatically configure DNS
+      if (hasNamecheapConfig && isCustomDomain) {
+        toast({
+          title: "Namecheap API Yapılandırması Mevcut",
+          description: "DNS ayarlarını otomatik olarak yapılandırmak için 'Namecheap ile Otomatik Yapılandır' butonunu kullanabilirsiniz.",
+        });
+      }
     } catch (error) {
       toast({
         title: "Alan adı eklenemedi",
@@ -183,32 +196,24 @@ const DomainManagement = () => {
   const handleVerifyDomain = async (domainId: number) => {
     try {
       // This function now performs a real DNS check
-      // by attempting to resolve the CNAME record
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await verifyDomain(userId, domainId);
       
-      // In a real implementation, we'd check the DNS records
-      // For now, we'll simulate success more often
-      const isSuccessful = Math.random() > 0.3; // 70% success rate
-      
-      if (isSuccessful) {
-        const updatedDomains = domains.map(domain => 
-          domain.id === domainId 
-            ? { 
-                ...domain, 
-                status: "verified" as DomainStatus, 
-                lastChecked: new Date().toISOString(),
-                verifiedAt: new Date().toISOString()
-              } 
-            : domain
-        );
+      if (result) {
+        // Reload domains to get the updated status
+        setDomains(getUserDomains(userId));
         
-        setDomains(updatedDomains);
-        localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
-        
-        // Eğer doğrulanan domain varsa ve bu domainde aktif tema yoksa
-        // Tema yayınlama işlemini tetikle
-        const verifiedDomain = updatedDomains.find(d => d.id === domainId);
-        publishThemeToVerifiedDomain(verifiedDomain);
+        if (result.status === 'verified') {
+          toast({
+            title: "Domain Doğrulandı",
+            description: "Alan adı başarıyla doğrulandı. Temanız otomatik olarak yayınlanacak.",
+          });
+        } else {
+          toast({
+            title: "Doğrulama Başarısız",
+            description: "Alan adı doğrulanamadı. Lütfen DNS ayarlarınızı kontrol edin.",
+            variant: "destructive",
+          });
+        }
         
         return Promise.resolve();
       } else {
@@ -218,27 +223,6 @@ const DomainManagement = () => {
       return Promise.reject(error);
     }
   };
-  
-  // Doğrulanan domaine tema yayınlama işlemi
-  const publishThemeToVerifiedDomain = (domain?: Domain) => {
-    if (!domain) return;
-    
-    // Domainin aktif olduğunu belirt
-    toast({
-      title: "Domain aktifleştirildi",
-      description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresinde mağazanız artık aktif.`,
-    });
-    
-    // localStorage'da ilgili tema bilgilerini güncelle
-    // Gerçek bir API'de burada tema yayınlama işlemi olurdu
-    const publishInfo = {
-      domainId: domain.id,
-      publishedAt: new Date().toISOString(),
-      isActive: true
-    };
-    
-    localStorage.setItem(`theme_publish_${userId}_${domain.id}`, JSON.stringify(publishInfo));
-  };
 
   const handleRefreshDomain = async (domainId: number) => {
     try {
@@ -247,58 +231,37 @@ const DomainManagement = () => {
       const domain = domains.find(d => d.id === domainId);
       if (!domain) return Promise.reject("Domain bulunamadı");
       
-      // Test connection for verified domains
-      if (domain.status === "verified") {
-        await testDomainConnection(domain);
+      // Check DNS propagation
+      if (domain.status !== 'verified') {
+        const isDnsVerified = await checkDnsPropagation(domain.domain);
+        
+        if (isDnsVerified) {
+          const updatedDomain = updateDomain(userId, domainId, {
+            status: 'verified' as DomainStatus,
+            verifiedAt: new Date().toISOString(),
+            lastChecked: new Date().toISOString()
+          });
+          
+          if (updatedDomain) {
+            toast({
+              title: "Domain Doğrulandı",
+              description: "Alan adı başarıyla doğrulandı.",
+            });
+          }
+        }
       }
       
-      const updatedDomains = domains.map(domain => 
-        domain.id === domainId 
-          ? { ...domain, lastChecked: new Date().toISOString() } 
-          : domain
-      );
+      // Update last checked time
+      updateDomain(userId, domainId, {
+        lastChecked: new Date().toISOString()
+      });
       
-      setDomains(updatedDomains);
-      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+      // Reload domains to get the updated status
+      setDomains(getUserDomains(userId));
       
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
-    }
-  };
-  
-  // Domain bağlantısını test etme
-  const testDomainConnection = async (domain: Domain) => {
-    if (!domain) return;
-    
-    setTestingConnection(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Gerçek bir API'de burada domain bağlantısı test edilirdi
-      // Şimdilik %80 başarılı olduğunu varsayalım
-      const isSuccessful = Math.random() > 0.2;
-      
-      if (!isSuccessful) {
-        toast({
-          title: "Bağlantı hatası",
-          description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresine bağlanılamadı. DNS ayarlarınızı kontrol edin.`,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Bağlantı başarılı",
-          description: `${domain.isCustomDomain ? domain.domain : domain.domain + '.shopset.net'} adresine başarıyla bağlanıldı.`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Bağlantı testi hatası",
-        description: "Domain bağlantısı test edilirken bir hata oluştu.",
-        variant: "destructive",
-      });
-    } finally {
-      setTestingConnection(false);
     }
   };
 
@@ -307,13 +270,28 @@ const DomainManagement = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const updatedDomains = domains.map(domain => ({ 
-        ...domain, 
-        lastChecked: new Date().toISOString() 
-      }));
+      // Check each domain for changes
+      for (const domain of domains) {
+        if (domain.status !== 'verified') {
+          const isDnsVerified = await checkDnsPropagation(domain.domain);
+          
+          if (isDnsVerified) {
+            updateDomain(userId, domain.id, {
+              status: 'verified' as DomainStatus,
+              verifiedAt: new Date().toISOString(),
+              lastChecked: new Date().toISOString()
+            });
+          }
+        }
+        
+        // Update last checked time
+        updateDomain(userId, domain.id, {
+          lastChecked: new Date().toISOString()
+        });
+      }
       
-      setDomains(updatedDomains);
-      localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+      // Reload domains to get the updated status
+      setDomains(getUserDomains(userId));
       
       toast({
         title: "Tüm alan adları yenilendi",
@@ -330,16 +308,6 @@ const DomainManagement = () => {
     }
   };
 
-  const handleVisitDomain = (domain: Domain) => {
-    if (!domain) return;
-    
-    const url = domain.isCustomDomain ? 
-      `https://${domain.domain}` : 
-      `https://${domain.domain}.shopset.net`;
-      
-    window.open(url, '_blank');
-  };
-
   const handleMakePrimary = (domainId: number) => {
     const updatedDomains = domains.map(domain => ({
       ...domain,
@@ -347,7 +315,11 @@ const DomainManagement = () => {
     }));
     
     setDomains(updatedDomains);
-    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    
+    // Update each domain in storage
+    updatedDomains.forEach(domain => {
+      updateDomain(userId, domain.id, { primary: domain.id === domainId });
+    });
     
     // Update store with primary domain
     const primaryDomain = updatedDomains.find(domain => domain.id === domainId);
@@ -387,13 +359,20 @@ const DomainManagement = () => {
       return;
     }
     
-    const updatedDomains = domains.filter(domain => domain.id !== domainId);
-    setDomains(updatedDomains);
-    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    deleteDomain(userId, domainId);
+    setDomains(prevDomains => prevDomains.filter(domain => domain.id !== domainId));
     
     toast({
       title: "Alan adı silindi",
       description: "Alan adı başarıyla silindi.",
+    });
+  };
+
+  const handleNamecheapIntegrationComplete = () => {
+    setHasNamecheapConfig(true);
+    toast({
+      title: "Namecheap Entegrasyonu Tamamlandı",
+      description: "Artık domain DNS ayarlarını otomatik olarak yapılandırabilirsiniz.",
     });
   };
 
@@ -405,19 +384,20 @@ const DomainManagement = () => {
           <p className="text-gray-500">Mağazanız için özel alan adları ekleyin ve yönetin</p>
         </div>
         <div className="flex space-x-2">
-          {testingConnection ? (
-            <Button variant="outline" disabled>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Bağlantı test ediliyor...
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/dashboard')}
-            >
-              Geri Dön
-            </Button>
-          )}
+          <Button 
+            variant="outline" 
+            onClick={() => setNamecheapDialogOpen(true)}
+            className="gap-2"
+          >
+            <Link className="h-4 w-4" />
+            {hasNamecheapConfig ? "Namecheap Ayarları" : "Namecheap Bağla"}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/dashboard')}
+          >
+            Geri Dön
+          </Button>
         </div>
       </div>
       
@@ -518,10 +498,13 @@ const DomainManagement = () => {
                 isPrimary={domain.primary}
                 createdAt={domain.createdAt}
                 isCustomDomain={domain.isCustomDomain}
+                namecheapConnected={hasNamecheapConfig}
+                hasPublishedTheme={domain.hasPublishedTheme}
                 onVerify={() => handleVerifyDomain(domain.id)}
                 onMakePrimary={() => handleMakePrimary(domain.id)}
                 onDelete={() => handleDeleteDomain(domain.id)}
                 onRefresh={() => handleRefreshDomain(domain.id)}
+                onConnectNamecheap={() => setNamecheapDialogOpen(true)}
               />
             ))}
           </div>
@@ -595,6 +578,12 @@ const DomainManagement = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <NamecheapIntegrationDialog 
+        open={namecheapDialogOpen}
+        onOpenChange={setNamecheapDialogOpen}
+        onComplete={handleNamecheapIntegrationComplete}
+      />
     </div>
   );
 };
