@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +17,39 @@ import {
   updateDomain, 
   deleteDomain, 
   verifyDomain, 
-  getNamecheapApiConfig
+  getNamecheapApiConfig,
+  DomainData
 } from '@/services/domainService';
 import { checkDnsPropagation } from '@/services/themeService';
 
 // Yardımcı fonksiyon - domain temizleme
 const cleanDomainName = (domain: string): string => {
   return domain.trim().toLowerCase().replace(/^(https?:\/\/)?(www\.)?/i, '');
+};
+
+// Utility function to convert DomainData to Domain
+const convertToDomain = (domainData: DomainData): Domain => {
+  return {
+    id: typeof domainData.id === 'string' ? parseInt(domainData.id, 10) : domainData.id as number,
+    domain: domainData.domain,
+    status: domainData.status,
+    primary: domainData.primary,
+    isCustomDomain: domainData.isCustomDomain,
+    createdAt: domainData.createdAt,
+    lastChecked: domainData.lastChecked,
+    verifiedAt: domainData.verifiedAt,
+    errorMessage: domainData.errorMessage,
+    hasPublishedTheme: domainData.hasPublishedTheme,
+    themePublishedAt: domainData.publishedAt,
+    activeTheme: domainData.activeTheme,
+    namecheapConnected: domainData.namecheapConnected,
+    dnsSettings: domainData.dnsSettings
+  };
+};
+
+// Utility function to convert Domain[] to DomainData[]
+const convertToDomains = (domainDataArray: DomainData[]): Domain[] => {
+  return domainDataArray.map(convertToDomain);
 };
 
 const DomainManagement = () => {
@@ -51,7 +78,7 @@ const DomainManagement = () => {
       setIsLoading(true);
       // Use user ID as part of the storage key to keep domains separate between users
       const loadedDomains = getUserDomains(userId);
-      setDomains(loadedDomains);
+      setDomains(convertToDomains(loadedDomains));
       setIsLoading(false);
     };
     
@@ -167,7 +194,7 @@ const DomainManagement = () => {
         }
       });
       
-      setDomains(prevDomains => [...prevDomains, newDomainObject]);
+      setDomains(prevDomains => [...prevDomains, convertToDomain(newDomainObject)]);
       setNewDomain("");
       
       toast({
@@ -200,7 +227,7 @@ const DomainManagement = () => {
       
       if (result) {
         // Reload domains to get the updated status
-        setDomains(getUserDomains(userId));
+        setDomains(convertToDomains(getUserDomains(userId)));
         
         if (result.status === 'verified') {
           toast({
@@ -257,7 +284,7 @@ const DomainManagement = () => {
       });
       
       // Reload domains to get the updated status
-      setDomains(getUserDomains(userId));
+      setDomains(convertToDomains(getUserDomains(userId)));
       
       return Promise.resolve();
     } catch (error) {
@@ -291,7 +318,7 @@ const DomainManagement = () => {
       }
       
       // Reload domains to get the updated status
-      setDomains(getUserDomains(userId));
+      setDomains(convertToDomains(getUserDomains(userId)));
       
       toast({
         title: "Tüm alan adları yenilendi",

@@ -12,6 +12,10 @@ export interface Domain {
   verifiedAt?: string;
   errorMessage?: string;
   isCustomDomain?: boolean; // Track if this is a custom domain vs a subdomain
+  hasPublishedTheme?: boolean; // Added this field to fix the type error
+  themePublishedAt?: string;
+  activeTheme?: string;
+  namecheapConnected?: boolean;
   dnsSettings?: {
     type: string;
     host: string;
