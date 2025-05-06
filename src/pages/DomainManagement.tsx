@@ -18,6 +18,7 @@ import {
   deleteDomain, 
   verifyDomain, 
   getNamecheapApiConfig,
+  isNamecheapApiConnected,
   DomainData
 } from '@/services/domainService';
 import { checkDnsPropagation } from '@/services/themeService';
@@ -85,11 +86,26 @@ const DomainManagement = () => {
     // Check if user has Namecheap API config
     const checkNamecheapConfig = () => {
       const config = getNamecheapApiConfig(userId);
-      setHasNamecheapConfig(!!config);
+      const isConnected = isNamecheapApiConnected(userId);
+      setHasNamecheapConfig(!!config && isConnected);
+      
+      if (config && isConnected) {
+        console.log("Namecheap API configuration loaded successfully");
+      } else {
+        console.log("No Namecheap API configuration found or not connected");
+      }
     };
     
     loadDomains();
     checkNamecheapConfig();
+    
+    // Set up interval to periodically check namecheap config and domains
+    const interval = setInterval(() => {
+      checkNamecheapConfig();
+      loadDomains();
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, [userId, user, navigate]);
 
   // Save domains to localStorage whenever they change
@@ -403,6 +419,17 @@ const DomainManagement = () => {
     });
   };
 
+  // Fonksiyon eklendi - tüm domainleri yeniden yüklemek için
+  const reloadAllDomains = () => {
+    const loadedDomains = getUserDomains(userId);
+    setDomains(convertToDomains(loadedDomains));
+    
+    // Ayrıca Namecheap bağlantısını da kontrol et
+    const config = getNamecheapApiConfig(userId);
+    const isConnected = isNamecheapApiConnected(userId);
+    setHasNamecheapConfig(!!config && isConnected);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -479,24 +506,35 @@ const DomainManagement = () => {
         
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-semibold">Alan Adlarınız</h2>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleRefreshAll}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Yenileniyor...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Tümünü Yenile
-              </>
-            )}
-          </Button>
+          <div className="space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={reloadAllDomains}
+              className="gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Yeniden Yükle
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefreshAll}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Yenileniyor...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Tümünü Yenile
+                </>
+              )}
+            </Button>
+          </div>
         </div>
         
         {domains.length === 0 ? (

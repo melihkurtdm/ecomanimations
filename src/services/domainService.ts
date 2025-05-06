@@ -333,7 +333,12 @@ export interface NamecheapApiConfig {
 // Set Namecheap API configuration for a user
 export const setNamecheapApiConfig = (userId: string, config: NamecheapApiConfig): boolean => {
   try {
+    console.log("Setting Namecheap API config for user:", userId, config);
     localStorage.setItem(`namecheap_config_${userId}`, JSON.stringify(config));
+    
+    // Also set a flag to indicate the Namecheap API is connected at application level
+    localStorage.setItem(`namecheap_api_connected_${userId}`, "true");
+    
     return true;
   } catch (error) {
     console.error("Error setting Namecheap API config:", error);
@@ -352,6 +357,11 @@ export const getNamecheapApiConfig = (userId: string): NamecheapApiConfig | null
     console.error("Error getting Namecheap API config:", error);
     return null;
   }
+};
+
+// Check if Namecheap API is connected for a user
+export const isNamecheapApiConnected = (userId: string): boolean => {
+  return localStorage.getItem(`namecheap_api_connected_${userId}`) === "true";
 };
 
 // Simulate automatic DNS configuration via Namecheap API

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertCircle, Link, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { setNamecheapApiConfig } from "@/services/domainService";
+import { setNamecheapApiConfig, getNamecheapApiConfig, isNamecheapApiConnected } from "@/services/domainService";
 
 interface NamecheapIntegrationDialogProps {
   open: boolean;
@@ -27,6 +27,20 @@ const NamecheapIntegrationDialog: React.FC<NamecheapIntegrationDialogProps> = ({
   const [username, setUsername] = useState("");
   const [clientIp, setClientIp] = useState("127.0.0.1");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Load existing Namecheap API configuration if available
+  useEffect(() => {
+    if (user && open) {
+      const config = getNamecheapApiConfig(user.id);
+      if (config) {
+        setApiKey(config.apiKey);
+        setUsername(config.username);
+        setClientIp(config.clientIp);
+        setIsConnected(isNamecheapApiConnected(user.id));
+      }
+    }
+  }, [user, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +71,7 @@ const NamecheapIntegrationDialog: React.FC<NamecheapIntegrationDialogProps> = ({
       const success = setNamecheapApiConfig(user.id, { apiKey, username, clientIp });
       
       if (success) {
+        setIsConnected(true);
         toast({
           title: "Bağlantı Başarılı",
           description: "Namecheap API bağlantısı başarıyla yapılandırıldı."
@@ -141,6 +156,15 @@ const NamecheapIntegrationDialog: React.FC<NamecheapIntegrationDialogProps> = ({
                 Namecheap API'ye erişim için yetkilendirilmiş IP adresinizi girin. Varsayılan olarak 127.0.0.1 kullanılabilir.
               </p>
             </div>
+            
+            {isConnected && (
+              <Alert className="bg-green-50 border-green-200">
+                <AlertCircle className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  Namecheap API bağlantınız kurulmuş durumda. Bilgilerinizi güncellemek istiyorsanız aşağıdaki formu kullanabilirsiniz.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
           
           <DialogFooter className="mt-4">
@@ -152,6 +176,11 @@ const NamecheapIntegrationDialog: React.FC<NamecheapIntegrationDialogProps> = ({
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Bağlanıyor...
+                </>
+              ) : isConnected ? (
+                <>
+                  <Link className="mr-2 h-4 w-4" />
+                  Bağlantıyı Güncelle
                 </>
               ) : (
                 <>
