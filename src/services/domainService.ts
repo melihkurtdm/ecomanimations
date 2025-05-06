@@ -1,3 +1,4 @@
+
 import { DomainStatus } from "@/types/domain";
 import { toast } from "@/components/ui/use-toast";
 import { checkDnsPropagation, getNamecheapApiStatus } from "./themeService";
@@ -15,6 +16,8 @@ export interface DomainData {
   errorMessage?: string;
   connectedStore?: string;
   hasPublishedTheme?: boolean;
+  publishedAt?: string; // Added this property to match usage in convertToDomain
+  activeTheme?: string; // Added this property to match usage in convertToDomain
   namecheapConnected?: boolean;
   dnsSettings?: {
     type: string;

@@ -40,7 +40,7 @@ const convertToDomain = (domainData: DomainData): Domain => {
     verifiedAt: domainData.verifiedAt,
     errorMessage: domainData.errorMessage,
     hasPublishedTheme: domainData.hasPublishedTheme,
-    themePublishedAt: domainData.publishedAt,
+    themePublishedAt: domainData.publishedAt, // Using publishedAt from DomainData
     activeTheme: domainData.activeTheme,
     namecheapConnected: domainData.namecheapConnected,
     dnsSettings: domainData.dnsSettings
