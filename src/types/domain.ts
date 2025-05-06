@@ -12,7 +12,7 @@ export interface Domain {
   verifiedAt?: string;
   errorMessage?: string;
   isCustomDomain?: boolean; // Track if this is a custom domain vs a subdomain
-  hasPublishedTheme?: boolean; // Added this field to fix the type error
+  hasPublishedTheme?: boolean;
   themePublishedAt?: string;
   activeTheme?: string;
   namecheapConnected?: boolean;
@@ -22,4 +22,9 @@ export interface Domain {
     value: string;
     ttl?: number;
   };
+  // Tema ile ilgili detaylı bilgiler
+  publishedThemeId?: string | number;
+  publishedThemeName?: string;
+  publishStatus?: "active" | "pending" | "failed";
+  lastPublishAttempt?: string;
 }

@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 interface ThemeData {
@@ -77,7 +76,11 @@ export const publishThemeToDomain = async (
             ...d, 
             hasPublishedTheme: true,
             themePublishedAt: new Date().toISOString(),
-            activeTheme: updatedTheme.name
+            activeTheme: updatedTheme.name,
+            publishedThemeId: updatedTheme.id,
+            publishedThemeName: updatedTheme.name,
+            publishStatus: "active",
+            lastPublishAttempt: new Date().toISOString()
           };
         }
         return d;
@@ -205,6 +208,8 @@ export const getThemeStatusForDomain = (userId: string, domainName: string): {
   hasPublishedTheme: boolean;
   publishedAt?: string;
   themeName?: string;
+  themeId?: string | number;
+  publishStatus?: string;
 } => {
   try {
     const storedDomains = localStorage.getItem(`domains_${userId}`);
@@ -218,7 +223,9 @@ export const getThemeStatusForDomain = (userId: string, domainName: string): {
     return {
       hasPublishedTheme: domain.hasPublishedTheme || false,
       publishedAt: domain.themePublishedAt,
-      themeName: domain.activeTheme
+      themeName: domain.activeTheme,
+      themeId: domain.publishedThemeId,
+      publishStatus: domain.publishStatus
     };
   } catch (error) {
     console.error("Error getting theme status for domain:", error);
@@ -367,4 +374,9 @@ export const getNamecheapApiStatus = (userId: string, domain: string): {
       apiStatus: 'disconnected'
     };
   }
+};
+
+// Added function to navigate programmatically
+export const navigate = (path: string) => {
+  window.location.href = path;
 };

@@ -1,4 +1,3 @@
-
 import { DomainStatus } from "@/types/domain";
 import { toast } from "@/components/ui/use-toast";
 import { checkDnsPropagation, getNamecheapApiStatus } from "./themeService";
@@ -30,10 +29,22 @@ export interface DomainData {
 // Get all domains for a user
 export const getUserDomains = (userId: string): DomainData[] => {
   try {
+    // Try to get domains from sessionStorage first (more reliable across refreshes)
+    const sessionDomains = sessionStorage.getItem(`domains_${userId}`);
+    if (sessionDomains) {
+      return JSON.parse(sessionDomains);
+    }
+    
+    // Fallback to localStorage
     const storedDomains = localStorage.getItem(`domains_${userId}`);
     if (!storedDomains) return [];
     
-    return JSON.parse(storedDomains);
+    const domains = JSON.parse(storedDomains);
+    
+    // Save to sessionStorage for future use
+    sessionStorage.setItem(`domains_${userId}`, storedDomains);
+    
+    return domains;
   } catch (error) {
     console.error("Error getting user domains:", error);
     return [];
@@ -64,7 +75,10 @@ export const addDomain = (userId: string, domainData: Partial<DomainData>): Doma
   };
   
   const updatedDomains = [...domains, newDomain];
+  
+  // Store in both localStorage and sessionStorage for redundancy
   localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+  sessionStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
   
   return newDomain;
 };
@@ -84,7 +98,10 @@ export const updateDomain = (userId: string, domainId: string | number, updates:
   const updatedDomain = { ...domains[domainIndex], ...updates };
   domains[domainIndex] = updatedDomain;
   
+  // Store in both localStorage and sessionStorage for redundancy
   localStorage.setItem(`domains_${userId}`, JSON.stringify(domains));
+  sessionStorage.setItem(`domains_${userId}`, JSON.stringify(domains));
+  
   console.log(`Domain updated: ${updatedDomain.domain}, status: ${updatedDomain.status}, hasPublishedTheme: ${updatedDomain.hasPublishedTheme}`);
   return updatedDomain;
 };
@@ -333,11 +350,15 @@ export interface NamecheapApiConfig {
 // Set Namecheap API configuration for a user
 export const setNamecheapApiConfig = (userId: string, config: NamecheapApiConfig): boolean => {
   try {
-    console.log("Setting Namecheap API config for user:", userId, config);
+    console.log("Setting Namecheap API config for user:", userId);
+    
+    // Store in both localStorage and sessionStorage for redundancy
     localStorage.setItem(`namecheap_config_${userId}`, JSON.stringify(config));
+    sessionStorage.setItem(`namecheap_config_${userId}`, JSON.stringify(config));
     
     // Also set a flag to indicate the Namecheap API is connected at application level
     localStorage.setItem(`namecheap_api_connected_${userId}`, "true");
+    sessionStorage.setItem(`namecheap_api_connected_${userId}`, "true");
     
     return true;
   } catch (error) {
@@ -349,8 +370,29 @@ export const setNamecheapApiConfig = (userId: string, config: NamecheapApiConfig
 // Get Namecheap API configuration for a user
 export const getNamecheapApiConfig = (userId: string): NamecheapApiConfig | null => {
   try {
+    // Try sessionStorage first (more reliable across refreshes)
+    const sessionConfig = sessionStorage.getItem(`namecheap_config_${userId}`);
+    if (sessionConfig) {
+      return JSON.parse(sessionConfig);
+    }
+    
+    // Fallback to localStorage
     const config = localStorage.getItem(`namecheap_config_${userId}`);
-    if (!config) return null;
+    if (!config) {
+      // Try backup location
+      const backupConfig = localStorage.getItem(`namecheap_api_config_backup_${userId}`);
+      if (backupConfig) {
+        // Restore from backup
+        const parsedBackup = JSON.parse(backupConfig);
+        sessionStorage.setItem(`namecheap_config_${userId}`, backupConfig);
+        localStorage.setItem(`namecheap_config_${userId}`, backupConfig);
+        return parsedBackup;
+      }
+      return null;
+    }
+    
+    // Save to sessionStorage for future use
+    sessionStorage.setItem(`namecheap_config_${userId}`, config);
     
     return JSON.parse(config);
   } catch (error) {
@@ -361,7 +403,27 @@ export const getNamecheapApiConfig = (userId: string): NamecheapApiConfig | null
 
 // Check if Namecheap API is connected for a user
 export const isNamecheapApiConnected = (userId: string): boolean => {
-  return localStorage.getItem(`namecheap_api_connected_${userId}`) === "true";
+  // Try sessionStorage first
+  if (sessionStorage.getItem(`namecheap_api_connected_${userId}`) === "true") {
+    return true;
+  }
+  
+  // Fallback to localStorage
+  if (localStorage.getItem(`namecheap_api_connected_${userId}`) === "true") {
+    // Copy to sessionStorage for future checks
+    sessionStorage.setItem(`namecheap_api_connected_${userId}`, "true");
+    return true;
+  }
+  
+  // Check backup location
+  if (localStorage.getItem(`namecheap_api_connected_backup_${userId}`) === "true") {
+    // Restore from backup
+    sessionStorage.setItem(`namecheap_api_connected_${userId}`, "true");
+    localStorage.setItem(`namecheap_api_connected_${userId}`, "true");
+    return true;
+  }
+  
+  return false;
 };
 
 // Simulate automatic DNS configuration via Namecheap API
