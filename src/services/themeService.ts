@@ -84,6 +84,7 @@ export const publishThemeToDomain = async (
       });
       
       localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+      console.log(`Domain ${domain} updated with published theme status`);
     }
     
     return true;
@@ -112,6 +113,8 @@ export const isThemePublishedToDomain = (userId: string, domain: string): boolea
 // Simulate theme publication process
 export const simulateThemePublicationProcess = async (userId: string, domainName: string): Promise<boolean> => {
   try {
+    console.log(`Starting theme publication process for domain ${domainName}`);
+    
     // First check if we have a verified domain
     const storedDomains = localStorage.getItem(`domains_${userId}`);
     if (!storedDomains) {
@@ -149,11 +152,37 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
         updatedAt: new Date().toISOString(),
       };
       
-      localStorage.setItem(`themes_${userId}`, JSON.stringify([defaultTheme]));
+      const themes = getUserThemes(userId);
+      const updatedThemes = [...themes, defaultTheme];
+      localStorage.setItem(`themes_${userId}`, JSON.stringify(updatedThemes));
+      console.log("Created default theme:", defaultTheme);
       
       // Publish this theme to the domain
       return await publishThemeToDomain(userId, defaultTheme.id, domainName);
     }
+    
+    // Check if we have a store
+    const storedStore = localStorage.getItem(`store_${userId}`);
+    if (!storedStore) {
+      toast({
+        title: "Mağaza Bulunamadı",
+        description: "Tema yayınlamak için önce bir mağaza oluşturmanız gerekiyor.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Parse and update store data with the domain
+    const storeData = JSON.parse(storedStore);
+    if (domainToPublish.isCustomDomain) {
+      storeData.customDomain = domainToPublish.domain;
+    } else {
+      storeData.domain = domainToPublish.domain;
+    }
+    
+    // Save updated store data
+    localStorage.setItem(`store_${userId}`, JSON.stringify(storeData));
+    console.log("Updated store data with domain:", storeData);
     
     // Publish the active theme to the domain
     return await publishThemeToDomain(userId, activeTheme.id, domainName);
@@ -165,5 +194,47 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
       variant: "destructive"
     });
     return false;
+  }
+};
+
+// Get theme status for a domain
+export const getThemeStatusForDomain = (userId: string, domainName: string): {
+  hasPublishedTheme: boolean;
+  publishedAt?: string;
+  themeName?: string;
+} => {
+  try {
+    const storedDomains = localStorage.getItem(`domains_${userId}`);
+    if (!storedDomains) return { hasPublishedTheme: false };
+    
+    const domains = JSON.parse(storedDomains);
+    const domain = domains.find((d: any) => d.domain === domainName);
+    
+    if (!domain) return { hasPublishedTheme: false };
+    
+    return {
+      hasPublishedTheme: domain.hasPublishedTheme || false,
+      publishedAt: domain.themePublishedAt,
+      themeName: domain.activeTheme
+    };
+  } catch (error) {
+    console.error("Error getting theme status for domain:", error);
+    return { hasPublishedTheme: false };
+  }
+};
+
+// Debug function to check all publications
+export const debugThemePublications = (userId: string): void => {
+  try {
+    const domains = localStorage.getItem(`domains_${userId}`);
+    const themes = localStorage.getItem(`themes_${userId}`);
+    const store = localStorage.getItem(`store_${userId}`);
+    
+    console.log("=== DEBUG THEME PUBLICATIONS ===");
+    console.log("DOMAINS:", domains ? JSON.parse(domains) : "No domains");
+    console.log("THEMES:", themes ? JSON.parse(themes) : "No themes");
+    console.log("STORE:", store ? JSON.parse(store) : "No store");
+  } catch (error) {
+    console.error("Error in debug function:", error);
   }
 };

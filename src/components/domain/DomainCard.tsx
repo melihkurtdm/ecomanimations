@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { 
@@ -18,12 +18,15 @@ import {
   Trash2,
   RefreshCcw,
   Copy,
-  Globe
+  Globe,
+  Palette
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { DomainStatus } from '@/types/domain';
 import { testDomainAccess } from '@/services/domainService';
+import { getThemeStatusForDomain, simulateThemePublicationProcess } from '@/services/themeService';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DomainCardProps {
   domain: string;
@@ -32,6 +35,7 @@ interface DomainCardProps {
   createdAt: string;
   isCustomDomain?: boolean;
   connectedStore?: string;
+  hasPublishedTheme?: boolean;
   onVerify: () => Promise<void>;
   onMakePrimary: () => void;
   onDelete: () => void;
@@ -45,15 +49,31 @@ const DomainCard: React.FC<DomainCardProps> = ({
   createdAt,
   isCustomDomain = true, // Default to true for custom domains
   connectedStore,
+  hasPublishedTheme,
   onVerify,
   onMakePrimary,
   onDelete,
   onRefresh
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [themeStatus, setThemeStatus] = useState<{
+    hasPublishedTheme: boolean;
+    publishedAt?: string;
+    themeName?: string;
+  }>({ hasPublishedTheme: false });
+
+  // Load theme status for this domain
+  useEffect(() => {
+    if (user && status === 'verified') {
+      const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
+      setThemeStatus(domainThemeStatus);
+    }
+  }, [domain, status, user]);
 
   const handleVerifyDomain = async () => {
     try {
@@ -85,6 +105,13 @@ const DomainCard: React.FC<DomainCardProps> = ({
     try {
       setIsRefreshing(true);
       await onRefresh();
+      
+      // Also refresh theme status
+      if (user && status === 'verified') {
+        const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
+        setThemeStatus(domainThemeStatus);
+      }
+      
       toast({
         title: "Domain durumu güncellendi",
         description: "Alan adı durumu yenilendi.",
@@ -123,7 +150,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
       } else {
         toast({
           title: "Site Henüz Hazır Değil",
-          description: "Site henüz yayında değil veya erişilemez durumda.",
+          description: "Site henüz yayında değil veya erişilemez durumda. DNS ayarlarınızın yayılması için bekleyin veya 'Tema Yayınla' butonunu kullanın.",
           variant: "destructive",
         });
       }
@@ -136,6 +163,35 @@ const DomainCard: React.FC<DomainCardProps> = ({
       });
     } finally {
       setIsChecking(false);
+    }
+  };
+
+  const handlePublishTheme = async () => {
+    if (!user) return;
+    
+    setIsPublishing(true);
+    try {
+      const success = await simulateThemePublicationProcess(user.id, domain);
+      
+      if (success) {
+        // Refresh theme status
+        const domainThemeStatus = getThemeStatusForDomain(user.id, domain);
+        setThemeStatus(domainThemeStatus);
+        
+        toast({
+          title: "Tema Yayınlandı",
+          description: `Temanız ${domain} adresinde başarıyla yayınlandı.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing theme:", error);
+      toast({
+        title: "Tema Yayınlama Hatası",
+        description: "Tema yayınlanırken bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -173,6 +229,26 @@ const DomainCard: React.FC<DomainCardProps> = ({
       default:
         return null;
     }
+  };
+
+  const getThemeBadge = () => {
+    if (status !== 'verified') return null;
+    
+    if (themeStatus.hasPublishedTheme) {
+      return (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+          <Palette className="h-3 w-3 mr-1" />
+          Tema Yayında
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+        <Palette className="h-3 w-3 mr-1" />
+        Tema Yayınlanmadı
+      </Badge>
+    );
   };
 
   const getDomainTypeIndicator = () => {
@@ -242,6 +318,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
             </div>
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 mb-3 sm:mb-0">
               {getStatusBadge()}
+              {getThemeBadge()}
               <span className="text-xs">
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: tr })} eklendi
               </span>
@@ -279,6 +356,22 @@ const DomainCard: React.FC<DomainCardProps> = ({
               </>
             )}
             
+            {status === 'verified' && !themeStatus.hasPublishedTheme && (
+              <Button size="sm" variant="outline" onClick={handlePublishTheme} disabled={isPublishing} className="text-purple-600">
+                {isPublishing ? (
+                  <>
+                    <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                    Yayınlanıyor...
+                  </>
+                ) : (
+                  <>
+                    <Palette className="h-4 w-4 mr-1" />
+                    Tema Yayınla
+                  </>
+                )}
+              </Button>
+            )}
+            
             {status === 'verified' && !isPrimary && (
               <Button size="sm" variant="outline" onClick={onMakePrimary}>
                 <Star className="h-4 w-4 mr-1" />
@@ -286,7 +379,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               </Button>
             )}
             
-            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit} disabled={isChecking || status !== 'verified'}>
+            <Button size="sm" variant="outline" className="text-blue-600" onClick={handleExternalVisit} disabled={isChecking}>
               {isChecking ? (
                 <>
                   <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
@@ -300,7 +393,7 @@ const DomainCard: React.FC<DomainCardProps> = ({
               )}
             </Button>
             
-            <Button size="sm" variant="outline" className="text-red-600" onClick={onDelete}>
+            <Button size="sm" variant="outline" className="text-red-600" onClick={onDelete} disabled={isPrimary}>
               <Trash2 className="h-4 w-4 mr-1" />
               Sil
             </Button>
@@ -373,11 +466,32 @@ const DomainCard: React.FC<DomainCardProps> = ({
             <div className="flex">
               <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
               <div>
-                <p>Alan adınız doğrulandı! Artık mağazanız bu adreste görüntülenecektir.</p>
-                {connectedStore ? (
-                  <p className="mt-1"><strong>{connectedStore}</strong> mağazası bu alan adı üzerinden erişilebilir.</p>
+                <p>Alan adınız doğrulandı! {themeStatus.hasPublishedTheme ? 'Temanız yayında!' : 'Artık temanızı yayınlayabilirsiniz.'}</p>
+                {themeStatus.hasPublishedTheme ? (
+                  <p className="mt-1">
+                    Tema <strong>{themeStatus.themeName || "Varsayılan Tema"}</strong> başarıyla yayınlandı. Mağazanız bu alan adı üzerinden erişilebilir.
+                  </p>
                 ) : (
-                  <p className="mt-1 text-amber-600">Henüz bir mağazaya bağlı değil. Mağaza kurulumunu tamamlayın.</p>
+                  <p className="mt-1 text-amber-600">
+                    Henüz bir tema yayınlanmadı. "Tema Yayınla" butonunu kullanarak mağazanızı yayına alın.
+                  </p>
+                )}
+                {!themeStatus.hasPublishedTheme && (
+                  <div className="mt-2">
+                    <Button size="sm" variant="outline" onClick={handlePublishTheme} disabled={isPublishing} className="text-purple-600">
+                      {isPublishing ? (
+                        <>
+                          <RefreshCcw className="h-4 w-4 mr-1 animate-spin" />
+                          Yayınlanıyor...
+                        </>
+                      ) : (
+                        <>
+                          <Palette className="h-4 w-4 mr-1" />
+                          Tema Yayınla
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
