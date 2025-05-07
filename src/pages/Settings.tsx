@@ -16,6 +16,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+// Define profile type to match the database structure
+type Profile = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
+};
+
 const profileFormSchema = z.object({
   fullName: z.string().min(2, {
     message: "İsim en az 2 karakter olmalıdır.",
@@ -40,7 +49,7 @@ const passwordFormSchema = z.object({
 const Settings = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [profileData, setProfileData] = useState<{ full_name: string | null, avatar_url: string | null } | null>(null);
+  const [profileData, setProfileData] = useState<Profile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,16 +82,21 @@ const Settings = () => {
           setIsProfileLoading(true);
           setError(null);
           
+          // Use type assertion to fix TypeScript errors
           const { data, error } = await supabase
-            .from('profiles')
+            .from('profiles' as any)
             .select('full_name, avatar_url')
             .eq('id', user.id)
             .single();
           
           if (error) throw error;
           
-          setProfileData(data);
-          profileForm.reset({ fullName: data.full_name || "" });
+          setProfileData(data as Profile);
+          if (data && data.full_name !== null) {
+            profileForm.reset({ fullName: data.full_name });
+          } else {
+            profileForm.reset({ fullName: "" });
+          }
         } catch (error: any) {
           console.error('Profil bilgileri alınamadı:', error.message);
           setError('Profil bilgileri alınamadı.');
@@ -104,12 +118,13 @@ const Settings = () => {
       setIsProfileLoading(true);
       setError(null);
       
+      // Use type assertion to fix TypeScript errors
       const { error } = await supabase
-        .from('profiles')
+        .from('profiles' as any)
         .update({
           full_name: data.fullName,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq('id', user.id);
       
       if (error) throw error;
@@ -121,14 +136,14 @@ const Settings = () => {
       
       // Güncel bilgileri çek
       const { data: updatedData, error: fetchError } = await supabase
-        .from('profiles')
+        .from('profiles' as any)
         .select('full_name, avatar_url')
         .eq('id', user.id)
         .single();
       
       if (fetchError) throw fetchError;
       
-      setProfileData(updatedData);
+      setProfileData(updatedData as Profile);
       
     } catch (error: any) {
       console.error('Profil güncellenemedi:', error.message);
