@@ -82,20 +82,21 @@ const Settings = () => {
           setIsProfileLoading(true);
           setError(null);
           
-          // Use type assertion to fix TypeScript errors
+          // Use a type-safe approach for Supabase
           const { data, error } = await supabase
-            .from('profiles' as any)
-            .select('full_name, avatar_url')
+            .from('profiles')
+            .select('*')
             .eq('id', user.id)
             .single();
           
           if (error) throw error;
           
-          setProfileData(data as Profile);
-          if (data && data.full_name !== null) {
-            profileForm.reset({ fullName: data.full_name });
-          } else {
-            profileForm.reset({ fullName: "" });
+          if (data) {
+            const profileData = data as unknown as Profile;
+            setProfileData(profileData);
+            profileForm.reset({ 
+              fullName: profileData.full_name || "" 
+            });
           }
         } catch (error: any) {
           console.error('Profil bilgileri alınamadı:', error.message);
@@ -118,13 +119,14 @@ const Settings = () => {
       setIsProfileLoading(true);
       setError(null);
       
-      // Use type assertion to fix TypeScript errors
+      const updateData = {
+        full_name: data.fullName,
+        updated_at: new Date().toISOString(),
+      };
+      
       const { error } = await supabase
-        .from('profiles' as any)
-        .update({
-          full_name: data.fullName,
-          updated_at: new Date().toISOString(),
-        } as any)
+        .from('profiles')
+        .update(updateData)
         .eq('id', user.id);
       
       if (error) throw error;
@@ -136,14 +138,16 @@ const Settings = () => {
       
       // Güncel bilgileri çek
       const { data: updatedData, error: fetchError } = await supabase
-        .from('profiles' as any)
-        .select('full_name, avatar_url')
+        .from('profiles')
+        .select('*')
         .eq('id', user.id)
         .single();
       
       if (fetchError) throw fetchError;
       
-      setProfileData(updatedData as Profile);
+      if (updatedData) {
+        setProfileData(updatedData as unknown as Profile);
+      }
       
     } catch (error: any) {
       console.error('Profil güncellenemedi:', error.message);
