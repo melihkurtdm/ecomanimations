@@ -82,20 +82,21 @@ const Settings = () => {
           setIsProfileLoading(true);
           setError(null);
           
-          // Use a type-safe approach for Supabase
+          // Add type assertion to the Supabase query
           const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
+            .from('profiles' as any)
+            .select('*' as any)
             .eq('id', user.id)
             .single();
           
           if (error) throw error;
           
           if (data) {
-            const profileData = data as unknown as Profile;
-            setProfileData(profileData);
+            // Explicit type casting for TypeScript
+            const typedData = data as unknown as Profile;
+            setProfileData(typedData);
             profileForm.reset({ 
-              fullName: profileData.full_name || "" 
+              fullName: typedData.full_name || "" 
             });
           }
         } catch (error: any) {
@@ -124,9 +125,10 @@ const Settings = () => {
         updated_at: new Date().toISOString(),
       };
       
+      // Add type assertion to the Supabase query
       const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
+        .from('profiles' as any)
+        .update(updateData as any)
         .eq('id', user.id);
       
       if (error) throw error;
@@ -137,15 +139,17 @@ const Settings = () => {
       });
       
       // Güncel bilgileri çek
+      // Add type assertion to the Supabase query
       const { data: updatedData, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
+        .from('profiles' as any)
+        .select('*' as any)
         .eq('id', user.id)
         .single();
       
       if (fetchError) throw fetchError;
       
       if (updatedData) {
+        // Explicit type casting for TypeScript
         setProfileData(updatedData as unknown as Profile);
       }
       
