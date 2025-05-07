@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -6,10 +5,11 @@ import { Globe, RotateCw, CheckCircle2, AlertTriangle, Link, ExternalLink } from
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVerifiedDomains, getDnsInstructions, testDomainAccess, configureDnsViaNamecheapApi, isNamecheapApiConnected } from '@/services/domainService';
-import { simulateThemePublicationProcess, isThemePublishedToDomain, getThemeStatusForDomain, debugThemePublications } from '@/services/themeService';
+import { simulateThemePublicationProcess, isThemePublishedToDomain, getThemeStatusForDomain, debugThemePublications, navigate } from '@/services/themeService';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 interface PublishThemeDialogProps {
   open: boolean;
@@ -29,6 +29,7 @@ const PublishThemeDialog: React.FC<PublishThemeDialogProps> = ({
   onPublish
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [verifiedDomains, setVerifiedDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<string>("");
   const [publishingToDomain, setPublishingToDomain] = useState(false);
