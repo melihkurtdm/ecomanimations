@@ -5,7 +5,7 @@ import { Globe, RotateCw, CheckCircle2, AlertTriangle, Link, ExternalLink } from
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVerifiedDomains, getDnsInstructions, testDomainAccess, configureDnsViaNamecheapApi, isNamecheapApiConnected } from '@/services/domainService';
-import { simulateThemePublicationProcess, isThemePublishedToDomain, getThemeStatusForDomain, debugThemePublications, navigate } from '@/services/themeService';
+import { simulateThemePublicationProcess, isThemePublishedToDomain, getThemeStatusForDomain, debugThemePublications } from '@/services/themeService';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +94,7 @@ const PublishThemeDialog: React.FC<PublishThemeDialogProps> = ({
         if (success) {
           toast({
             title: "Tema Yayınlandı",
-            description: `Tema başarıyla ${selectedDomain} adresinde yayınlandı.`,
+            description: `Tema başarıyla ${selectedDomain} adresinde yayınland��.`,
           });
           
           // Refresh the domain list to update status
