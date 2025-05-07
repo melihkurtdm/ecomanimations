@@ -57,30 +57,66 @@ export const getVerifiedDomains = (userId: string): DomainData[] => {
   return domains.filter(domain => domain.status === 'verified');
 };
 
-// Add a new domain
-export const addDomain = (userId: string, domainData: Partial<DomainData>): DomainData => {
-  const domains = getUserDomains(userId);
-  
-  const newDomain: DomainData = {
-    id: Date.now(),
-    domain: domainData.domain || '',
-    status: domainData.status || 'pending',
-    primary: domainData.primary || false,
-    isCustomDomain: domainData.isCustomDomain || true,
-    createdAt: new Date().toISOString(),
-    lastChecked: new Date().toISOString(),
-    hasPublishedTheme: false,
-    namecheapConnected: false,
-    ...domainData
-  };
-  
-  const updatedDomains = [...domains, newDomain];
-  
-  // Store in both localStorage and sessionStorage for redundancy
-  localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
-  sessionStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
-  
-  return newDomain;
+// Add a new domain with proper validation and error handling
+export const addDomain = (userId: string, domainData: Partial<DomainData>): DomainData | null => {
+  try {
+    console.log("Adding domain for user:", userId, domainData);
+    const domains = getUserDomains(userId);
+    
+    // Validate domain
+    if (!domainData.domain || domainData.domain.trim() === '') {
+      console.error("Cannot add domain with empty domain name");
+      toast({
+        title: "Hata",
+        description: "Alan adı boş olamaz.",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    // Check for duplicates
+    const normalizedDomain = domainData.domain.trim().toLowerCase();
+    const existingDomain = domains.find(d => d.domain.toLowerCase() === normalizedDomain);
+    if (existingDomain) {
+      console.error("Domain already exists:", normalizedDomain);
+      toast({
+        title: "Hata",
+        description: "Bu alan adı zaten eklenmiş.",
+        variant: "destructive",
+      });
+      return existingDomain; // Return existing domain instead of null
+    }
+    
+    const newDomain: DomainData = {
+      id: Date.now(),
+      domain: normalizedDomain,
+      status: domainData.status || 'pending',
+      primary: domainData.primary || false,
+      isCustomDomain: domainData.isCustomDomain || true,
+      createdAt: new Date().toISOString(),
+      lastChecked: new Date().toISOString(),
+      hasPublishedTheme: false,
+      namecheapConnected: false,
+      ...domainData
+    };
+    
+    const updatedDomains = [...domains, newDomain];
+    
+    // Store in both localStorage and sessionStorage for redundancy
+    localStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    sessionStorage.setItem(`domains_${userId}`, JSON.stringify(updatedDomains));
+    
+    console.log("Domain added successfully:", newDomain);
+    return newDomain;
+  } catch (error) {
+    console.error("Error adding domain:", error);
+    toast({
+      title: "Hata",
+      description: "Alan adı eklenirken bir hata oluştu.",
+      variant: "destructive",
+    });
+    return null;
+  }
 };
 
 // Update an existing domain

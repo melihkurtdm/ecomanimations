@@ -35,14 +35,20 @@ const storeFormSchema = z.object({
   storeDescription: z.string().min(10, {
     message: "Mağaza açıklaması en az 10 karakter olmalıdır.",
   }),
-  domain: z.string().min(3, {
-    message: "Domain en az 3 karakter olmalıdır.",
-  }).regex(/^[a-z0-9-]+$/, {
-    message: "Domain sadece küçük harf, sayı ve tire içerebilir.",
-  }).optional(),
-  customDomain: z.string().min(3, {
-    message: "Domain en az 3 karakter olmalıdır.",
-  }).optional(),
+  domain: z.string().optional(),
+  customDomain: z.string().optional(),
+}).refine((data) => {
+  // Either domain or customDomain must be provided and valid
+  if (data.domain && data.domain.length >= 3) {
+    return true;
+  }
+  if (data.customDomain && data.customDomain.length >= 3) {
+    return true;
+  }
+  return false;
+}, {
+  message: "Alan adı veya özel alan adı geçerli olmalıdır.",
+  path: ["domain"], // shows the error on the domain field
 });
 
 // Step 2: Shipping Settings Schema
@@ -246,7 +252,7 @@ const StoreSetup = () => {
       if (useCustomDomain) {
         // When using custom domain, validate customDomain
         if (!data.customDomain || data.customDomain.length < 3) {
-          console.log("Custom domain validation failed");
+          console.error("Custom domain validation failed");
           basicForm.setError('customDomain', {
             type: 'manual',
             message: 'Özel alan adı en az 3 karakter olmalıdır.',
@@ -266,7 +272,7 @@ const StoreSetup = () => {
       } else {
         // When using subdomain, validate domain
         if (!data.domain || data.domain.length < 3) {
-          console.log("Subdomain validation failed");
+          console.error("Subdomain validation failed");
           basicForm.setError('domain', {
             type: 'manual',
             message: 'Alt alan adı en az 3 karakter olmalıdır.',
@@ -526,6 +532,7 @@ const StoreSetup = () => {
                 <form 
                   onSubmit={basicForm.handleSubmit(handleBasicSubmit)} 
                   className="space-y-6"
+                  id="basicStoreForm"
                 >
                   <FormField
                     control={basicForm.control}
@@ -572,7 +579,10 @@ const StoreSetup = () => {
                           type="radio" 
                           id="useDefaultDomain" 
                           checked={!useCustomDomain}
-                          onChange={() => setUseCustomDomain(false)}
+                          onChange={() => {
+                            setUseCustomDomain(false);
+                            basicForm.setValue('customDomain', '');
+                          }}
                           className="h-4 w-4"
                         />
                         <label htmlFor="useDefaultDomain" className="text-sm font-medium">
@@ -612,7 +622,10 @@ const StoreSetup = () => {
                           type="radio" 
                           id="useCustomDomain" 
                           checked={useCustomDomain}
-                          onChange={() => setUseCustomDomain(true)}
+                          onChange={() => {
+                            setUseCustomDomain(true);
+                            basicForm.setValue('domain', '');
+                          }}
                           className="h-4 w-4"
                         />
                         <label htmlFor="useCustomDomain" className="text-sm font-medium">
@@ -632,6 +645,7 @@ const StoreSetup = () => {
                                   <Input 
                                     placeholder="magazam.com" 
                                     {...field} 
+                                    className="w-full"
                                   />
                                 </div>
                               </FormControl>
@@ -670,6 +684,7 @@ const StoreSetup = () => {
                     <Button 
                       type="submit" 
                       disabled={submittingBasicForm}
+                      form="basicStoreForm"
                     >
                       {submittingBasicForm ? (
                         <>
