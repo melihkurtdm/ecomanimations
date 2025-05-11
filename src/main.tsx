@@ -23,16 +23,9 @@ supabase
       return;
     }
     
-    // Check if data is null before trying to use it
-    if (data === null) {
-      setDefaultTheme();
-      return;
-    }
-    
-    // Check if data exists and has the expected structure
-    if (typeof data === 'object' && 'theme' in data) {
-      // Now we can safely access the theme property since we've verified its existence
-      // TypeScript safe way to access data.theme after validation
+    // Explicitly check for null and then proceed with structure validation
+    if (data !== null && typeof data === 'object' && 'theme' in data) {
+      // Now we can safely access the theme property with type assertion
       const domainData = data as DomainData;
       const theme = domainData.theme === "dark" ? "dark" : "light";
       
