@@ -8,30 +8,43 @@ import type { DomainData } from './types/domain';
 // Check current domain and set theme from Supabase
 const currentDomain = window.location.hostname;
 
-// Use any type to bypass TypeScript restriction since the domains table is not in the generated types
-// We'll properly handle the response data with our own type
+// Since the domains table isn't in the generated types, we need to handle it carefully
+// We'll query safely and check for data existence before using it
 supabase
   .from("domains" as any)
   .select("*")
   .eq("domain", currentDomain)
   .maybeSingle()
   .then(({ data, error }) => {
-    if (data && (data as DomainData).theme) {
+    if (error) {
+      console.error("Error fetching domain data:", error);
+      // Set fallback theme on error
+      setDefaultTheme();
+      return;
+    }
+    
+    // Check if data exists and has the expected structure
+    if (data && typeof data === 'object' && 'theme' in data) {
+      const domainData = data as unknown as DomainData;
+      const theme = domainData.theme === "dark" ? "dark" : "light";
+      
       // Set theme based on domain data
-      document.documentElement.classList.add((data as DomainData).theme === "dark" ? "dark" : "light");
-      localStorage.setItem('theme', (data as DomainData).theme === "dark" ? "dark" : "light");
+      document.documentElement.classList.add(theme);
+      localStorage.setItem('theme', theme);
     } else {
-      // Default theme setup for landing page or fallback
-      const isLandingPage = window.location.pathname === '/';
-      if (isLandingPage) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
+      // No valid domain data found, use default theme
+      setDefaultTheme();
     }
   });
+
+// Helper function to set default theme based on pathname
+function setDefaultTheme() {
+  const isLandingPage = window.location.pathname === '/';
+  const theme = isLandingPage ? 'dark' : 'light';
+  
+  document.documentElement.classList.add(theme);
+  localStorage.setItem('theme', theme);
+}
 
 // Create root and render app
 createRoot(document.getElementById("root")!).render(<App />);
