@@ -31,8 +31,8 @@ supabase
     
     // Check if data exists and has the expected structure
     if (typeof data === 'object' && 'theme' in data) {
-      const domainData = data as unknown as DomainData;
-      const theme = domainData.theme === "dark" ? "dark" : "light";
+      // Use type assertion after we've verified the structure
+      const theme = data.theme === "dark" ? "dark" : "light";
       
       // Set theme based on domain data
       document.documentElement.classList.add(theme);
