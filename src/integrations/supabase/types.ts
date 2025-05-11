@@ -33,6 +33,30 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          domain: string
+          id: string
+          selected_theme: string
+          store_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          domain: string
+          id?: string
+          selected_theme: string
+          store_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          domain?: string
+          id?: string
+          selected_theme?: string
+          store_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
