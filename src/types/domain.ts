@@ -1,3 +1,4 @@
+
 export type DomainStatus = "verified" | "pending" | "error";
 
 export interface Domain {

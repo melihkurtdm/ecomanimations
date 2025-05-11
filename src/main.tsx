@@ -8,18 +8,18 @@ import type { DomainData } from './types/domain';
 // Check current domain and set theme from Supabase
 const currentDomain = window.location.hostname;
 
-// Use type assertion to work around TypeScript limitation
-// This is safe since we're handling potential errors in the promise chain
+// Use any type to bypass TypeScript restriction since the domains table is not in the generated types
+// We'll properly handle the response data with our own type
 supabase
-  .from("domains")
+  .from("domains" as any)
   .select("*")
   .eq("domain", currentDomain)
   .maybeSingle()
   .then(({ data, error }) => {
-    if (data && data.theme) {
+    if (data && (data as DomainData).theme) {
       // Set theme based on domain data
-      document.documentElement.classList.add(data.theme === "dark" ? "dark" : "light");
-      localStorage.setItem('theme', data.theme === "dark" ? "dark" : "light");
+      document.documentElement.classList.add((data as DomainData).theme === "dark" ? "dark" : "light");
+      localStorage.setItem('theme', (data as DomainData).theme === "dark" ? "dark" : "light");
     } else {
       // Default theme setup for landing page or fallback
       const isLandingPage = window.location.pathname === '/';
