@@ -41,7 +41,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
               typeof data.theme_settings === 'object' && 
               !Array.isArray(data.theme_settings) && 
               'id' in data.theme_settings) {
-            setTheme(data.theme_settings.id);
+            // Convert potential non-string ID to string
+            setTheme(String(data.theme_settings.id));
           } else if (data.selected_theme) {
             setTheme(data.selected_theme);
           }

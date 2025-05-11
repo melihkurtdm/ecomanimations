@@ -1,4 +1,3 @@
-
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -33,7 +32,8 @@ supabase
           typeof data.theme_settings === 'object' && 
           !Array.isArray(data.theme_settings) && 
           'id' in data.theme_settings) {
-        document.body.setAttribute("data-theme", data.theme_settings.id);
+        // Convert potential non-string ID to string
+        document.body.setAttribute("data-theme", String(data.theme_settings.id));
       }
       // Otherwise fall back to selected_theme
       else if (data.selected_theme) {
