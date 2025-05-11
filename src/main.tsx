@@ -23,7 +23,7 @@ supabase
       return;
     }
     
-    // Add null check for data before attempting to use it
+    // Check if data is null before trying to use it
     if (data === null) {
       setDefaultTheme();
       return;
@@ -33,6 +33,7 @@ supabase
     if (typeof data === 'object' && 'theme' in data) {
       // Use type assertion after we've verified the structure
       const domainData = data as DomainData;
+      // Now we can safely access the theme property
       const theme = domainData.theme === "dark" ? "dark" : "light";
       
       // Set theme based on domain data
