@@ -8,6 +8,8 @@ import type { DomainData } from './types/domain';
 // Check current domain and set theme from Supabase
 const currentDomain = window.location.hostname;
 
+// Use type assertion to work around TypeScript limitation
+// This is safe since we're handling potential errors in the promise chain
 supabase
   .from("domains")
   .select("*")
