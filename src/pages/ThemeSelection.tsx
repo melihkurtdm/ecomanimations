@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -151,33 +151,58 @@ const ThemeSelection = () => {
     setConfirmPublishDialog(true);
   };
 
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = async () => {
     setIsPublishing(true);
     
-    // Yayınlama ilerleme durumunu simüle et
-    const interval = setInterval(() => {
-      setPublishingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          
-          // Yayınlama tamamlandığında
-          setTimeout(() => {
-            setConfirmPublishDialog(false);
-            navigate('/dashboard/store-setup');
-          }, 500);
-          
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 200);
+    // Save the selected theme and domain to Supabase
+    const currentDomain = domain || window.location.hostname;
     
-    toast({
-      title: "Tema yayınlanıyor",
-      description: domain 
-        ? `${themeData.find(t => t.id === selectedTheme)?.name} teması ${domain} adresinde yayınlanıyor...` 
-        : `${themeData.find(t => t.id === selectedTheme)?.name} teması yayınlanıyor...`,
-    });
+    try {
+      await supabase
+        .from("stores")
+        .upsert([
+          {
+            domain: currentDomain,
+            selected_theme: selectedTheme,
+            store_name: "Oto Mağaza"
+          }
+        ], { onConflict: ["domain"] });
+        
+      // Continue with the existing publish process
+      
+      // Yayınlama ilerleme durumunu simüle et
+      const interval = setInterval(() => {
+        setPublishingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            
+            // Yayınlama tamamlandığında
+            setTimeout(() => {
+              setConfirmPublishDialog(false);
+              navigate('/dashboard/store-setup');
+            }, 500);
+            
+            return 100;
+          }
+          return prev + 5;
+        });
+      }, 200);
+      
+      toast({
+        title: "Tema yayınlanıyor",
+        description: domain 
+          ? `${themeData.find(t => t.id === selectedTheme)?.name} teması ${domain} adresinde yayınlanıyor...` 
+          : `${themeData.find(t => t.id === selectedTheme)?.name} teması yayınlanıyor...`,
+      });
+    } catch (error) {
+      console.error("Theme publishing error:", error);
+      toast({
+        title: "Hata oluştu",
+        description: "Tema yayınlanırken bir sorun oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+      setIsPublishing(false);
+    }
   };
 
   const handleCustomize = () => {
