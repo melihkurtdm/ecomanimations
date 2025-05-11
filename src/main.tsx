@@ -8,10 +8,14 @@ import type { DomainData } from './types/domain';
 // Check current domain and set theme from Supabase
 const currentDomain = window.location.hostname;
 
+// Create root and render app first so the ThemeProvider is available
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
+
 // First try to get theme from stores table (new approach)
 supabase
   .from("stores")
-  .select("*")
+  .select("selected_theme")
   .eq("domain", currentDomain)
   .maybeSingle()
   .then(({ data, error }) => {
@@ -23,8 +27,8 @@ supabase
       return;
     }
     
-    if (data) {
-      const themeId = (data as any)?.selected_theme || "default";
+    if (data?.selected_theme) {
+      const themeId = data.selected_theme;
       document.body.setAttribute("data-theme", themeId);
       
       // Also set the light/dark mode from localStorage or default to light
@@ -51,7 +55,6 @@ function checkDomainsTable() {
       }
       
       // Using optional chaining and type assertion to safely access theme
-      // This completely bypasses the TypeScript null check error
       const theme = (data as any)?.theme === "dark" ? "dark" : "light";
       document.documentElement.classList.add(theme);
       localStorage.setItem('theme', theme);
@@ -66,6 +69,3 @@ function setDefaultTheme() {
   document.documentElement.classList.add(theme);
   localStorage.setItem('theme', theme);
 }
-
-// Create root and render app
-createRoot(document.getElementById("root")!).render(<App />);
