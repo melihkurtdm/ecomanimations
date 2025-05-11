@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -11,17 +10,20 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Globe, Archive, EyeOff, AlertTriangle, Check, Sparkles, ArrowRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ThemePublishFormProps {
   isPublished: boolean;
   onPublish: () => void;
   onUnpublish: () => void;
+  themeSettings?: any;
 }
 
 const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
   isPublished,
   onPublish,
-  onUnpublish
+  onUnpublish,
+  themeSettings
 }) => {
   const [publishSettings, setPublishSettings] = useState({
     visibility: 'public',
@@ -39,12 +41,27 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
     }));
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     setIsLoading(true);
     
-    // Yayınlama işlemi simülasyonu
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const domain = window.location.hostname;
+      
+      // Save theme settings to Supabase if they exist
+      if (themeSettings) {
+        const { error } = await supabase
+          .from("stores")
+          .update({
+            theme_settings: themeSettings
+          })
+          .eq("domain", domain);
+          
+        if (error) {
+          throw error;
+        }
+      }
+      
+      // Call the onPublish callback
       onPublish();
       
       toast({
@@ -58,7 +75,16 @@ const ThemePublishForm: React.FC<ThemePublishFormProps> = ({
           </div>
         ),
       });
-    }, 1500);
+    } catch (error: any) {
+      console.error("Theme publishing error:", error);
+      toast({
+        title: "Yayınlama başarısız",
+        description: "Tema yayınlanırken bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUnpublish = () => {

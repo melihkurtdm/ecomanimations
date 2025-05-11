@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
+import { supabase } from '@/integrations/supabase/client';
 import ThemeHeader from '@/components/theme/ThemeHeader';
 import ThemeCustomizationForm from '@/components/theme/ThemeCustomizationForm';
 import ThemePreview from '@/components/theme/ThemePreview';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Globe, Palette, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { themeData } from '@/data/themeData';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const currentTheme = {
   id: "modern",
@@ -62,6 +63,7 @@ type ThemeSettings = {
 const ThemeCustomization = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>(currentTheme);
   const [previewMode, setPreviewMode] = useState(false);
   const [activeTab, setActiveTab] = useState("colors");
@@ -72,6 +74,7 @@ const ThemeCustomization = () => {
   const [isPublished, setIsPublished] = useState(false);
   const [previewAnimation, setPreviewAnimation] = useState(false);
   const [editorMode, setEditorMode] = useState<"customize" | "builder">("customize");
+  const [currentDomain, setCurrentDomain] = useState(window.location.hostname);
   
   const form = useForm({
     defaultValues: {
@@ -107,20 +110,38 @@ const ThemeCustomization = () => {
     setIsSaved(false);
   }, [themeSettings]);
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     setIsSaved(true);
     setIsDirty(false);
+    
+    // Apply the theme locally via context
+    setTheme(themeSettings.id || "modern");
+    
     toast({
       title: "Değişiklikler kaydedildi",
       description: "Tema özelleştirmeleri başarıyla uygulandı.",
     });
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     setIsPublishing(true);
     
-    setTimeout(() => {
-      setIsPublishing(false);
+    try {
+      // Save theme settings to Supabase
+      const { error } = await supabase
+        .from("stores")
+        .update({
+          theme_settings: themeSettings
+        })
+        .eq("domain", currentDomain);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Apply the theme via context
+      setTheme(themeSettings.id || "modern");
+      
       setIsPublished(true);
       setPublishDialogOpen(false);
       
@@ -128,7 +149,16 @@ const ThemeCustomization = () => {
         title: "Tema yayınlandı!",
         description: "Temanız başarıyla mağazanızda yayınlandı.",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Theme publishing error:", error);
+      toast({
+        title: "Yayınlama başarısız",
+        description: "Tema yayınlanırken bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const resetToDefaults = () => {

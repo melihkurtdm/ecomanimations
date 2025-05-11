@@ -39,6 +39,7 @@ export type Database = {
           id: string
           selected_theme: string
           store_name: string | null
+          theme_settings: Json | null
           user_id: string | null
         }
         Insert: {
@@ -46,6 +47,7 @@ export type Database = {
           id?: string
           selected_theme: string
           store_name?: string | null
+          theme_settings?: Json | null
           user_id?: string | null
         }
         Update: {
@@ -53,6 +55,7 @@ export type Database = {
           id?: string
           selected_theme?: string
           store_name?: string | null
+          theme_settings?: Json | null
           user_id?: string | null
         }
         Relationships: []
