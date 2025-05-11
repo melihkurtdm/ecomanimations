@@ -27,7 +27,9 @@ supabase
     if (data !== null && typeof data === 'object' && 'theme' in data) {
       // Now we can safely access the theme property with type assertion
       const domainData = data as DomainData;
-      const theme = domainData.theme === "dark" ? "dark" : "light";
+      // Get theme value safely with a fallback to light
+      const themeValue = domainData.theme || 'light';
+      const theme = themeValue === "dark" ? "dark" : "light";
       
       // Set theme based on domain data
       document.documentElement.classList.add(theme);
