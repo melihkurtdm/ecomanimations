@@ -158,15 +158,14 @@ const ThemeSelection = () => {
     const currentDomain = domain || window.location.hostname;
     
     try {
+      // Fix: Pass a single object instead of an array for the first parameter
       await supabase
         .from("stores")
-        .upsert([
-          {
-            domain: currentDomain,
-            selected_theme: selectedTheme,
-            store_name: "Oto Mağaza"
-          }
-        ], { onConflict: ["domain"] });
+        .upsert({
+          domain: currentDomain,
+          selected_theme: selectedTheme || '',
+          store_name: "Oto Mağaza"
+        }, { onConflict: "domain" });
         
       // Continue with the existing publish process
       
