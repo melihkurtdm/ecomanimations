@@ -31,7 +31,8 @@ supabase
       // If we have theme settings with an ID, use it
       if (data.theme_settings && 
           typeof data.theme_settings === 'object' && 
-          data.theme_settings.hasOwnProperty('id')) {
+          !Array.isArray(data.theme_settings) && 
+          'id' in data.theme_settings) {
         document.body.setAttribute("data-theme", data.theme_settings.id);
       }
       // Otherwise fall back to selected_theme
