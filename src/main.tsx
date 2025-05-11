@@ -23,8 +23,14 @@ supabase
       return;
     }
     
+    // Add null check for data before attempting to use it
+    if (data === null) {
+      setDefaultTheme();
+      return;
+    }
+    
     // Check if data exists and has the expected structure
-    if (data && typeof data === 'object' && 'theme' in data) {
+    if (typeof data === 'object' && 'theme' in data) {
       const domainData = data as unknown as DomainData;
       const theme = domainData.theme === "dark" ? "dark" : "light";
       
