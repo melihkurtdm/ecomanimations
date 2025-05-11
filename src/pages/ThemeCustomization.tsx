@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,6 +48,7 @@ type ColorScheme = {
 };
 
 type ThemeSettings = {
+  id?: string;  // Make id optional in the type definition
   colors: ColorScheme;
   fonts: {
     heading: string;
@@ -115,7 +117,8 @@ const ThemeCustomization = () => {
     setIsDirty(false);
     
     // Apply the theme locally via context
-    setTheme(themeSettings.id || "modern");
+    const themeId = themeSettings.id || "modern";
+    setTheme(themeId);
     
     toast({
       title: "Değişiklikler kaydedildi",
@@ -140,7 +143,8 @@ const ThemeCustomization = () => {
       }
       
       // Apply the theme via context
-      setTheme(themeSettings.id || "modern");
+      const themeId = themeSettings.id || "modern";
+      setTheme(themeId);
       
       setIsPublished(true);
       setPublishDialogOpen(false);

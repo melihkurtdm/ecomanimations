@@ -1,3 +1,4 @@
+
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -28,7 +29,9 @@ supabase
     
     if (data) {
       // If we have theme settings with an ID, use it
-      if (data.theme_settings?.id) {
+      if (data.theme_settings && 
+          typeof data.theme_settings === 'object' && 
+          data.theme_settings.hasOwnProperty('id')) {
         document.body.setAttribute("data-theme", data.theme_settings.id);
       }
       // Otherwise fall back to selected_theme

@@ -36,8 +36,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         // If we have theme settings, use them
         if (data?.theme_settings) {
           setThemeSettings(data.theme_settings);
-          // If the theme settings include an ID, use it as the theme
-          if (data.theme_settings.id) {
+          // If the theme settings include a theme property, use it as the theme
+          if (data.theme_settings && typeof data.theme_settings === 'object' && data.theme_settings.hasOwnProperty('id')) {
             setTheme(data.theme_settings.id);
           } else if (data.selected_theme) {
             setTheme(data.selected_theme);
