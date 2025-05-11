@@ -32,7 +32,8 @@ supabase
     // Check if data exists and has the expected structure
     if (typeof data === 'object' && 'theme' in data) {
       // Now we can safely access the theme property since we've verified its existence
-      const theme = data.theme === "dark" ? "dark" : "light";
+      // Use non-null assertion since we've already checked data is not null
+      const theme = (data as DomainData).theme === "dark" ? "dark" : "light";
       
       // Set theme based on domain data
       document.documentElement.classList.add(theme);
