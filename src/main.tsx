@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { supabase } from './integrations/supabase/client';
+import type { DomainData } from './types/domain';
 
 // Check current domain and set theme from Supabase
 const currentDomain = window.location.hostname;

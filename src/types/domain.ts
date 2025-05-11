@@ -1,4 +1,3 @@
-
 export type DomainStatus = "verified" | "pending" | "error";
 
 export interface Domain {
@@ -27,4 +26,22 @@ export interface Domain {
   publishedThemeName?: string;
   publishStatus?: "active" | "pending" | "failed";
   lastPublishAttempt?: string;
+}
+
+// Add interface for domain data from Supabase
+export interface DomainData {
+  id: string | number;
+  domain: string;
+  status: DomainStatus;
+  theme?: "dark" | "light";
+  primary: boolean;
+  createdAt: string;
+  lastChecked: string;
+  verifiedAt?: string;
+  errorMessage?: string;
+  isCustomDomain?: boolean;
+  hasPublishedTheme?: boolean;
+  themePublishedAt?: string;
+  activeTheme?: string;
+  namecheapConnected?: boolean;
 }
