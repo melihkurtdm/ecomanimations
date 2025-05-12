@@ -13,7 +13,7 @@ const Hero = () => {
   const translations = {
     tr: {
       tagline: "E-ticaret Çözümleriniz",
-      heading: "Modern E-ticaret Platformunuz",
+      heading: "E-ticaretin Tüm Gücü Elinizde",
       description: "Kullanıcı dostu arayüz ve profesyonel temalarla çevrimiçi mağazanızı hızlıca oluşturun. Satışlarınızı artırmak hiç bu kadar kolay olmamıştı.",
       startButton: "Hemen Başlayın",
       demoButton: "Demo İnceleyin",
@@ -23,7 +23,7 @@ const Hero = () => {
     },
     en: {
       tagline: "Your E-commerce Solutions",
-      heading: "Modern E-commerce Platform",
+      heading: "The Full Power of E-commerce in Your Hands",
       description: "Create your online store quickly with a user-friendly interface and professional themes. Increasing your sales has never been easier.",
       startButton: "Start Now",
       demoButton: "View Demo",
@@ -71,37 +71,19 @@ const Hero = () => {
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-16 md:py-32">
-      <div className="absolute inset-0 z-0 opacity-50">
-        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-brand-purple/5 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-brand-blue/5 to-transparent"></div>
-        
-        {/* Animasyonlu arka plan öğeleri */}
-        <motion.div 
-          className="absolute top-20 left-10 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3] 
-          }}
-          transition={{ 
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
-        
-        <motion.div 
-          className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"
-          animate={{ 
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.5, 0.2] 
-          }}
-          transition={{ 
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="w-full h-full object-cover opacity-40"
+        >
+          <source src="/videos/intro.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-gray-900/20 to-gray-900/60 dark:from-black/70 dark:via-black/50 dark:to-black/80"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -121,7 +103,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-purple/10 text-brand-purple mb-4"
+              className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-purple/10 text-brand-purple mb-4 dark:bg-white/10 dark:text-white"
             >
               {t.tagline}
             </motion.span>
@@ -129,19 +111,15 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.7 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white dark:text-white"
             >
-              {language === 'tr' ? (
-                <>Modern <span className="gradient-text">E-ticaret</span> Platformunuz</>
-              ) : (
-                <>Modern <span className="gradient-text">E-commerce</span> Platform</>
-              )}
+              {t.heading}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.8 }}
-              className="text-lg text-gray-600 dark:text-gray-300 mb-8 md:max-w-lg"
+              className="text-lg text-gray-200 dark:text-gray-300 mb-8 md:max-w-lg"
             >
               {t.description}
             </motion.p>
@@ -161,10 +139,10 @@ const Hero = () => {
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                 />
               </Button>
-              <Button variant="outline" size="lg" className="relative overflow-hidden group">
-                <span className="relative z-10">{t.demoButton}</span>
+              <Button variant="outline" size="lg" className="relative overflow-hidden group bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
+                <span className="relative z-10 text-white">{t.demoButton}</span>
                 <motion.span 
-                  className="absolute inset-0 bg-gray-100 dark:bg-gray-800 z-0"
+                  className="absolute inset-0 bg-white/10 z-0"
                   initial={{ y: "-100%" }}
                   whileHover={{ y: 0 }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
@@ -200,7 +178,7 @@ const Hero = () => {
                   C
                 </motion.div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-200 dark:text-gray-300">
                 <span className="font-semibold">1,000+</span> {t.businesses}
               </p>
             </motion.div>
