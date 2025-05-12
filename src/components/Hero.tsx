@@ -15,7 +15,7 @@ const Hero = () => {
     tr: {
       tagline: "E-ticaret Çözümleriniz",
       heading: "E-ticaretin Tüm Gücü Elinizde",
-      description: "Kullanıcı dostu arayüz ve profesyonel temalarla çevrimiçi mağazanızı hızlıca oluşturun. Satışlarınızı artırmak hiç bu kadar kolay olmamıştı.",
+      description: "Satışlarınızı artırmak ve çevrimiçi varlığınızı geliştirmek için ihtiyacınız olan tüm araçlar tek bir platformda",
       startButton: "Hemen Başlayın",
       demoButton: "Demo İnceleyin",
       businesses: "işletme bizimle çalışıyor",
@@ -86,23 +86,8 @@ const Hero = () => {
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-16 md:py-32">
-      {/* Background Video */}
-      <div className="absolute inset-0 z-0">
-        <video 
-          ref={videoRef}
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="w-full h-full object-cover opacity-40"
-        >
-          {/* Use both relative and absolute paths for better compatibility */}
-          <source src="/videos/intro.mp4" type="video/mp4" />
-          <source src="videos/intro.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-gray-900/20 to-gray-900/60 dark:from-black/70 dark:via-black/50 dark:to-black/80"></div>
-      </div>
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-gray-900/40 via-gray-900/20 to-gray-900/60 dark:from-black/70 dark:via-black/50 dark:to-black/80"></div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -141,6 +126,30 @@ const Hero = () => {
             >
               {t.description}
             </motion.p>
+            
+            {/* Video below the description */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.85 }}
+              className="mb-8 rounded-lg overflow-hidden shadow-xl w-full max-w-lg"
+            >
+              <video 
+                ref={videoRef}
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                preload="auto"
+                className="w-full h-auto object-cover"
+              >
+                {/* Use both relative and absolute paths for better compatibility */}
+                <source src="/videos/intro.mp4" type="video/mp4" />
+                <source src="videos/intro.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </motion.div>
+            
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
