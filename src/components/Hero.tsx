@@ -9,7 +9,6 @@ const Hero = () => {
   const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const translations = {
     tr: {
@@ -64,20 +63,6 @@ const Hero = () => {
       observer.observe(imageRef.current);
     }
 
-    // Ensure video loads properly
-    const loadVideo = async () => {
-      try {
-        if (videoRef.current) {
-          // Force reload the video to ensure it's loaded
-          videoRef.current.load();
-        }
-      } catch (error) {
-        console.error('Error loading video:', error);
-      }
-    };
-    
-    loadVideo();
-    
     return () => {
       if (heroRef.current) observer.unobserve(heroRef.current);
       if (imageRef.current) observer.unobserve(imageRef.current);
@@ -126,29 +111,6 @@ const Hero = () => {
             >
               {t.description}
             </motion.p>
-            
-            {/* Video below the description */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.85 }}
-              className="mb-8 rounded-lg overflow-hidden shadow-xl w-full max-w-lg"
-            >
-              <video 
-                ref={videoRef}
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-                preload="auto"
-                className="w-full h-auto object-cover"
-              >
-                {/* Use both relative and absolute paths for better compatibility */}
-                <source src="/videos/intro.mp4" type="video/mp4" />
-                <source src="videos/intro.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </motion.div>
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
