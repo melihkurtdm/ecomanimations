@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -138,6 +137,25 @@ const Hero = () => {
                 />
               </Button>
             </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.1 }}
+              className="mt-10"
+            >
+              <video
+                controls
+                style={{ width: '100%', maxWidth: '640px', borderRadius: '12px', margin: '0 auto' }}
+              >
+                <source
+                  src="https://raw.githubusercontent.com/melihkurtdm/ecomanimations/main/videos/intro.mp4"
+                  type="video/mp4"
+                />
+                Tarayıcınız video etiketini desteklemiyor.
+              </video>
+            </motion.div>
+            
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
