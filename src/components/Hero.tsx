@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -9,6 +8,7 @@ const Hero = () => {
   const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const translations = {
     tr: {
@@ -63,6 +63,20 @@ const Hero = () => {
       observer.observe(imageRef.current);
     }
 
+    // Ensure video loads properly
+    const loadVideo = async () => {
+      try {
+        if (videoRef.current) {
+          // Force reload the video to ensure it's loaded
+          videoRef.current.load();
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+      }
+    };
+    
+    loadVideo();
+    
     return () => {
       if (heroRef.current) observer.unobserve(heroRef.current);
       if (imageRef.current) observer.unobserve(imageRef.current);
@@ -74,13 +88,16 @@ const Hero = () => {
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <video 
+          ref={videoRef}
           autoPlay 
           loop 
           muted 
           playsInline
           className="w-full h-full object-cover opacity-40"
         >
+          {/* Use both relative and absolute paths for better compatibility */}
           <source src="/videos/intro.mp4" type="video/mp4" />
+          <source src="videos/intro.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-gray-900/20 to-gray-900/60 dark:from-black/70 dark:via-black/50 dark:to-black/80"></div>
