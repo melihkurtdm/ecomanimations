@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion'; 
@@ -57,6 +56,7 @@ const Themes = () => {
   const [isHovered, setIsHovered] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const slidesPerView = {
     sm: 1,
     md: 2,
@@ -79,6 +79,21 @@ const Themes = () => {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const loadVideo = async () => {
+      try {
+        if (videoRef.current) {
+          // Force reload the video to ensure it's loaded
+          videoRef.current.load();
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+      }
+    };
+    
+    loadVideo();
   }, []);
 
   const nextSlide = () => {
@@ -206,6 +221,28 @@ const Themes = () => {
         viewport={{ once: true, amount: 0.2 }}
         className="container mx-auto px-4 sm:px-6 lg:px-8"
       >
+        {/* Video added above the heading */}
+        <motion.div 
+          variants={itemVariants}
+          className="mb-12 flex justify-center"
+        >
+          <div className="rounded-lg overflow-hidden shadow-xl w-full max-w-3xl">
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-auto object-cover"
+            >
+              <source src="/videos/intro.mp4" type="video/mp4" />
+              <source src="videos/intro.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </motion.div>
+        
         <div className="text-center mb-16">
           <motion.h2 
             variants={itemVariants}
