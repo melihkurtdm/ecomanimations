@@ -9,6 +9,7 @@ const Hero = () => {
   const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const translations = {
     tr: {
@@ -63,6 +64,37 @@ const Hero = () => {
       observer.observe(imageRef.current);
     }
 
+    // Ensure video loads properly with a delay to make sure the DOM is fully loaded
+    const loadVideo = async () => {
+      try {
+        if (videoRef.current) {
+          // Force reload the video to ensure it's loaded
+          videoRef.current.load();
+          
+          // Try to play the video
+          setTimeout(() => {
+            try {
+              if (videoRef.current) {
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                  playPromise.catch(error => {
+                    console.error('Error playing video:', error);
+                  });
+                }
+              }
+            } catch (playError) {
+              console.error('Error during play attempt:', playError);
+            }
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+      }
+    };
+    
+    // Execute video loading with a small delay
+    setTimeout(loadVideo, 500);
+    
     return () => {
       if (heroRef.current) observer.unobserve(heroRef.current);
       if (imageRef.current) observer.unobserve(imageRef.current);
@@ -71,21 +103,6 @@ const Hero = () => {
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-16 md:py-32">
-      {/* Background Video */}
-      <div className="absolute inset-0 z-0">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="w-full h-full object-cover opacity-40"
-        >
-          <source src="/videos/intro.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-gray-900/20 to-gray-900/60 dark:from-black/70 dark:via-black/50 dark:to-black/80"></div>
-      </div>
-      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
           <motion.div 
@@ -123,6 +140,27 @@ const Hero = () => {
             >
               {t.description}
             </motion.p>
+            
+            {/* Video moved below the heading and description */}
+            <div className="relative mb-8 rounded-lg overflow-hidden shadow-xl border border-gray-700/30">
+              <video 
+                ref={videoRef}
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                preload="auto"
+                className="w-full object-cover rounded-lg"
+                style={{ maxHeight: "250px" }}
+              >
+                <source src="/videos/intro.mp4" type="video/mp4" />
+                <source src="videos/intro.mp4" type="video/mp4" />
+                <source src={process.env.PUBLIC_URL + "/videos/intro.mp4"} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/40 to-transparent"></div>
+            </div>
+            
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
