@@ -77,7 +77,7 @@ const Navbar = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/90 backdrop-blur-sm shadow-sm' : 'bg-transparent'
+        isScrolled ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,22 +92,22 @@ const Navbar = () => {
             <NavigationMenu>
               <NavigationMenuList className="gap-2">
                 <NavigationMenuItem>
-                  <a href="#features" className="text-gray-600 hover:text-brand-purple transition-colors px-3 py-2">
+                  <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-brand-purple transition-colors px-3 py-2">
                     Özellikler
                   </a>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <a href="#pricing" className="text-gray-600 hover:text-brand-purple transition-colors px-3 py-2">
+                  <a href="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-brand-purple transition-colors px-3 py-2">
                     Fiyatlandırma
                   </a>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <a href="#themes" className="text-gray-600 hover:text-brand-purple transition-colors px-3 py-2">
+                  <a href="#themes" className="text-gray-600 dark:text-gray-300 hover:text-brand-purple transition-colors px-3 py-2">
                     Temalar
                   </a>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <a href="#contact" className="text-gray-600 hover:text-brand-purple transition-colors px-3 py-2">
+                  <a href="#contact" className="text-gray-600 dark:text-gray-300 hover:text-brand-purple transition-colors px-3 py-2">
                     İletişim
                   </a>
                 </NavigationMenuItem>
@@ -183,7 +183,7 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            className="md:hidden bg-white shadow-lg"
+            className="md:hidden bg-white dark:bg-gray-800 shadow-lg"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}

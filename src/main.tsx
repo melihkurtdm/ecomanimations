@@ -1,3 +1,4 @@
+
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -47,12 +48,16 @@ supabase
       // No store data found for this domain, fallback to domains table
       checkDomainsTable();
     }
+  })
+  .catch(err => {
+    console.error("Error in Supabase query:", err);
+    setDefaultTheme();
   });
 
 // Helper function to check domains table (previous approach)
 function checkDomainsTable() {
   supabase
-    .from("domains" as any)
+    .from("domains")
     .select("*")
     .eq("domain", currentDomain)
     .maybeSingle()
@@ -64,9 +69,13 @@ function checkDomainsTable() {
       }
       
       // Using optional chaining and type assertion to safely access theme
-      const theme = (data as any)?.theme === "dark" ? "dark" : "light";
+      const theme = data?.theme === "dark" ? "dark" : "light";
       document.documentElement.classList.add(theme);
       localStorage.setItem('theme', theme);
+    })
+    .catch(err => {
+      console.error("Error in domains query:", err);
+      setDefaultTheme();
     });
 }
 

@@ -33,7 +33,7 @@ const Hero = () => {
     }
   };
 
-  const t = translations[language];
+  const t = translations[language as keyof typeof translations] || translations.tr;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -146,8 +146,12 @@ const Hero = () => {
               className="mt-10"
             >
               <video
-                controls
+                autoPlay
+                muted
+                loop
+                playsInline
                 style={{ width: '100%', maxWidth: '640px', borderRadius: '12px', margin: '0 auto' }}
+                className="shadow-xl"
               >
                 <source
                   src="https://raw.githubusercontent.com/melihkurtdm/ecomanimations/main/videos/intro.mp4"

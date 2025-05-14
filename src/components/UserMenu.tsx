@@ -20,7 +20,7 @@ const UserMenu = () => {
   if (!user) {
     return (
       <div className="flex space-x-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300 dark:hover:text-white">
           <Link to="/auth?tab=login">Giriş Yap</Link>
         </Button>
         <Button asChild>
