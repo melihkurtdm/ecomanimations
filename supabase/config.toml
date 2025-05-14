@@ -1,1 +1,8 @@
+
 project_id = "bxtfhixopbqakyzgjlhe"
+
+[functions.check-domain-status]
+verify_jwt = true
+
+[functions.add-domain]
+verify_jwt = true

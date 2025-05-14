@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, AlertCircle, CheckCircle, Clock, Trash } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Domain } from '@/types/domain';
+import { Domain, DomainStatus } from '@/types/domain';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -18,6 +18,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tables } from '@/integrations/supabase/types';
+
+// Helper function to convert Supabase domain records to our Domain type
+const convertToDomain = (record: Tables<"domains">): Domain => {
+  return {
+    id: typeof record.id === 'string' ? parseInt(record.id) : Number(record.id),
+    domain: record.domain,
+    status: record.status as DomainStatus || 'pending',
+    primary: record.primary || false,
+    createdAt: record.created_at || new Date().toISOString(),
+    lastChecked: record.last_checked || new Date().toISOString(),
+    verifiedAt: record.verified_at,
+    errorMessage: record.error_message,
+    isCustomDomain: true, // Default value
+    hasPublishedTheme: false, // Default value
+  };
+};
 
 const DomainList: React.FC = () => {
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -42,7 +59,9 @@ const DomainList: React.FC = () => {
           
         if (error) throw error;
         
-        setDomains(data || []);
+        // Convert Supabase records to Domain type
+        const domainData = data ? data.map(convertToDomain) : [];
+        setDomains(domainData);
       } catch (error) {
         console.error('Error loading domains:', error);
         toast({
@@ -76,8 +95,10 @@ const DomainList: React.FC = () => {
         .order('created_at', { ascending: false });
         
       if (fetchError) throw fetchError;
-        
-      setDomains(updatedDomains || []);
+      
+      // Convert Supabase records to Domain type
+      const domainData = updatedDomains ? updatedDomains.map(convertToDomain) : [];
+      setDomains(domainData);
       
       toast({
         title: "Domain status updated",
@@ -106,7 +127,7 @@ const DomainList: React.FC = () => {
       if (error) throw error;
       
       // Remove from local state
-      setDomains(domains.filter(d => d.id !== domainId));
+      setDomains(domains.filter(d => String(d.id) !== domainId));
       
       toast({
         title: "Domain deleted",
@@ -144,7 +165,7 @@ const DomainList: React.FC = () => {
       // Update local state
       setDomains(domains.map(d => ({
         ...d,
-        primary: d.id === domainId
+        primary: String(d.id) === domainId
       })));
       
       toast({
@@ -236,7 +257,7 @@ const DomainList: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   {getStatusBadge(domain.status)}
                   <span className="text-xs text-muted-foreground">
-                    Added {format(new Date(domain.created_at), 'MMM d, yyyy')}
+                    Added {format(new Date(domain.createdAt), 'MMM d, yyyy')}
                   </span>
                 </div>
               </div>
@@ -260,9 +281,9 @@ const DomainList: React.FC = () => {
               </div>
             </div>
             
-            {domain.error_message && (
+            {domain.errorMessage && (
               <div className="mt-2 p-2 bg-red-50 text-red-800 text-sm rounded">
-                Error: {domain.error_message}
+                Error: {domain.errorMessage}
               </div>
             )}
           </div>
