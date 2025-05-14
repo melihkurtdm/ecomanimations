@@ -13,12 +13,14 @@ root.render(<App />);
 const currentDomain = window.location.hostname;
 
 // First try to get theme from stores table (new approach)
-supabase
-  .from("stores")
-  .select("selected_theme, theme_settings")
-  .eq("domain", currentDomain)
-  .maybeSingle()
-  .then(({ data, error }) => {
+const fetchStoreData = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("stores")
+      .select("selected_theme, theme_settings")
+      .eq("domain", currentDomain)
+      .maybeSingle();
+      
     if (error) {
       console.error("Error fetching store data:", error);
       
@@ -48,11 +50,14 @@ supabase
       // No store data found for this domain, fallback to domains table
       checkDomainsTable();
     }
-  })
-  .catch((err: Error) => {
+  } catch (err) {
     console.error("Error in Supabase query:", err);
     setDefaultTheme();
-  });
+  }
+};
+
+// Start the fetch process
+fetchStoreData();
 
 // Helper function to check domains table (previous approach)
 function checkDomainsTable() {
