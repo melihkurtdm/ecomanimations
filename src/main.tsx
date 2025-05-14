@@ -9,46 +9,34 @@ const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 
 // Check current domain and retrieve store configuration from Supabase
-// This is only for initial theme loading before ThemeContext is fully initialized
 const currentDomain = window.location.hostname;
 
-// First try to get theme from stores table (new approach)
+// Load theme settings from Supabase stores table
 const fetchStoreData = async () => {
   try {
     const { data, error } = await supabase
       .from("stores")
-      .select("selected_theme, theme_settings")
+      .select("*")
       .eq("domain", currentDomain)
       .maybeSingle();
-      
+    
     if (error) {
       console.error("Error fetching store data:", error);
-      
-      // Fallback to domains table (previous approach)
-      checkDomainsTable();
+      setDefaultTheme();
       return;
     }
     
     if (data) {
-      // If we have theme settings with an ID, use it
-      if (data.theme_settings && 
-          typeof data.theme_settings === 'object' && 
-          !Array.isArray(data.theme_settings) && 
-          'id' in data.theme_settings) {
-        // Convert potential non-string ID to string
-        document.body.setAttribute("data-theme", String(data.theme_settings.id));
-      }
-      // Otherwise fall back to selected_theme
-      else if (data.selected_theme) {
-        document.body.setAttribute("data-theme", data.selected_theme);
-      }
+      // Set the theme ID from selected_theme
+      const themeId = data.selected_theme || "default";
+      document.body.setAttribute("data-theme", themeId);
       
       // Also set the light/dark mode from localStorage or default to light
       const darkMode = localStorage.getItem('theme') || 'light';
       document.documentElement.classList.add(darkMode);
     } else {
-      // No store data found for this domain, fallback to domains table
-      checkDomainsTable();
+      // No store data found for this domain, fall back to default
+      setDefaultTheme();
     }
   } catch (err) {
     console.error("Error in Supabase query:", err);
@@ -59,37 +47,6 @@ const fetchStoreData = async () => {
 // Start the fetch process
 fetchStoreData();
 
-// Helper function to check domains table (previous approach)
-function checkDomainsTable() {
-  try {
-    // Using any type assertion as domains table doesn't exist in the TypeScript schema
-    (supabase as any)
-      .from("domains")
-      .select("*")
-      .eq("domain", currentDomain)
-      .maybeSingle()
-      .then(({ data, error }: { data: any, error: any }) => {
-        if (error) {
-          console.error("Error fetching domain data:", error);
-          setDefaultTheme();
-          return;
-        }
-        
-        // Using optional chaining and type assertion to safely access theme
-        const theme = data?.theme === "dark" ? "dark" : "light";
-        document.documentElement.classList.add(theme);
-        localStorage.setItem('theme', theme);
-      })
-      .catch((err: Error) => {
-        console.error("Error in domains query:", err);
-        setDefaultTheme();
-      });
-  } catch (err) {
-    console.error("Error executing domains query:", err);
-    setDefaultTheme();
-  }
-}
-
 // Helper function to set default theme based on pathname
 function setDefaultTheme() {
   const isLandingPage = window.location.pathname === '/';
@@ -97,4 +54,7 @@ function setDefaultTheme() {
   
   document.documentElement.classList.add(theme);
   localStorage.setItem('theme', theme);
+  
+  // Set default theme ID
+  document.body.setAttribute("data-theme", "minimalist");
 }

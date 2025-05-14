@@ -3,30 +3,34 @@ import React, { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ThemeToggle: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
     const isLandingPage = window.location.pathname === '/';
     return isLandingPage ? 'dark' : 'light';
   });
+  
+  // Get theme from context
+  const { theme } = useTheme();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    const savedColorMode = localStorage.getItem('theme') as 'light' | 'dark';
+    if (savedColorMode) {
+      setColorMode(savedColorMode);
+      document.documentElement.classList.toggle('dark', savedColorMode === 'dark');
     }
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    localStorage.setItem('theme', newTheme);
+  const toggleColorMode = () => {
+    const newColorMode = colorMode === 'light' ? 'dark' : 'light';
+    setColorMode(newColorMode);
+    document.documentElement.classList.toggle('dark', newColorMode === 'dark');
+    localStorage.setItem('theme', newColorMode);
     
     toast({
-      title: newTheme === 'dark' ? 'Koyu tema aktif' : 'Açık tema aktif',
-      description: newTheme === 'dark' ? 'Sayfa koyu temaya geçti' : 'Sayfa açık temaya geçti',
+      title: newColorMode === 'dark' ? 'Koyu tema aktif' : 'Açık tema aktif',
+      description: newColorMode === 'dark' ? 'Sayfa koyu temaya geçti' : 'Sayfa açık temaya geçti',
       duration: 2000,
     });
   };
@@ -35,11 +39,11 @@ const ThemeToggle: React.FC = () => {
     <Button 
       variant="ghost" 
       size="sm" 
-      onClick={toggleTheme}
+      onClick={toggleColorMode}
       className="h-8 w-8 px-0 hover:bg-muted/50 transition-all duration-300 animate-fade-in"
-      aria-label={theme === 'light' ? 'Koyu temaya geç' : 'Açık temaya geç'}
+      aria-label={colorMode === 'light' ? 'Koyu temaya geç' : 'Açık temaya geç'}
     >
-      {theme === 'light' ? (
+      {colorMode === 'light' ? (
         <Moon className="h-4 w-4 transition-transform duration-300 hover:rotate-12" />
       ) : (
         <Sun className="h-4 w-4 transition-transform duration-300 hover:rotate-12" />

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -79,6 +80,29 @@
     
     --border: 240 5% 90%;
     --input: 240 5% 90%;
+  }
+
+  [data-theme="elegant"] {
+    --background: 40 20% 97%;
+    --foreground: 30 10% 15%;
+
+    --card: 40 15% 98%;
+    --card-foreground: 30 10% 15%;
+
+    --primary: 30 80% 55%;
+    --primary-foreground: 30 10% 5%;
+
+    --secondary: 40 10% 92%;
+    --secondary-foreground: 30 10% 15%;
+    
+    --accent: 30 80% 55%;
+    --accent-foreground: 30 10% 5%;
+    
+    --muted: 40 10% 92%;
+    --muted-foreground: 30 10% 40%;
+    
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
   }
  
   .dark {

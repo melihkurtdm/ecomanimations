@@ -24,7 +24,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         
         const { data, error } = await supabase
           .from("stores")
-          .select("selected_theme, theme_settings")
+          .select("*")
           .eq("domain", currentDomain)
           .maybeSingle();
         
@@ -33,21 +33,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         
-        // If we have theme settings, use them
-        if (data?.theme_settings) {
-          setThemeSettings(data.theme_settings);
-          // If the theme settings include a theme property, use it as the theme
-          if (data.theme_settings && 
-              typeof data.theme_settings === 'object' && 
-              !Array.isArray(data.theme_settings) && 
-              'id' in data.theme_settings) {
-            // Convert potential non-string ID to string
-            setTheme(String(data.theme_settings.id));
-          } else if (data.selected_theme) {
-            setTheme(data.selected_theme);
+        if (data) {
+          // Set the theme from selected_theme
+          setTheme(data.selected_theme || "minimalist");
+          
+          // Set theme settings if available
+          if (data.theme_settings) {
+            setThemeSettings(data.theme_settings);
           }
-        } else if (data?.selected_theme) {
-          setTheme(data.selected_theme);
         }
       } catch (error) {
         console.error("Failed to load theme settings:", error);
@@ -59,13 +52,43 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     loadThemeSettings();
   }, []);
 
-  // Apply theme whenever it changes
+  // Update theme in Supabase when it changes
+  const updateThemeInSupabase = async (newTheme: string) => {
+    try {
+      const currentDomain = window.location.hostname;
+      
+      const { error } = await supabase
+        .from("stores")
+        .update({ selected_theme: newTheme })
+        .eq("domain", currentDomain);
+      
+      if (error) {
+        console.error("Theme could not be updated:", error);
+      } else {
+        console.log("Theme successfully updated to:", newTheme);
+      }
+    } catch (error) {
+      console.error("Error updating theme:", error);
+    }
+  };
+
+  // Apply theme whenever it changes and update in Supabase
   useEffect(() => {
     document.body.setAttribute("data-theme", theme);
-  }, [theme]);
+    
+    // Update theme in Supabase when it changes
+    if (!isLoading) {
+      updateThemeInSupabase(theme);
+    }
+  }, [theme, isLoading]);
 
   return (
-    <ThemeContext.Provider value={{ theme, themeSettings, setTheme, setThemeSettings }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      themeSettings, 
+      setTheme, 
+      setThemeSettings 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
