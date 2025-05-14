@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext"; // Added import
@@ -21,7 +20,7 @@ import Store from "./pages/Store";
 import Stats from "./pages/Stats";
 import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
-import DomainManagement from "./pages/DomainManagement";
+import DomainManagement from './pages/DomainManagement';
 import ThemePublish from "./pages/ThemePublish";
 import AdvertisingManager from "./pages/AdvertisingManager";
 import StoreAnalytics from "./pages/StoreAnalytics";
@@ -104,7 +103,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
+              <Router>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
@@ -126,7 +125,7 @@ function App() {
                   <Route path="/dashboard/payment-success" element={<PaymentSuccess />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </BrowserRouter>
+              </Router>
             </TooltipProvider>
           </ThemeProvider>
         </LanguageProvider>

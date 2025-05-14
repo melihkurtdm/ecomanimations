@@ -1,4 +1,3 @@
-
 export type DomainStatus = "verified" | "pending" | "error";
 
 export interface Domain {
@@ -45,4 +44,25 @@ export interface DomainData {
   themePublishedAt?: string;
   activeTheme?: string;
   namecheapConnected?: boolean;
+}
+
+// Add interface for Vercel DNS records
+export interface VercelDnsConfig {
+  name?: string;
+  aliases?: string[];
+  cname?: string;
+  aRecord?: string;
+  aliasRecord?: boolean;
+  configuredBy?: string;
+  verified?: boolean;
+  verification?: {
+    type: string;
+    domain: string;
+    value: string;
+    reason: string;
+  }[];
+  error?: {
+    code: string;
+    message: string;
+  };
 }

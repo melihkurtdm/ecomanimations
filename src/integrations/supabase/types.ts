@@ -9,6 +9,62 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      domains: {
+        Row: {
+          created_at: string | null
+          dns_records: Json | null
+          domain: string
+          error_message: string | null
+          id: string
+          last_checked: string | null
+          primary: boolean | null
+          status: string | null
+          store_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          vercel_status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dns_records?: Json | null
+          domain: string
+          error_message?: string | null
+          id?: string
+          last_checked?: string | null
+          primary?: boolean | null
+          status?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vercel_status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dns_records?: Json | null
+          domain?: string
+          error_message?: string | null
+          id?: string
+          last_checked?: string | null
+          primary?: boolean | null
+          status?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vercel_status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domains_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -35,28 +91,37 @@ export type Database = {
       }
       stores: {
         Row: {
+          created_at: string | null
           domain: string
           id: string
           selected_theme: string
           store_name: string | null
           theme_settings: Json | null
+          updated_at: string | null
           user_id: string | null
+          vercel_status: string | null
         }
         Insert: {
+          created_at?: string | null
           domain: string
           id?: string
           selected_theme: string
           store_name?: string | null
           theme_settings?: Json | null
+          updated_at?: string | null
           user_id?: string | null
+          vercel_status?: string | null
         }
         Update: {
+          created_at?: string | null
           domain?: string
           id?: string
           selected_theme?: string
           store_name?: string | null
           theme_settings?: Json | null
+          updated_at?: string | null
           user_id?: string | null
+          vercel_status?: string | null
         }
         Relationships: []
       }
