@@ -57,30 +57,40 @@ serve(async (req) => {
       );
     }
 
-    // In a real implementation, we would call Vercel API
-    // to add the domain to the project
-    // const vercelApiKey = Deno.env.get("VERCEL_API_KEY");
-    // const vercelProjectId = Deno.env.get("VERCEL_PROJECT_ID");
-    
-    // Mock DNS records that would be returned from Vercel API
-    const mockDnsRecords = {
-      name: domain,
-      apexName: domain,
-      dnsRecords: [
-        {
-          name: domain,
-          type: "CNAME",
-          value: "routes.shopset.net",
-          ttl: 3600
+    // Get Vercel API credentials
+    const vercelApiToken = Deno.env.get("VERCEL_API_TOKEN");
+    const vercelProjectId = Deno.env.get("VERCEL_PROJECT_ID");
+
+    if (!vercelApiToken || !vercelProjectId) {
+      throw new Error('Vercel API credentials not configured');
+    }
+
+    // Call Vercel API to add domain
+    const vercelDomainResponse = await fetch(
+      `https://api.vercel.com/v9/projects/${vercelProjectId}/domains?teamId=team_HPjKHkr4qzE4yQDICc76U3La`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${vercelApiToken}`,
+          'Content-Type': 'application/json',
         },
-        {
-          name: "www",
-          type: "CNAME", 
-          value: "routes.shopset.net",
-          ttl: 3600
-        }
-      ],
-      verified: false,
+        body: JSON.stringify({ name: domain }),
+      }
+    );
+
+    const vercelData = await vercelDomainResponse.json();
+    
+    if (!vercelDomainResponse.ok) {
+      console.error('Vercel API error:', vercelData);
+      throw new Error(`Vercel API error: ${vercelData.error?.message || 'Unknown error'}`);
+    }
+
+    // Get DNS configuration from Vercel response
+    const dnsConfig = {
+      name: vercelData.name,
+      apexName: vercelData.apexName,
+      dnsRecords: vercelData.verification || [],
+      verified: vercelData.verified,
     };
 
     // Insert the new domain into the database
@@ -92,8 +102,8 @@ serve(async (req) => {
           user_id: userId,
           store_id: storeId,
           status: 'pending',
-          vercel_status: 'pending',
-          dns_records: mockDnsRecords
+          vercel_status: vercelData.verified ? 'verified' : 'pending',
+          dns_records: dnsConfig
         }
       ])
       .select()
@@ -107,7 +117,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         domain: newDomain,
-        dnsRecords: mockDnsRecords.dnsRecords
+        dnsRecords: dnsConfig.dnsRecords
       }),
       {
         headers: {

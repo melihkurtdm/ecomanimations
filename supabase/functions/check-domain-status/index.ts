@@ -22,51 +22,80 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get auth token from request
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    // Get Vercel API credentials
+    const vercelApiToken = Deno.env.get("VERCEL_API_TOKEN");
+    const vercelProjectId = Deno.env.get("VERCEL_PROJECT_ID");
+
+    if (!vercelApiToken || !vercelProjectId) {
+      throw new Error('Vercel API credentials not configured');
     }
-    
+
     // Get pending domains
     const { data: domains, error } = await supabase
       .from('domains')
       .select()
-      .eq('status', 'pending');
+      .in('status', ['pending', 'error']);
 
     if (error) {
       throw error;
     }
 
-    console.log(`Found ${domains.length} pending domains to check`);
+    console.log(`Found ${domains.length} domains to check`);
 
-    // For now, this is a mock implementation - in a real implementation,
-    // you would check each domain's DNS records against the expected values
+    // Check status for each domain
     let checkedCount = 0;
+    let verifiedCount = 0;
     
     for (const domain of domains) {
       try {
-        // Mock verification - simulate checking DNS records
-        // In a real implementation, you would:
-        // 1. Call Vercel API to check domain verification status
-        // 2. Update the domain status based on the API response
+        // Call Vercel API to check domain status
+        const vercelResponse = await fetch(
+          `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}?teamId=team_HPjKHkr4qzE4yQDICc76U3La`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${vercelApiToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!vercelResponse.ok) {
+          const errorData = await vercelResponse.json();
+          console.error(`Error checking domain ${domain.domain}:`, errorData);
+          
+          await supabase
+            .from('domains')
+            .update({
+              status: 'error',
+              error_message: `Verification failed: ${errorData.error?.message || 'Unknown error'}`,
+              last_checked: new Date().toISOString()
+            })
+            .eq('id', domain.id);
+            
+          continue;
+        }
         
-        const randomStatus = Math.random() > 0.3 ? 'verified' : 'pending';
+        const vercelData = await vercelResponse.json();
         
-        if (randomStatus === 'verified') {
+        if (vercelData.verified) {
           await supabase
             .from('domains')
             .update({
               status: 'verified',
               verified_at: new Date().toISOString(),
-              last_checked: new Date().toISOString()
+              last_checked: new Date().toISOString(),
+              vercel_status: 'verified'
             })
             .eq('id', domain.id);
+          
+          verifiedCount++;
         } else {
           await supabase
             .from('domains')
             .update({
-              last_checked: new Date().toISOString()
+              last_checked: new Date().toISOString(),
+              vercel_status: vercelData.verified ? 'verified' : 'pending'
             })
             .eq('id', domain.id);
         }
@@ -91,7 +120,8 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         checkedCount,
-        message: `Checked ${checkedCount} domains`
+        verifiedCount,
+        message: `Checked ${checkedCount} domains, verified ${verifiedCount}`
       }),
       {
         headers: {

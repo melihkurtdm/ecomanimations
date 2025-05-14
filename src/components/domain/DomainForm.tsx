@@ -48,8 +48,9 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
       const { data, error } = await supabase.functions.invoke('add-domain', {
         body: {
           domain,
-          selectedTheme,
+          theme: selectedTheme,
           userId: user.id,
+          storeId: null, // You can add store selection if needed
         },
       });
       
@@ -62,7 +63,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
       }
 
       // Set DNS records for display
-      setDnsRecords(data.dnsConfig);
+      setDnsRecords(data.dnsRecords);
       
       toast({
         title: "Domain added successfully",
@@ -97,7 +98,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
 
       toast({
         title: "Domain status checked",
-        description: `Checked ${data.checkedCount} domain(s).`,
+        description: `Checked ${data.checkedCount} domain(s). Verified ${data.verifiedCount} domain(s).`,
       });
 
     } catch (error) {
@@ -111,56 +112,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
   };
 
   const renderDnsRecords = () => {
-    if (!dnsRecords) return null;
-    
-    // Determine what to show based on Vercel's response
-    let recordsToShow = [];
-    
-    if (dnsRecords.name?.length > 0) {
-      recordsToShow = [
-        {
-          type: dnsRecords.aliasRecord ? 'A' : 'CNAME',
-          name: dnsRecords.name,
-          value: dnsRecords.aliasRecord ? 'Vercel A Record' : 'cname.vercel-dns.com',
-          ttl: 60
-        }
-      ];
-    } else if (dnsRecords.aRecord) {
-      recordsToShow = [
-        {
-          type: 'A',
-          name: '@',
-          value: dnsRecords.aRecord,
-          ttl: 60
-        }
-      ];
-    } else if (dnsRecords.cname) {
-      recordsToShow = [
-        {
-          type: 'CNAME',
-          name: '@',
-          value: dnsRecords.cname,
-          ttl: 60
-        }
-      ];
-    } else if (dnsRecords.configuredBy) {
-      // Domain already configured
-      return (
-        <div className="mt-4 p-4 bg-green-50 text-green-800 rounded-md">
-          <p className="font-medium">Domain verified!</p>
-          <p>Your domain is already configured correctly.</p>
-        </div>
-      );
-    }
-    
-    if (recordsToShow.length === 0) {
-      return (
-        <div className="mt-4 p-4 bg-yellow-50 text-yellow-800 rounded-md">
-          <p className="font-medium">No DNS records available</p>
-          <p>Please try adding your domain again or contact support.</p>
-        </div>
-      );
-    }
+    if (!dnsRecords || dnsRecords.length === 0) return null;
     
     return (
       <div className="mt-6 border rounded-md overflow-hidden">
@@ -181,12 +133,12 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
               </tr>
             </thead>
             <tbody>
-              {recordsToShow.map((record, index) => (
+              {dnsRecords.map((record: any, index: number) => (
                 <tr key={index} className="border-t">
                   <td className="px-4 py-2">{record.type}</td>
                   <td className="px-4 py-2">{record.name}</td>
                   <td className="px-4 py-2 font-mono text-xs">{record.value}</td>
-                  <td className="px-4 py-2">{record.ttl}</td>
+                  <td className="px-4 py-2">{record.ttl || "Auto"}</td>
                 </tr>
               ))}
             </tbody>
