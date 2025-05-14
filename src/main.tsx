@@ -49,34 +49,40 @@ supabase
       checkDomainsTable();
     }
   })
-  .catch(err => {
+  .catch((err: Error) => {
     console.error("Error in Supabase query:", err);
     setDefaultTheme();
   });
 
 // Helper function to check domains table (previous approach)
 function checkDomainsTable() {
-  supabase
-    .from("domains")
-    .select("*")
-    .eq("domain", currentDomain)
-    .maybeSingle()
-    .then(({ data, error }) => {
-      if (error) {
-        console.error("Error fetching domain data:", error);
+  try {
+    // Using any type assertion as domains table doesn't exist in the TypeScript schema
+    (supabase as any)
+      .from("domains")
+      .select("*")
+      .eq("domain", currentDomain)
+      .maybeSingle()
+      .then(({ data, error }: { data: any, error: any }) => {
+        if (error) {
+          console.error("Error fetching domain data:", error);
+          setDefaultTheme();
+          return;
+        }
+        
+        // Using optional chaining and type assertion to safely access theme
+        const theme = data?.theme === "dark" ? "dark" : "light";
+        document.documentElement.classList.add(theme);
+        localStorage.setItem('theme', theme);
+      })
+      .catch((err: Error) => {
+        console.error("Error in domains query:", err);
         setDefaultTheme();
-        return;
-      }
-      
-      // Using optional chaining and type assertion to safely access theme
-      const theme = data?.theme === "dark" ? "dark" : "light";
-      document.documentElement.classList.add(theme);
-      localStorage.setItem('theme', theme);
-    })
-    .catch(err => {
-      console.error("Error in domains query:", err);
-      setDefaultTheme();
-    });
+      });
+  } catch (err) {
+    console.error("Error executing domains query:", err);
+    setDefaultTheme();
+  }
 }
 
 // Helper function to set default theme based on pathname
