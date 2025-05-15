@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,8 +18,38 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
   const [selectedTheme, setSelectedTheme] = useState('minimalist');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dnsRecords, setDnsRecords] = useState<any>(null);
+  const [defaultStore, setDefaultStore] = useState<any>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Fetch user's default store on component mount
+  useEffect(() => {
+    const fetchDefaultStore = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: stores, error } = await supabase
+          .from('stores')
+          .select('*')
+          .eq('user_id', user.id)
+          .limit(1);
+        
+        if (error) {
+          console.error('Error fetching store:', error);
+          return;
+        }
+        
+        if (stores && stores.length > 0) {
+          setDefaultStore(stores[0]);
+          console.log('Default store found:', stores[0]);
+        }
+      } catch (err) {
+        console.error('Error in fetchDefaultStore:', err);
+      }
+    };
+    
+    fetchDefaultStore();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,23 +75,37 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
     setIsSubmitting(true);
     
     try {
+      // Use the store ID from the default store if available
+      const storeId = defaultStore?.id || null;
+      
+      console.log('Submitting domain with:', {
+        domain,
+        theme: selectedTheme,
+        userId: user.id,
+        storeId,
+      });
+      
       const { data, error } = await supabase.functions.invoke('add-domain', {
         body: {
           domain,
           theme: selectedTheme,
           userId: user.id,
-          storeId: null, // You can add store selection if needed
+          storeId,
         },
       });
       
       if (error) {
+        console.error('Error invoking add-domain function:', error);
         throw new Error(error.message);
       }
 
       if (data.error) {
+        console.error('Error returned from add-domain function:', data.error);
         throw new Error(data.error);
       }
 
+      console.log('Domain added successfully:', data);
+      
       // Set DNS records for display
       setDnsRecords(data.dnsRecords);
       
@@ -200,6 +244,14 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
             </div>
           </RadioGroup>
         </div>
+
+        {defaultStore && (
+          <div className="p-2 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-800">
+              Domain will be connected to your store: <strong>{defaultStore.store_name || 'Default Store'}</strong>
+            </p>
+          </div>
+        )}
 
         <Button
           type="submit"

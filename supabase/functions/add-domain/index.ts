@@ -21,13 +21,29 @@ serve(async (req) => {
     const body = await req.json();
     const { domain, theme, userId, storeId } = body;
 
+    console.log("Received request body:", JSON.stringify({
+      domain,
+      theme,
+      userId,
+      storeId: storeId || "null"
+    }));
+
     if (!domain) {
       throw new Error('Domain is required');
+    }
+
+    if (!userId) {
+      throw new Error('User ID is required');
     }
 
     // Create a Supabase client with the Auth context of the logged in user
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration is missing');
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Check if domain already exists
@@ -65,6 +81,8 @@ serve(async (req) => {
       throw new Error('Vercel API credentials not configured');
     }
 
+    console.log("Calling Vercel API with project ID:", vercelProjectId);
+    
     // Call Vercel API to add domain
     const vercelDomainResponse = await fetch(
       `https://api.vercel.com/v9/projects/${vercelProjectId}/domains?teamId=team_HPjKHkr4qzE4yQDICc76U3La`,
@@ -80,9 +98,12 @@ serve(async (req) => {
 
     const vercelData = await vercelDomainResponse.json();
     
+    // Log detailed response from Vercel for debugging
+    console.log("Vercel API response status:", vercelDomainResponse.status);
+    console.log("Vercel API response data:", JSON.stringify(vercelData));
+    
     if (!vercelDomainResponse.ok) {
-      console.error('Vercel API error:', vercelData);
-      throw new Error(`Vercel API error: ${vercelData.error?.message || 'Unknown error'}`);
+      throw new Error(`Vercel API error: ${vercelData.error?.message || JSON.stringify(vercelData)}`);
     }
 
     // Get DNS configuration from Vercel response
