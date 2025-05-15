@@ -19,6 +19,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dnsRecords, setDnsRecords] = useState<any>(null);
   const [defaultStore, setDefaultStore] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -53,6 +54,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!domain) {
       toast({
@@ -85,7 +87,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
         storeId,
       });
       
-      const { data, error } = await supabase.functions.invoke('add-domain', {
+      const response = await supabase.functions.invoke('add-domain', {
         body: {
           domain,
           theme: selectedTheme,
@@ -94,14 +96,17 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
         },
       });
       
-      if (error) {
-        console.error('Error invoking add-domain function:', error);
-        throw new Error(error.message);
+      // Check for errors in the response
+      if (response.error) {
+        console.error('Error from add-domain function:', response.error);
+        throw new Error(response.error.message || 'Failed to add domain');
       }
 
-      if (data.error) {
-        console.error('Error returned from add-domain function:', data.error);
-        throw new Error(data.error);
+      const data = response.data;
+      
+      if (!data || data.error) {
+        console.error('Error returned from add-domain function:', data?.error || 'Unknown error');
+        throw new Error(data?.error || 'Failed to add domain');
       }
 
       console.log('Domain added successfully:', data);
@@ -120,6 +125,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
       
     } catch (error) {
       console.error('Error adding domain:', error);
+      setError(error.message);
       toast({
         title: "Failed to add domain",
         description: error.message || "An error occurred",
@@ -208,6 +214,16 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="p-4 border border-red-200 bg-red-50 text-red-800 rounded-md">
+          <p className="font-medium">Error occurred:</p>
+          <p className="text-sm">{error}</p>
+          <p className="text-xs mt-2">
+            Please check that your Vercel API token has the correct permissions and that it is valid.
+          </p>
+        </div>
+      )}
+    
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="domain">Domain Name</Label>
@@ -249,6 +265,14 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
           <div className="p-2 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800">
               Domain will be connected to your store: <strong>{defaultStore.store_name || 'Default Store'}</strong>
+            </p>
+          </div>
+        )}
+
+        {!defaultStore && (
+          <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-sm text-yellow-800">
+              No store found. Domain will be added without store connection.
             </p>
           </div>
         )}

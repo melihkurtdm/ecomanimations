@@ -82,6 +82,8 @@ serve(async (req) => {
     }
 
     console.log("Calling Vercel API with project ID:", vercelProjectId);
+    console.log("Vercel API Token length:", vercelApiToken.length, "characters");
+    console.log("Vercel API Token first 4 chars:", vercelApiToken.substring(0, 4), "...");
     
     // Call Vercel API to add domain
     const vercelDomainResponse = await fetch(
@@ -96,14 +98,27 @@ serve(async (req) => {
       }
     );
 
-    const vercelData = await vercelDomainResponse.json();
-    
-    // Log detailed response from Vercel for debugging
+    // Log full response details for debugging
+    const responseText = await vercelDomainResponse.text();
     console.log("Vercel API response status:", vercelDomainResponse.status);
-    console.log("Vercel API response data:", JSON.stringify(vercelData));
+    console.log("Vercel API response full body:", responseText);
+
+    // Parse the response as JSON if possible
+    let vercelData;
+    try {
+      vercelData = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse Vercel API response as JSON:", e);
+      throw new Error(`Vercel API returned invalid JSON: ${responseText.substring(0, 100)}...`);
+    }
     
     if (!vercelDomainResponse.ok) {
-      throw new Error(`Vercel API error: ${vercelData.error?.message || JSON.stringify(vercelData)}`);
+      // Create more detailed error message
+      const errorDetails = vercelData?.error ? 
+        `code: ${vercelData.error.code}, message: ${vercelData.error.message}` : 
+        JSON.stringify(vercelData);
+        
+      throw new Error(`Vercel API error (${vercelDomainResponse.status}): ${errorDetails}`);
     }
 
     // Get DNS configuration from Vercel response
