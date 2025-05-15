@@ -90,7 +90,7 @@ serve(async (req) => {
     console.log("Token length:", vercelApiToken.length, "characters");
     console.log("Token first 4 chars:", vercelApiToken.substring(0, 4));
     
-    // Call Vercel API to add domain - removing hardcoded team ID
+    // Call Vercel API to add domain
     const vercelDomainResponse = await fetch(
       `https://api.vercel.com/v9/projects/${vercelProjectId}/domains`,
       {

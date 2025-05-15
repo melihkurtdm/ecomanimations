@@ -57,7 +57,7 @@ serve(async (req) => {
     
     for (const domain of domains) {
       try {
-        // Call Vercel API to check domain status - removing hardcoded team ID
+        // Call Vercel API to check domain status
         const vercelResponse = await fetch(
           `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}`,
           {
