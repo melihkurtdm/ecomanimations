@@ -91,8 +91,11 @@ serve(async (req) => {
     console.log("Token first 4 chars:", vercelApiToken.substring(0, 4));
     
     // Call Vercel API to add domain
+    const vercelUrl = `https://api.vercel.com/v9/projects/${vercelProjectId}/domains`;
+    console.log("Calling Vercel API URL:", vercelUrl);
+    
     const vercelDomainResponse = await fetch(
-      `https://api.vercel.com/v9/projects/${vercelProjectId}/domains`,
+      vercelUrl,
       {
         method: 'POST',
         headers: {

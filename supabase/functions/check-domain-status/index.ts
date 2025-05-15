@@ -58,8 +58,11 @@ serve(async (req) => {
     for (const domain of domains) {
       try {
         // Call Vercel API to check domain status
+        const vercelUrl = `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}`;
+        console.log(`Checking domain ${domain.domain} with URL:`, vercelUrl);
+        
         const vercelResponse = await fetch(
-          `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}`,
+          vercelUrl,
           {
             method: 'GET',
             headers: {
@@ -70,7 +73,17 @@ serve(async (req) => {
         );
 
         if (!vercelResponse.ok) {
-          const errorData = await vercelResponse.json();
+          const responseText = await vercelResponse.text();
+          console.error(`Error response for domain ${domain.domain}:`, responseText);
+          
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+          } catch (e) {
+            console.error("Failed to parse error response as JSON:", e);
+            errorData = { error: { message: responseText } };
+          }
+          
           console.error(`Error checking domain ${domain.domain}:`, errorData);
           
           await supabase
@@ -86,6 +99,7 @@ serve(async (req) => {
         }
         
         const vercelData = await vercelResponse.json();
+        console.log(`Domain ${domain.domain} check result:`, vercelData);
         
         if (vercelData.verified) {
           await supabase
