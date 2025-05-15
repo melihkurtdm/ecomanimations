@@ -73,21 +73,26 @@ serve(async (req) => {
       );
     }
 
-    // Get Vercel API credentials
+    // Get Vercel API credentials from environment variables
     const vercelApiToken = Deno.env.get("VERCEL_API_TOKEN");
     const vercelProjectId = Deno.env.get("VERCEL_PROJECT_ID");
 
     if (!vercelApiToken || !vercelProjectId) {
+      console.error("Missing Vercel credentials:", {
+        hasToken: vercelApiToken ? "Yes" : "No",
+        hasProjectId: vercelProjectId ? "Yes" : "No"
+      });
       throw new Error('Vercel API credentials not configured');
     }
 
-    console.log("Calling Vercel API with project ID:", vercelProjectId);
-    console.log("Vercel API Token length:", vercelApiToken.length, "characters");
-    console.log("Vercel API Token first 4 chars:", vercelApiToken.substring(0, 4), "...");
+    console.log("Vercel configuration check:");
+    console.log("Project ID:", vercelProjectId);
+    console.log("Token length:", vercelApiToken.length, "characters");
+    console.log("Token first 4 chars:", vercelApiToken.substring(0, 4));
     
-    // Call Vercel API to add domain
+    // Call Vercel API to add domain - removing hardcoded team ID
     const vercelDomainResponse = await fetch(
-      `https://api.vercel.com/v9/projects/${vercelProjectId}/domains?teamId=team_HPjKHkr4qzE4yQDICc76U3La`,
+      `https://api.vercel.com/v9/projects/${vercelProjectId}/domains`,
       {
         method: 'POST',
         headers: {

@@ -20,6 +20,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
   const [dnsRecords, setDnsRecords] = useState<any>(null);
   const [defaultStore, setDefaultStore] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -55,6 +56,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setDebugInfo(null);
     
     if (!domain) {
       toast({
@@ -87,14 +89,32 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
         storeId,
       });
       
-      const response = await supabase.functions.invoke('add-domain', {
-        body: {
-          domain,
-          theme: selectedTheme,
-          userId: user.id,
-          storeId,
-        },
+      // Capture the actual request payload for debugging
+      const requestBody = {
+        domain,
+        theme: selectedTheme,
+        userId: user.id,
+        storeId,
+      };
+      
+      setDebugInfo({
+        requestSent: true,
+        requestBody,
+        timestamp: new Date().toISOString()
       });
+      
+      const response = await supabase.functions.invoke('add-domain', {
+        body: requestBody,
+      });
+      
+      // Update debug info with response
+      setDebugInfo(prev => ({
+        ...prev,
+        responseReceived: true,
+        responseError: response.error,
+        responseData: response.data,
+        responseStatus: response.error ? 'error' : 'success'
+      }));
       
       // Check for errors in the response
       if (response.error) {
@@ -223,6 +243,16 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
           </p>
         </div>
       )}
+      
+      {/* Debug Info Panel - Gönderimdeki değerleri görmek için */}
+      {debugInfo && (
+        <div className="p-4 border border-blue-200 bg-blue-50 text-blue-800 rounded-md text-xs">
+          <p className="font-medium">Debug Information:</p>
+          <pre className="mt-2 overflow-auto max-h-40">
+            {JSON.stringify(debugInfo, null, 2)}
+          </pre>
+        </div>
+      )}
     
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
@@ -265,6 +295,7 @@ const DomainForm: React.FC<DomainFormProps> = ({ onSuccess }) => {
           <div className="p-2 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800">
               Domain will be connected to your store: <strong>{defaultStore.store_name || 'Default Store'}</strong>
+              (ID: {defaultStore.id})
             </p>
           </div>
         )}

@@ -27,8 +27,17 @@ serve(async (req) => {
     const vercelProjectId = Deno.env.get("VERCEL_PROJECT_ID");
 
     if (!vercelApiToken || !vercelProjectId) {
+      console.error("Missing Vercel credentials:", {
+        hasToken: vercelApiToken ? "Yes" : "No",
+        hasProjectId: vercelProjectId ? "Yes" : "No"
+      });
       throw new Error('Vercel API credentials not configured');
     }
+
+    console.log("Vercel configuration check:");
+    console.log("Project ID:", vercelProjectId);
+    console.log("Token length:", vercelApiToken.length, "characters");
+    console.log("Token first 4 chars:", vercelApiToken.substring(0, 4));
 
     // Get pending domains
     const { data: domains, error } = await supabase
@@ -48,9 +57,9 @@ serve(async (req) => {
     
     for (const domain of domains) {
       try {
-        // Call Vercel API to check domain status
+        // Call Vercel API to check domain status - removing hardcoded team ID
         const vercelResponse = await fetch(
-          `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}?teamId=team_HPjKHkr4qzE4yQDICc76U3La`,
+          `https://api.vercel.com/v9/projects/${vercelProjectId}/domains/${domain.domain}`,
           {
             method: 'GET',
             headers: {
