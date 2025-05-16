@@ -9,6 +9,7 @@ const Hero = () => {
   const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const translations = {
     tr: {
@@ -68,6 +69,17 @@ const Hero = () => {
       if (imageRef.current) observer.unobserve(imageRef.current);
     };
   }, []);
+
+  // Kullanıcı etkileşimiyle videoyu oynatma fonksiyonu
+  const handlePlayVideo = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  };
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-16 md:py-32">
@@ -145,20 +157,33 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 1.1 }}
               className="mt-10"
             >
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                style={{ width: '100%', maxWidth: '640px', borderRadius: '12px', margin: '0 auto' }}
-                className="shadow-xl"
+              <div 
+                className="relative cursor-pointer"
+                onClick={handlePlayVideo}
               >
-                <source
-                  src="https://raw.githubusercontent.com/melihkurtdm/ecomanimations/main/videos/intro.mp4"
-                  type="video/mp4"
-                />
-                Tarayıcınız video etiketini desteklemiyor.
-              </video>
+                <video
+                  ref={videoRef}
+                  loop
+                  playsInline
+                  style={{ width: '100%', maxWidth: '640px', borderRadius: '12px', margin: '0 auto' }}
+                  className="shadow-xl"
+                >
+                  <source
+                    src="https://raw.githubusercontent.com/melihkurtdm/ecomanimations/main/videos/intro.mp4"
+                    type="video/mp4"
+                  />
+                  Tarayıcınız video etiketini desteklemiyor.
+                </video>
+                {/* Video kontrol butonu */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl opacity-0 hover:opacity-100 transition-opacity">
+                  <div className="bg-white/90 dark:bg-gray-800/90 rounded-full p-3 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brand-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </motion.div>
             
             <motion.div 
