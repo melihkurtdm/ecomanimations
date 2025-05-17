@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
@@ -65,7 +64,7 @@ type ThemeSettings = {
 const ThemeCustomization = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>(currentTheme);
   const [previewMode, setPreviewMode] = useState(false);
   const [activeTab, setActiveTab] = useState("colors");
@@ -86,6 +85,11 @@ const ThemeCustomization = () => {
       borderRadius: themeSettings.borderRadius,
     }
   });
+
+  // Dynamically import the correct theme layout
+  const ThemeLayout = React.useMemo(() => {
+    return lazy(() => import(`../themes/${theme}/ThemeLayout.tsx`));
+  }, [theme]);
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -304,6 +308,12 @@ const ThemeCustomization = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Theme Layout Preview */}
+      <div className="mb-8 border rounded shadow overflow-hidden">
+        <Suspense fallback={<div className="flex items-center justify-center p-8">Tema yükleniyor...</div>}>
+          <ThemeLayout page="homepage" />
+        </Suspense>
+      </div>
       <ThemeHeader 
         title="Tema Özelleştirme"
         description="Mağazanızın görünümünü özelleştirin. Renk şemasını, yazı tiplerini ve diğer tasarım öğelerini zevkinize göre düzenleyin."
