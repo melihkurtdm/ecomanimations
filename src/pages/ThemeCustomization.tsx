@@ -116,6 +116,30 @@ const ThemeCustomization = () => {
     setIsSaved(false);
   }, [themeSettings]);
 
+  // Fetch theme settings from Supabase on mount or when currentDomain changes
+  useEffect(() => {
+    const fetchThemeSettings = async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('theme_settings')
+        .eq('domain', currentDomain)
+        .single();
+
+      if (error) {
+        console.error('Tema ayarları çekilirken hata:', error);
+        return;
+      }
+
+      // Type guard: ensure theme_settings is an object with at least an id property
+      if (data && typeof data.theme_settings === 'object' && data.theme_settings !== null) {
+        setThemeSettings(data.theme_settings as ThemeSettings);
+        setTheme((data.theme_settings as ThemeSettings).id || 'modern');
+      }
+    };
+
+    fetchThemeSettings();
+  }, [currentDomain, setTheme]);
+
   const handleSaveChanges = async () => {
     setIsSaved(true);
     setIsDirty(false);
