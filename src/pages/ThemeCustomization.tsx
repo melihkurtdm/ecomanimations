@@ -61,6 +61,11 @@ type ThemeSettings = {
   borderRadius: string;
 };
 
+const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+  minimalist: lazy(() => import('@/themes/minimalist/ThemeLayout')),
+  elegant: lazy(() => import('@/themes/elegant/ThemeLayout')),
+};
+
 const ThemeCustomization = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -86,10 +91,7 @@ const ThemeCustomization = () => {
     }
   });
 
-  // Dynamically import the correct theme layout
-  const ThemeLayout = React.useMemo(() => {
-    return lazy(() => import(`../themes/${theme}/ThemeLayout.tsx`));
-  }, [theme]);
+  const ThemeLayout = themeMap[theme] || themeMap["minimalist"];
 
   useEffect(() => {
     if (!user && !isLoading) {
