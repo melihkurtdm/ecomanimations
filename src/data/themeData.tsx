@@ -176,6 +176,23 @@ export const themeData: ThemeItem[] = [
       buttonStyle: "bg-gradient-to-r from-sky-500 to-blue-500 text-white",
       headerStyle: "bg-gradient-to-r from-sky-50 to-white"
     }
+  },
+  {
+    id: "luxe-aura",
+    name: "Luxe Aura",
+    description: "Lüks ve premium bir mağaza deneyimi sunar.",
+    imageSrc: "/images/themes/luxe-aura.png",
+    features: ["Lüks tasarım", "Premium ürün sunumu", "Zengin animasyonlar", "Serif yazı tipi"],
+    color: "#BFA16A",
+    category: "fashion",
+    previewUrl: "",
+    designStyle: "luxury",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "1rem",
+      buttonStyle: "font-serif text-lg",
+      headerStyle: "bg-gradient-to-r from-yellow-50 to-white"
+    }
   }
 ];
 
