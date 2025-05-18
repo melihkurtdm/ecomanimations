@@ -62,8 +62,9 @@ type ThemeSettings = {
 };
 
 const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
-  minimalist: lazy(() => import('@/themes/minimalist/ThemeLayout')),
-  elegant: lazy(() => import('@/themes/elegant/ThemeLayout')),
+  minimalist: lazy(() => import("../themes/minimalist/ThemeLayout")),
+  elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
+  "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
 };
 
 const ThemeCustomization = () => {
