@@ -92,6 +92,7 @@ const ThemeCustomization = () => {
   });
 
   const ThemeLayout = themeMap[theme] || themeMap["minimalist"];
+  console.log("Aktif tema:", theme); // 👈 ekle buraya
 
   useEffect(() => {
     if (!user && !isLoading) {
