@@ -193,6 +193,24 @@ export const themeData: ThemeItem[] = [
       buttonStyle: "font-serif text-lg",
       headerStyle: "bg-gradient-to-r from-yellow-50 to-white"
     }
+  },
+  {
+    id: "diamond-luxe",
+    name: "Diamond Luxe",
+    description: "Elit ve animasyonlu bir e-ticaret deneyimi sunar.",
+    imageSrc: "/images/themes/diamond-luxe.png",
+    features: ["Animasyonlu kartlar", "Zengin geçişler", "Premium görünüm", "Lüks tipografi"],
+    color: "#D4AF37",
+    badge: "Yeni",
+    category: "fashion",
+    previewUrl: "",
+    designStyle: "elegant",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "1rem",
+      buttonStyle: "font-bold text-lg",
+      headerStyle: "bg-gradient-to-r from-yellow-100 to-white"
+    }
   }
 ];
 
