@@ -62,10 +62,11 @@ type ThemeSettings = {
 };
 const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
   minimalist: lazy(() => import("../themes/minimalist/ThemeLayout")),
-  elegant: lazy(() => import("../themes/elegant/ThemeLayout")), 
+  elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
-  // Temporarily comment out modern theme until module is available
-  // modern: lazy(() => import("../themes/modern/ThemeLayout")),
+  // Temporarily comment out themes until modules are available
+  // "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
+  "modern": lazy(() => import("../themes/modern/ThemeLayout"))
 };
 
 const ThemeCustomization = () => {
@@ -333,7 +334,7 @@ const ThemeCustomization = () => {
     exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
   };
 
-  const selectedThemeData = themeData.find(t => t.id === currentTheme.id) || themeData[0];
+  const selectedThemeData = themeData.find(t => t.id === themeSettings.id) || themeData[0];
 
   return (
     <div className="container mx-auto px-4 py-8">
