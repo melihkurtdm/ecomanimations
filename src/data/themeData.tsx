@@ -211,6 +211,24 @@ export const themeData: ThemeItem[] = [
       buttonStyle: "font-bold text-lg",
       headerStyle: "bg-gradient-to-r from-yellow-100 to-white"
     }
+  },
+  {
+    id: "temu-clone",
+    name: "Temu Clone",
+    description: "Popüler Temu stilinde modern alışveriş deneyimi.",
+    imageSrc: "/images/themes/temu-clone.png",
+    features: ["Kampanya bannerları", "Grid ürün yerleşimi", "Hızlı satış butonları"],
+    color: "#F97316",
+    badge: "Yeni",
+    category: "catalog",
+    previewUrl: "",
+    designStyle: "dynamic",
+    layout: "grid",
+    customStyles: {
+      cardBorderRadius: "0.5rem",
+      buttonStyle: "font-semibold tracking-wide",
+      headerStyle: "bg-gradient-to-r from-orange-50 to-white"
+    }
   }
 ];
 
