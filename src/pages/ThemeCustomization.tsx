@@ -99,10 +99,7 @@ const ThemeCustomization = () => {
   console.log("theme context:", theme);
   console.log("themeSettings.id:", themeSettings.id);
   console.log("theme context:", theme);
-  const ThemeLayout = themeMap[theme] || themeMap["minimalist"];
-  console.log("theme:", theme); // 👈 aktif tema ne geliyor?
-  console.log("themeMap[theme]:", themeMap[theme]); // doğru component geliyor mu?
-  console.log("Aktif tema:", theme); // 👈 ekle buraya
+  console.log("Active theme ID (before ThemeLayout selection):", theme);
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -146,9 +143,14 @@ const ThemeCustomization = () => {
       // Type guard: ensure theme_settings is an object
       if (data && typeof data.theme_settings === 'object' && data.theme_settings !== null) {
         const themeSettings = data.theme_settings as ThemeSettings;
-        console.log("setTheme çağrıldı:", themeSettings.id);
         setThemeSettings(themeSettings);
-        setTheme(themeSettings.id || 'modern');
+        if (themeSettings.id) {
+          setTheme(themeSettings.id);
+          console.log("Active theme ID (from Supabase):", themeSettings.id);
+        } else {
+          setTheme('modern');
+          console.log("Active theme ID (defaulted to modern): modern");
+        }
       }
     };
 
@@ -369,7 +371,10 @@ const ThemeCustomization = () => {
       {/* Theme Layout Preview */}
       <div className="mb-8 border rounded shadow overflow-hidden">
         <Suspense fallback={<div className="flex items-center justify-center p-8">Tema yükleniyor...</div>}>
-          <ThemeLayout page="homepage" />
+          {(() => {
+            const LayoutComponent = themeMap[themeSettings.id || "modern"] || themeMap["minimalist"];
+            return <LayoutComponent page="homepage" />;
+          })()}
         </Suspense>
       </div>
       <ThemeHeader 
