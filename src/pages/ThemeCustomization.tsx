@@ -149,15 +149,34 @@ const ThemeCustomization = () => {
   const handleSaveChanges = async () => {
     setIsSaved(true);
     setIsDirty(false);
-    
-    // Apply the theme locally via context
+
     const themeId = themeSettings.id || "modern";
-    setTheme(themeId);
-    
-    toast({
-      title: "Değişiklikler kaydedildi",
-      description: "Tema özelleştirmeleri başarıyla uygulandı.",
-    });
+
+    setTheme(themeId); // local context
+    const { error } = await supabase
+      .from("stores")
+      .update({
+        theme_settings: {
+          ...themeSettings,
+          id: themeId,
+        },
+        selected_theme: themeId // 👈 İstersen bunu da güncelle
+      })
+      .eq("domain", currentDomain);
+
+    if (error) {
+      console.error("Tema kaydetme hatası:", error);
+      toast({
+        title: "Hata",
+        description: "Tema Supabase'e kaydedilemedi.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Değişiklikler kaydedildi",
+        description: "Tema özelleştirmeleri Supabase'e kaydedildi.",
+      });
+    }
   };
 
   const handlePublish = async () => {
