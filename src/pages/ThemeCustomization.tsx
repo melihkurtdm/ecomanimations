@@ -66,7 +66,7 @@ const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
   "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
   "modern": lazy(() => import("../themes/modern/ThemeLayout")),
-  "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout"))
+  "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };
 
 const ThemeCustomization = () => {
@@ -100,6 +100,8 @@ const ThemeCustomization = () => {
   console.log("themeSettings.id:", themeSettings.id);
   console.log("theme context:", theme);
   const ThemeLayout = themeMap[theme] || themeMap["minimalist"];
+  console.log("theme:", theme); // 👈 aktif tema ne geliyor?
+  console.log("themeMap[theme]:", themeMap[theme]); // doğru component geliyor mu?
   console.log("Aktif tema:", theme); // 👈 ekle buraya
 
   useEffect(() => {
