@@ -96,6 +96,8 @@ const ThemeCustomization = () => {
   console.log("theme:", theme);
   console.log("themeSettings.id:", themeSettings.id);
   console.log("theme context:", theme);
+  console.log("themeSettings.id:", themeSettings.id);
+  console.log("theme context:", theme);
   const ThemeLayout = themeMap[theme] || themeMap["minimalist"];
   console.log("Aktif tema:", theme); // 👈 ekle buraya
 
@@ -138,10 +140,12 @@ const ThemeCustomization = () => {
         return;
       }
 
-      // Type guard: ensure theme_settings is an object with at least an id property
+      // Type guard: ensure theme_settings is an object
       if (data && typeof data.theme_settings === 'object' && data.theme_settings !== null) {
-        setThemeSettings(data.theme_settings as ThemeSettings);
-        setTheme((data.theme_settings as ThemeSettings).id || 'modern');
+        const themeSettings = data.theme_settings as ThemeSettings;
+        console.log("setTheme çağrıldı:", themeSettings.id);
+        setThemeSettings(themeSettings);
+        setTheme(themeSettings.id || 'modern');
       }
     };
 
