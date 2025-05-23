@@ -65,7 +65,7 @@ const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
   // Temporarily comment out themes until modules are available
-  // "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
+   "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
   "modern": lazy(() => import("../themes/modern/ThemeLayout"))
 };
 
