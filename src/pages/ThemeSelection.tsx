@@ -153,45 +153,59 @@ const ThemeSelection = () => {
 
   const handleConfirmPublish = async () => {
     setIsPublishing(true);
-    
-    // Save the selected theme and domain to Supabase
+
     const currentDomain = domain || window.location.hostname;
-    
+
     try {
-      // Fix: Pass a single object instead of an array for the first parameter
       await supabase
         .from("stores")
-        .upsert({
-          domain: currentDomain,
-          selected_theme: selectedTheme || '',
-          store_name: "Oto Mağaza"
-        }, { onConflict: "domain" });
-        
-      // Continue with the existing publish process
-      
-      // Yayınlama ilerleme durumunu simüle et
+        .upsert(
+          {
+            domain: currentDomain,
+            selected_theme: selectedTheme || '',
+            store_name: "Oto Mağaza",
+            theme_settings: {
+              id: selectedTheme || 'modern',
+              colors: {
+                primary: "#F97316",
+                secondary: "#FDBA74",
+                accent: "#EF4444",
+                background: "#FFFFFF",
+                text: "#1F2937",
+              },
+              fonts: {
+                heading: "Inter",
+                body: "Inter",
+                button: "Inter",
+              },
+              spacing: {
+                section: "2rem",
+                element: "1rem",
+              },
+              borderRadius: "0.5rem"
+            }
+          },
+          { onConflict: "domain" }
+        );
+
+      // Simüle edilen yayınlama ilerlemesi
       const interval = setInterval(() => {
         setPublishingProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
-            
-            // Yayınlama tamamlandığında
             setTimeout(() => {
               setConfirmPublishDialog(false);
-              navigate('/dashboard/store-setup');
+              navigate('/dashboard/theme-customization');
             }, 500);
-            
             return 100;
           }
           return prev + 5;
         });
       }, 200);
-      
+
       toast({
         title: "Tema yayınlanıyor",
-        description: domain 
-          ? `${themeData.find(t => t.id === selectedTheme)?.name} teması ${domain} adresinde yayınlanıyor...` 
-          : `${themeData.find(t => t.id === selectedTheme)?.name} teması yayınlanıyor...`,
+        description: `${themeData.find(t => t.id === selectedTheme)?.name} teması ${currentDomain} adresinde yayınlanıyor...`,
       });
     } catch (error) {
       console.error("Theme publishing error:", error);
