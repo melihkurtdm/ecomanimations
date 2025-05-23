@@ -194,21 +194,23 @@ const ThemeCustomization = () => {
     setIsPublishing(true);
     
     try {
-      // Save theme settings to Supabase
-      const { error } = await supabase
+      await supabase
         .from("stores")
-        .update({
-          theme_settings: themeSettings
-        })
-        .eq("domain", currentDomain);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Apply the theme via context
-      const themeId = themeSettings.id || "modern";
-      setTheme(themeId);
+        .upsert(
+          {
+            domain: currentDomain,
+            selected_theme: themeSettings.id,
+            store_name: "Oto Mağaza",
+            theme_settings: {
+              id: themeSettings.id,
+              colors: themeSettings.colors,
+              fonts: themeSettings.fonts,
+              spacing: themeSettings.spacing,
+              borderRadius: themeSettings.borderRadius,
+            },
+          },
+          { onConflict: "domain" }
+        );
       
       setIsPublished(true);
       setPublishDialogOpen(false);
