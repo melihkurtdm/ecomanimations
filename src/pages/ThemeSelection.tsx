@@ -156,7 +156,12 @@ const ThemeSelection = () => {
   
     const currentDomain = domain || window.location.hostname;
   
+    // 🎯 Seçilen temanın tüm bilgilerini bul
     const selectedThemeData = themeData.find(t => t.id === selectedTheme);
+  
+    // ✅ BURAYA EKLE
+    console.log("📦 Seçilen tema ID:", selectedTheme);
+    console.log("🎨 Seçilen tema objesi:", selectedThemeData);
   
     if (!selectedThemeData) {
       toast({
@@ -178,7 +183,7 @@ const ThemeSelection = () => {
             store_name: "Oto Mağaza",
             theme_settings: {
               id: selectedThemeData.id,
-              colors: selectedThemeData.color || {
+              colors: selectedThemeData.colors || {
                 primary: "#F97316",
                 secondary: "#FDBA74",
                 accent: "#EF4444",
@@ -190,11 +195,11 @@ const ThemeSelection = () => {
                 body: "Inter",
                 button: "Inter",
               },
-              spacing: {
+              spacing: selectedThemeData.spacing || {
                 section: "2rem",
                 element: "1rem",
               },
-              borderRadius: "0.5rem"
+              borderRadius: selectedThemeData.borderRadius || "0.5rem"
             }
           },
           { onConflict: "domain" }
@@ -212,9 +217,6 @@ const ThemeSelection = () => {
     }
   };
   
-
-
- 
   const handleCustomize = () => {
     if (selectedTheme) {
       navigate('/dashboard/theme-customization');
