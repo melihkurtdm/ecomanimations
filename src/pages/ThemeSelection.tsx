@@ -174,7 +174,8 @@ const ThemeSelection = () => {
     }
   
     try {
-      await supabase
+      // First, insert/update the store record
+      const { data: storeData, error: storeError } = await supabase
         .from("stores")
         .upsert(
           {
@@ -203,8 +204,32 @@ const ThemeSelection = () => {
             }
           },
           { onConflict: "domain" }
-        );
-  
+        )
+        .select()
+        .single();
+
+      if (storeError) {
+        throw storeError;
+      }
+
+      // Then, insert the domain record
+      const { error: domainError } = await supabase
+        .from("domains")
+        .upsert({
+          domain: "ecomanimations.vercel.app",
+          store_id: storeData.id, // Link to the store record
+          store_name: "Oto Mağaza",
+          verified_at: new Date().toISOString(),
+          status: "active",
+          vercel_status: "verified"
+        }, {
+          onConflict: "domain"
+        });
+
+      if (domainError) {
+        throw domainError;
+      }
+
       // devam eden animasyon ve yönlendirme...
     } catch (error) {
       console.error("Theme publishing error:", error);
