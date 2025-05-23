@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowUpRight, Eye } from 'lucide-react';
@@ -25,6 +24,23 @@ export interface ThemeItem {
     buttonStyle?: string;
     headerStyle?: string;
   };
+  fonts?: {
+    heading: string;
+    body: string;
+    button: string;
+  };
+  colors?: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+  };
+  spacing?: {
+    section: string;
+    element: string;
+  };
+  borderRadius?: string;
 }
 
 interface ThemeCardProps {

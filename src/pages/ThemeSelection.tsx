@@ -153,27 +153,39 @@ const ThemeSelection = () => {
 
   const handleConfirmPublish = async () => {
     setIsPublishing(true);
-
+  
     const currentDomain = domain || window.location.hostname;
-
+  
+    const selectedThemeData = themeData.find(t => t.id === selectedTheme);
+  
+    if (!selectedThemeData) {
+      toast({
+        title: "Tema bulunamadı",
+        description: "Seçilen tema geçersiz.",
+        variant: "destructive",
+      });
+      setIsPublishing(false);
+      return;
+    }
+  
     try {
       await supabase
         .from("stores")
         .upsert(
           {
             domain: currentDomain,
-            selected_theme: selectedTheme || '',
+            selected_theme: selectedThemeData.id,
             store_name: "Oto Mağaza",
             theme_settings: {
-              id: selectedTheme || 'modern',
-              colors: {
+              id: selectedThemeData.id,
+              colors: selectedThemeData.color || {
                 primary: "#F97316",
                 secondary: "#FDBA74",
                 accent: "#EF4444",
                 background: "#FFFFFF",
                 text: "#1F2937",
               },
-              fonts: {
+              fonts: selectedThemeData.fonts || {
                 heading: "Inter",
                 body: "Inter",
                 button: "Inter",
@@ -187,37 +199,22 @@ const ThemeSelection = () => {
           },
           { onConflict: "domain" }
         );
-
-      // Simüle edilen yayınlama ilerlemesi
-      const interval = setInterval(() => {
-        setPublishingProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              setConfirmPublishDialog(false);
-              navigate('/dashboard/theme-customization');
-            }, 500);
-            return 100;
-          }
-          return prev + 5;
-        });
-      }, 200);
-
-      toast({
-        title: "Tema yayınlanıyor",
-        description: `${themeData.find(t => t.id === selectedTheme)?.name} teması ${currentDomain} adresinde yayınlanıyor...`,
-      });
+  
+      // devam eden animasyon ve yönlendirme...
     } catch (error) {
       console.error("Theme publishing error:", error);
       toast({
-        title: "Hata oluştu",
-        description: "Tema yayınlanırken bir sorun oluştu. Lütfen tekrar deneyin.",
-        variant: "destructive",
+        title: "Yayınlama Hatası",
+        description: "Veritabanına kayıt yapılırken bir sorun oluştu.",
+        variant: "destructive"
       });
       setIsPublishing(false);
     }
   };
+  
 
+
+ 
   const handleCustomize = () => {
     if (selectedTheme) {
       navigate('/dashboard/theme-customization');
