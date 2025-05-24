@@ -1,15 +1,15 @@
 import React from 'react';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
+import HeroBanner from './components/HeroBanner';
 import ProductGrid from './components/ProductGrid';
 import Footer from './components/Footer';
 
-const ThemeLayout = ({ page }: { page: string }) => {
+const ThemeLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main>
-        <Hero />
+        <HeroBanner />
         <ProductGrid />
       </main>
       <Footer />

@@ -1,108 +1,112 @@
-import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import ProductCard from './ProductCard';
 
-// Sample product data
-const products = [
+// Dummy product data
+const dummyProducts = [
   {
-    id: 1,
-    name: "Premium Deri Ceket",
-    price: 1299.99,
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 20
+    id: '1',
+    name: 'Akıllı Telefon X Pro',
+    price: 12999,
+    originalPrice: 14999,
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&h=500&fit=crop',
+    discount: 13
   },
   {
-    id: 2,
-    name: "İpek Gömlek",
-    price: 599.99,
-    image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 15
+    id: '2',
+    name: 'Kablosuz Kulaklık',
+    price: 899,
+    originalPrice: 1299,
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
+    discount: 31
   },
   {
-    id: 3,
-    name: "Dar Kesim Kot Pantolon",
-    price: 349.99,
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 0
+    id: '3',
+    name: 'Akıllı Saat',
+    price: 2499,
+    originalPrice: 2999,
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
+    discount: 17
   },
   {
-    id: 4,
-    name: "Ekose Blazer Ceket",
-    price: 899.99,
-    image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
+    id: '4',
+    name: 'Laptop Ultra',
+    price: 24999,
+    originalPrice: 27999,
+    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&h=500&fit=crop',
+    discount: 11
+  },
+  {
+    id: '5',
+    name: 'Bluetooth Hoparlör',
+    price: 599,
+    originalPrice: 799,
+    image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&h=500&fit=crop',
     discount: 25
   },
   {
-    id: 5,
-    name: "Bohem Tarz Elbise",
-    price: 499.99,
-    image: "https://images.unsplash.com/photo-1612336307429-8a898d10e223?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 10
-  },
-  {
-    id: 6,
-    name: "Vintage Deri Çanta",
-    price: 1499.99,
-    image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 0
-  },
-  {
-    id: 7,
-    name: "Spor Sweatshirt",
-    price: 299.99,
-    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 30
-  },
-  {
-    id: 8,
-    name: "Tasarım Bot",
-    price: 1199.99,
-    image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600",
-    discount: 15
+    id: '6',
+    name: 'Gaming Mouse',
+    price: 799,
+    originalPrice: 999,
+    image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500&h=500&fit=crop',
+    discount: 20
   }
 ];
 
 const ProductGrid = () => {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Öne Çıkan Ürünler</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative aspect-square">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              {product.discount > 0 && (
-                <div className="absolute top-2 right-2 bg-orange-600 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                  %{product.discount} İndirim
-                </div>
-              )}
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{product.name}</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  {product.discount > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-orange-600 font-bold">
-                        {((product.price * (100 - product.discount)) / 100).toFixed(2)} ₺
-                      </span>
-                      <span className="text-gray-400 line-through text-sm">
-                        {product.price.toFixed(2)} ₺
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-orange-600 font-bold">{product.price.toFixed(2)} ₺</span>
-                  )}
-                </div>
-                <button className="bg-orange-600 text-white p-2 rounded-full hover:bg-orange-700 transition-colors">
-                  <ShoppingCart className="h-5 w-5" />
-                </button>
+  const [products, setProducts] = useState(dummyProducts);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API call
+    const fetchProducts = async () => {
+      try {
+        // In a real app, this would be an API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setProducts(dummyProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className="animate-pulse">
+              <div className="bg-gray-200 aspect-square rounded-lg"></div>
+              <div className="mt-4 space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
               </div>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">Öne Çıkan Ürünler</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            originalPrice={product.originalPrice}
+            image={product.image}
+            discount={product.discount}
+          />
         ))}
       </div>
     </div>
