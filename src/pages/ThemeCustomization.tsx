@@ -379,7 +379,7 @@ const ThemeCustomization = () => {
           <Suspense fallback={<div className="flex items-center justify-center p-8">Loading theme...</div>}>
             {(() => {
               const LayoutComponent = themeMap[themeSettings.id] || themeMap["minimalist"];
-              return <LayoutComponent page="homepage" />;
+              return <LayoutComponent key={themeSettings.id} page="homepage" />;
             })()}
           </Suspense>
         ) : (
