@@ -215,36 +215,51 @@ export const themeData: ThemeItem[] = [
   {
     id: "temu-clone",
     name: "Temu Clone",
-    description: "Modern ve dinamik bir e-ticaret deneyimi sunar.",
+    description: "Premium ve animasyonlu bir e-ticaret deneyimi sunar.",
     imageSrc: "/images/themes/temu-clone.png",
-    features: ["Modern tasarım", "Hızlı yükleme", "Mobil uyumlu", "Dinamik ürün grid"],
+    features: [
+      "Premium tasarım",
+      "Akıllı animasyonlar",
+      "Mobil öncelikli",
+      "Gelişmiş ürün grid",
+      "Dinamik geçişler"
+    ],
     color: "#FF6B00",
+    badge: "Premium",
     category: "all",
     previewUrl: "",
-    designStyle: "modern",
+    designStyle: "premium",
     layout: "grid",
     customStyles: {
-      cardBorderRadius: "0.5rem",
-      buttonStyle: "font-medium",
-      headerStyle: "bg-white border-b border-gray-200"
+      cardBorderRadius: "1rem",
+      buttonStyle: "font-medium tracking-wide",
+      headerStyle: "bg-gradient-to-r from-orange-50 to-white shadow-sm"
     },
     colors: {
       primary: "#FF6B00",
       secondary: "#FF8F3F",
       accent: "#FF6B00",
       background: "#FFFFFF",
-      text: "#1F2937"
+      text: "#1F2937",
+      surface: "#F9FAFB",
+      border: "#E5E7EB"
     },
     fonts: {
-      heading: "Inter",
+      heading: "Poppins",
       body: "Inter",
       button: "Inter"
     },
     spacing: {
-      section: "2rem",
-      element: "1rem"
+      section: "3rem",
+      element: "1.5rem"
     },
-    borderRadius: "0.5rem"
+    borderRadius: "1rem",
+    animations: {
+      cardHover: "scale-105",
+      buttonHover: "translate-y-[-2px]",
+      pageTransition: "fade",
+      scrollReveal: true
+    }
   }
 ];
 
