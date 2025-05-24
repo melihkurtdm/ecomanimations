@@ -372,12 +372,16 @@ const ThemeCustomization = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Theme Layout Preview */}
       <div className="mb-8 border rounded shadow overflow-hidden">
-        <Suspense fallback={<div className="flex items-center justify-center p-8">Tema yükleniyor...</div>}>
-          {(() => {
-            const LayoutComponent = themeMap[themeSettings.id || "modern"] || themeMap["minimalist"];
-            return <LayoutComponent page="homepage" />;
-          })()}
-        </Suspense>
+        {themeSettings.id ? (
+          <Suspense fallback={<div className="flex items-center justify-center p-8">Loading theme...</div>}>
+            {(() => {
+              const LayoutComponent = themeMap[themeSettings.id] || themeMap["minimalist"];
+              return <LayoutComponent page="homepage" />;
+            })()}
+          </Suspense>
+        ) : (
+          <div className="flex items-center justify-center p-8">Loading theme...</div>
+        )}
       </div>
       <ThemeHeader 
         title="Tema Özelleştirme"
