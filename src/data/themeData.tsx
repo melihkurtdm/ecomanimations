@@ -232,7 +232,7 @@ export const themeData: ThemeItem[] = [
     layout: "grid",
     customStyles: {
       cardBorderRadius: "1rem",
-      buttonStyle: "font-medium tracking-wide",
+      buttonStyle: "font-medium tracking-wide hover:translate-y-[-2px] transition-transform",
       headerStyle: "bg-gradient-to-r from-orange-50 to-white shadow-sm"
     },
     colors: {
@@ -240,9 +240,7 @@ export const themeData: ThemeItem[] = [
       secondary: "#FF8F3F",
       accent: "#FF6B00",
       background: "#FFFFFF",
-      text: "#1F2937",
-      surface: "#F9FAFB",
-      border: "#E5E7EB"
+      text: "#1F2937"
     },
     fonts: {
       heading: "Poppins",
@@ -253,13 +251,7 @@ export const themeData: ThemeItem[] = [
       section: "3rem",
       element: "1.5rem"
     },
-    borderRadius: "1rem",
-    animations: {
-      cardHover: "scale-105",
-      buttonHover: "translate-y-[-2px]",
-      pageTransition: "fade",
-      scrollReveal: true
-    }
+    borderRadius: "1rem"
   }
 ];
 
