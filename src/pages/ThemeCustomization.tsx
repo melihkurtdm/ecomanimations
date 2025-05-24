@@ -368,6 +368,9 @@ const ThemeCustomization = () => {
 
   const selectedThemeData = themeData.find(t => t.id === themeSettings.id) || themeData[0];
 
+  console.log("🧩 Aktif tema ID:", themeSettings.id);
+  console.log("🎯 Supabase'den gelen themeSettings.id:", themeSettings?.id);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Theme Layout Preview */}
