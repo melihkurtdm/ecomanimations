@@ -64,7 +64,6 @@ const themeMap: Record<string, React.LazyExoticComponent<React.ComponentType<any
   minimalist: lazy(() => import("../themes/minimalist/ThemeLayout")),
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
-  "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
   "modern": lazy(() => import("../themes/modern/ThemeLayout")),
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };

@@ -134,15 +134,29 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
     
     const domains = JSON.parse(storedDomains);
     const domainToPublish = domains.find((d: any) => 
-      d.domain === domainName && d.status === 'verified'
+      d.domain === domainName && d.status === 'verified' && d.verifiedAt && d.store_id
     );
     
     if (!domainToPublish) {
-      toast({
-        title: "Uygun Domain Bulunamadı",
-        description: "Bu domain bulunamadı veya henüz doğrulanmamış.",
-        variant: "destructive"
-      });
+      if (!domains.find((d: any) => d.domain === domainName)) {
+        toast({
+          title: "Domain Bulunamadı",
+          description: "Bu domain bulunamadı.",
+          variant: "destructive"
+        });
+      } else if (!domains.find((d: any) => d.domain === domainName)?.verifiedAt) {
+        toast({
+          title: "Domain Doğrulanmamış",
+          description: "Bu domain henüz doğrulanmamış. Lütfen önce domain doğrulama işlemini tamamlayın.",
+          variant: "destructive"
+        });
+      } else if (!domains.find((d: any) => d.domain === domainName)?.store_id) {
+        toast({
+          title: "Domain Mağazaya Bağlı Değil",
+          description: "Bu domain henüz bir mağazaya bağlanmamış. Lütfen önce domain'i mağazanıza bağlayın.",
+          variant: "destructive"
+        });
+      }
       return false;
     }
     

@@ -24,6 +24,7 @@ export interface DomainData {
     value: string;
     ttl?: number;
   };
+  store_id?: string;
 }
 
 // Get all domains for a user
@@ -171,11 +172,21 @@ export const verifyDomain = async (userId: string, domainId: string | number): P
     const isDnsVerified = await checkDnsPropagation(domain.domain);
     
     if (isDnsVerified) {
+      // Get store data to link the domain
+      const storedStore = localStorage.getItem(`store_${userId}`);
+      if (!storedStore) {
+        console.error("No store found for domain verification");
+        return null;
+      }
+      
+      const storeData = JSON.parse(storedStore);
+      
       // Simulate success (in a real implementation, would check actual DNS records)
       const updatedDomain = updateDomain(userId, domainId, {
         status: 'verified',
         verifiedAt: new Date().toISOString(),
-        lastChecked: new Date().toISOString()
+        lastChecked: new Date().toISOString(),
+        store_id: storeData.id // Link the domain to the store
       });
       
       if (updatedDomain) {

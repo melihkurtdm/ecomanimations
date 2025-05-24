@@ -15,6 +15,7 @@ export interface Domain {
   themePublishedAt?: string;
   activeTheme?: string;
   namecheapConnected?: boolean;
+  store_id?: string | number; // Link to the store this domain belongs to
   dnsSettings?: {
     type: string;
     host: string;
@@ -44,6 +45,7 @@ export interface DomainData {
   themePublishedAt?: string;
   activeTheme?: string;
   namecheapConnected?: boolean;
+  store_id?: string | number; // Link to the store this domain belongs to
 }
 
 // Add interface for Vercel DNS records
