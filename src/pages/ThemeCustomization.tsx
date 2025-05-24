@@ -100,6 +100,8 @@ const ThemeCustomization = () => {
   console.log("themeSettings.id:", themeSettings.id);
   console.log("theme context:", theme);
   console.log("Active theme ID (before ThemeLayout selection):", theme);
+  console.log("Available themes in themeMap:", Object.keys(themeMap));
+  console.log("Selected theme data:", themeData.find(t => t.id === themeSettings.id));
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -129,9 +131,10 @@ const ThemeCustomization = () => {
   // Fetch theme settings from Supabase on mount or when currentDomain changes
   useEffect(() => {
     const fetchThemeSettings = async () => {
+      console.log("Fetching theme settings for domain:", currentDomain);
       const { data, error } = await supabase
         .from('stores')
-        .select('theme_settings')
+        .select('theme_settings, selected_theme')
         .eq('domain', currentDomain)
         .single();
 
@@ -140,17 +143,21 @@ const ThemeCustomization = () => {
         return;
       }
 
+      console.log("Fetched data from Supabase:", data);
+
       // Type guard: ensure theme_settings is an object
       if (data && typeof data.theme_settings === 'object' && data.theme_settings !== null) {
         const themeSettings = data.theme_settings as ThemeSettings;
+        console.log("Setting theme settings:", themeSettings);
         setThemeSettings(themeSettings);
-        if (themeSettings.id) {
-          setTheme(themeSettings.id);
-          console.log("Active theme ID (from Supabase):", themeSettings.id);
-        } else {
-          setTheme('modern');
-          console.log("Active theme ID (defaulted to modern): modern");
-        }
+        
+        // Use selected_theme if available, otherwise fallback to theme_settings.id
+        const themeId = data.selected_theme || themeSettings.id || 'modern';
+        console.log("Setting theme ID to:", themeId);
+        setTheme(themeId);
+      } else {
+        console.log("No theme settings found, using default theme");
+        setTheme('modern');
       }
     };
 
@@ -194,36 +201,41 @@ const ThemeCustomization = () => {
     setIsPublishing(true);
     
     try {
-      await supabase
+      const themeId = themeSettings.id || 'modern';
+      console.log("Publishing theme with ID:", themeId);
+      
+      const { error } = await supabase
         .from("stores")
-        .upsert(
-          {
-            domain: currentDomain,
-            selected_theme: themeSettings.id,
-            store_name: "Oto Mağaza",
-            theme_settings: {
-              id: themeSettings.id,
-              colors: themeSettings.colors,
-              fonts: themeSettings.fonts,
-              spacing: themeSettings.spacing,
-              borderRadius: themeSettings.borderRadius,
-            },
+        .upsert({
+          domain: currentDomain,
+          theme_settings: {
+            ...themeSettings,
+            id: themeId
           },
-          { onConflict: "domain" }
-        );
-      
+          selected_theme: themeId
+        });
+
+      if (error) {
+        console.error("Publish error:", error);
+        toast({
+          title: "Yayınlama hatası",
+          description: "Tema yayınlanırken bir hata oluştu.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setTheme(themeId);
       setIsPublished(true);
-      setPublishDialogOpen(false);
-      
       toast({
-        title: "Tema yayınlandı!",
-        description: "Temanız başarıyla mağazanızda yayınlandı.",
+        title: "Tema yayınlandı",
+        description: "Tema başarıyla yayınlandı.",
       });
     } catch (error) {
-      console.error("Theme publishing error:", error);
+      console.error("Publish error:", error);
       toast({
-        title: "Yayınlama başarısız",
-        description: "Tema yayınlanırken bir hata oluştu. Lütfen tekrar deneyin.",
+        title: "Yayınlama hatası",
+        description: "Tema yayınlanırken bir hata oluştu.",
         variant: "destructive",
       });
     } finally {
