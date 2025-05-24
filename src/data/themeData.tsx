@@ -227,7 +227,24 @@ export const themeData: ThemeItem[] = [
       cardBorderRadius: "0.5rem",
       buttonStyle: "font-medium",
       headerStyle: "bg-white border-b border-gray-200"
-    }
+    },
+    colors: {
+      primary: "#FF6B00",
+      secondary: "#FF8F3F",
+      accent: "#FF6B00",
+      background: "#FFFFFF",
+      text: "#1F2937"
+    },
+    fonts: {
+      heading: "Inter",
+      body: "Inter",
+      button: "Inter"
+    },
+    spacing: {
+      section: "2rem",
+      element: "1rem"
+    },
+    borderRadius: "0.5rem"
   }
 ];
 
