@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -7,7 +8,6 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
-		"./src/**/*.{js,jsx,mdx}",
 	],
 	prefix: "",
 	theme: {
@@ -55,8 +55,6 @@ export default {
 				},
 				luxury: {
 					gold: '#D4AF37',
-					'gold-light': '#BFA16A',
-					'gold-dark': '#A88A4A',
 					white: '#FFFFFF',
 					black: '#222222',
 					darkGold: '#B08D24',
@@ -124,12 +122,7 @@ export default {
 			},
 			fontFamily: {
 				'playfair': ['"Playfair Display"', 'serif'],
-				'inter': ['Inter', 'sans-serif'],
 				'montserrat': ['Montserrat', 'sans-serif'],
-			},
-			backgroundImage: {
-				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 			},
 		}
 	},
