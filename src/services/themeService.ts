@@ -321,6 +321,8 @@ export const forcePublishTheme = async (userId: string, domainName: string): Pro
       d.store_id
     );
     
+    console.log("STORED DOMAINS", domains);
+    console.log("TARGET DOMAIN", domainName);
     if (!domainToPublish) {
       toast({
         title: "Domain Bulunamadı",
