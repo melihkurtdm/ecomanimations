@@ -121,7 +121,7 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
   try {
     // 🔥 Debug satırı (tam buraya ekle)
     console.log("🔥 DEBUG domain list:", JSON.parse(localStorage.getItem(`domains_${userId}`) || '[]'));
-    
+
     console.log(`Starting theme publication process for domain ${domainName}`);
     
     // First check if we have a verified domain
@@ -309,7 +309,13 @@ export const forcePublishTheme = async (userId: string, domainName: string): Pro
     }
     
     const domains = JSON.parse(storedDomains);
-    const domainToPublish = domains.find((d: any) => d.domain === domainName);
+    const domainToPublish = domains.find((d: any) =>
+      d.domain === domainName &&
+      d.status === "verified" &&
+      (d.verified_at || d.verifiedAt) &&
+      d.store_id
+    );
+    
     
     if (!domainToPublish) {
       toast({
