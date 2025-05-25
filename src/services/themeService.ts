@@ -136,13 +136,15 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
     }
     
     const domains = JSON.parse(storedDomains);
+    console.log("DOMAINS", domains);
+    
     const domainToPublish = domains.find((d: any) =>
       d.domain === domainName &&
       d.status === "verified" &&
       d.verified_at &&
       d.store_id
     );
-    
+    console.log("TO PUBLISH", domainToPublish);
     
     if (!domainToPublish) {
       if (!domains.find((d: any) => d.domain === domainName)) {
