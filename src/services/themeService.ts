@@ -119,6 +119,9 @@ export const isThemePublishedToDomain = (userId: string, domain: string): boolea
 // Simulate theme publication process
 export const simulateThemePublicationProcess = async (userId: string, domainName: string): Promise<boolean> => {
   try {
+    // 🔥 Debug satırı (tam buraya ekle)
+    console.log("🔥 DEBUG domain list:", JSON.parse(localStorage.getItem(`domains_${userId}`) || '[]'));
+    
     console.log(`Starting theme publication process for domain ${domainName}`);
     
     // First check if we have a verified domain
