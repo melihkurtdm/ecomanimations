@@ -121,21 +121,20 @@ export const simulateThemePublicationProcess = async (userId: string, domainName
   try {
     // 🔥 Debug satırı (tam buraya ekle)
     console.log("🔥 DEBUG domain list:", JSON.parse(localStorage.getItem(`domains_${userId}`) || '[]'));
-
     console.log(`Starting theme publication process for domain ${domainName}`);
     
     // First check if we have a verified domain
-    const storedDomains = localStorage.getItem(`domains_${userId}`);
-    if (!storedDomains) {
+    const storedDomainsRaw = localStorage.getItem(`domains_${userId}`);
+    if (!storedDomainsRaw) {
       toast({
         title: "Domain Bulunamadı",
-        description: "Bu kullanıcıya ait doğrulanmış domain bulunamadı.",
+        description: "Bu kullanıcıya ait domain bulunamadı.",
         variant: "destructive"
       });
       return false;
     }
     
-    const domains = JSON.parse(storedDomains);
+    const domains = JSON.parse(storedDomainsRaw);
     console.log("DOMAINS", domains);
     
     const domainToPublish = domains.find((d: any) =>
@@ -304,8 +303,8 @@ export const forcePublishTheme = async (userId: string, domainName: string): Pro
     console.log(`Force publishing theme to domain ${domainName}`);
     
     // Check if we have a verified domain
-    const storedDomains = localStorage.getItem(`domains_${userId}`);
-    if (!storedDomains) {
+    const storedDomainsRaw = localStorage.getItem(`domains_${userId}`);
+    if (!storedDomainsRaw) {
       toast({
         title: "Domain Bulunamadı",
         description: "Bu kullanıcıya ait domain bulunamadı.",
@@ -314,14 +313,13 @@ export const forcePublishTheme = async (userId: string, domainName: string): Pro
       return false;
     }
     
-    const domains = JSON.parse(storedDomains);
+    const domains = JSON.parse(storedDomainsRaw);
     const domainToPublish = domains.find((d: any) =>
       d.domain === domainName &&
       d.status === "verified" &&
       (d.verified_at || d.verifiedAt) &&
       d.store_id
     );
-    
     
     if (!domainToPublish) {
       toast({
