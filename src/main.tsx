@@ -2,12 +2,12 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { supabase } from './integrations/supabase/client';
+//import { supabase } from './integrations/supabase/client';
 
 // Create root and render app first so the ThemeProvider is available
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
-
+/*
 // Check current domain and retrieve store configuration from Supabase
 const currentDomain = window.location.hostname;
 
@@ -58,3 +58,4 @@ function setDefaultTheme() {
   // Set default theme ID
   document.body.setAttribute("data-theme", "minimalist");
 }
+*/
