@@ -12,6 +12,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState("minimalist");
 
   useEffect(() => {
+    console.log("THEME_PROVIDER_VERSION", "v1-test-2026-02-20");
+    console.log("Theme set to:", theme);
+
     document.body.setAttribute("data-theme", theme);
   }, [theme]);
 
