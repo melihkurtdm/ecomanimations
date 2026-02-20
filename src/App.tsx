@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { resolveCurrentStore } from "@/lib/currentStore";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -95,6 +97,11 @@ if (typeof document !== "undefined") {
 }
 
 function App() {
+  useEffect(() => {
+    resolveCurrentStore()
+      .then((store) => console.log("ACTIVE STORE:", store))
+      .catch((err) => console.error("STORE RESOLVE ERROR:", err));
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
