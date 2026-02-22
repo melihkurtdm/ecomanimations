@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
-import { getHostNoWww } from "../utils/host";
+import { getHostNow } from "../utils/host";
 
 type StoreRow = {
   id: string;
@@ -19,7 +19,7 @@ export function useStoreByDomain() {
     let cancelled = false;
 
     const run = async () => {
-      const domain = getHostNoWww();
+      const domain = getHostNow();
 
       setLoading(true);
       setNotFound(false);
