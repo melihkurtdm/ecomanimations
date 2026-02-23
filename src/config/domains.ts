@@ -1,17 +1,15 @@
-// Admin panel SADECE bu hostlarda açılsın.
-export const ADMIN_HOSTS = new Set<string>([
-  "localhost",
-  "127.0.0.1",
-  "admin.autodrop.co",
-]);
-
 export const STOREFRONT_DOMAINS: Record<string, { store: string }> = {
+  // local
   "localhost": { store: "luxe-aura" },
   "127.0.0.1": { store: "luxe-aura" },
 
-  "www.autodrop.co": { store: "luxe-aura" },
+  // custom domain: autodrop -> luxe-aura
   "autodrop.co": { store: "luxe-aura" },
-  "ecomanimations.vercel.app": { store: "luxe-aura" },
+  "www.autodrop.co": { store: "luxe-aura" },
+
+  // vercel prod domain -> yix
+  "ecomanimations.vercel.app": { store: "yix" },
 };
 
-export const STOREFRONT_DEFAULT = { store: "luxe-aura" } as const;
+// wildcard / fallback
+export const STOREFRONT_DEFAULT = { store: "yix" } as const;
