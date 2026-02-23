@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
-import { getHostNow } from "../utils/host";
+import { getHostNow, getHostNowRaw } from "../utils/host";
+import { STOREFRONT_DEFAULT, STOREFRONT_DOMAINS } from "../config/domains";
 
 type StoreRow = {
   id: string;
@@ -11,6 +12,8 @@ type StoreRow = {
 };
 
 export function useStoreByDomain() {
+  const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_STORE === "1";
+
   const [store, setStore] = useState<StoreRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -19,12 +22,66 @@ export function useStoreByDomain() {
     let cancelled = false;
 
     const run = async () => {
+      const host = window.location.hostname.trim().toLowerCase();
       const domain = getHostNow();
+
+      if (DEBUG) {
+        console.log("[STORE_RESOLVE] host:", host, "normalizedHost:", domain);
+      }
+
+      // 1) Önce explicit mapping
+      const mapped = STOREFRONT_DOMAINS[host] ?? STOREFRONT_DOMAINS[domain];
+
+      if (mapped) {
+        const mappedStore: StoreRow = {
+          id: `mapped-${domain}`,
+          user_id: "mapped",
+          domain,
+          selected_theme: mapped.store,
+          theme_settings: null,
+        };
+
+        if (DEBUG) {
+          console.log("[STORE_RESOLVE] Using STOREFRONT_DOMAINS mapping:", {
+            host,
+            domain,
+            mapped,
+            store: mappedStore,
+          });
+        }
+
+        setStore(mappedStore);
+        setLoading(false);
+        setNotFound(false);
+        return;
+      }
+
+      // 2) Vercel fallback: her türlü *.vercel.app default store
+      if (host.endsWith(".vercel.app")) {
+        const mappedStore: StoreRow = {
+          id: `mapped-${domain}`,
+          user_id: "mapped",
+          domain,
+          selected_theme: STOREFRONT_DEFAULT.store,
+          theme_settings: null,
+        };
+
+        if (DEBUG) console.log("[STORE_RESOLVE] vercel fallback triggered", { host, mappedStore });
+
+        setStore(mappedStore);
+        setLoading(false);
+        setNotFound(false);
+        return;
+      }
 
       setLoading(true);
       setNotFound(false);
 
       try {
+        if (DEBUG) {
+          console.log("[STORE_RESOLVE] Querying Supabase for domain:", domain);
+        }
+
         const { data, error } = await supabase
           .from("stores")
           .select("*")
@@ -34,10 +91,16 @@ export function useStoreByDomain() {
         if (cancelled) return;
 
         if (error || !data) {
-          console.error("STORE RESOLVE ERROR", error);
+          if (DEBUG) {
+            console.error("[STORE_RESOLVE] Not found or error:", { error, data, domain });
+          }
           setNotFound(true);
           setStore(null);
           return;
+        }
+
+        if (DEBUG) {
+          console.log("[STORE_RESOLVE] Resolved store from Supabase:", data);
         }
 
         setStore(data as StoreRow);

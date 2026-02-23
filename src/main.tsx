@@ -11,11 +11,14 @@ import { ADMIN_HOSTS } from "./config/domains";
 import { adminRouter } from "./routes/adminRouter";
 import { storefrontRouter } from "./routes/storefrontRouter";
 
+const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_STORE === "1";
+
 const host = getHostNow();
 const isAdminHost = ADMIN_HOSTS.has(host);
 
-// İstersen debug için kalsın, istemezsen silebilirsin:
-console.log("hostname", window.location.hostname, "host", host, "isAdminHost", isAdminHost);
+if (DEBUG) {
+  console.log("[ROUTER_RESOLVE]", { host, isAdminHost });
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
