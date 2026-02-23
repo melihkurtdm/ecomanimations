@@ -13,6 +13,8 @@ import { storefrontRouter } from "./routes/storefrontRouter";
 const host = getHostNow();
 const isAdminHost = ADMIN_HOSTS.has(host);
 
+console.log("hostname", window.location.hostname, "host", host, "isAdminHost", isAdminHost);
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>

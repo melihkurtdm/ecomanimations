@@ -1,5 +1,5 @@
 export function getHostNow() {
-    return window.location.hostname.replace(/^www\./, "");
+    return window.location.hostname.replace(/^www\./, "").toLowerCase();
   }
   
-  export const getHostNoWww = getHostNow;
+  export const getHostNowWw = getHostNow;
