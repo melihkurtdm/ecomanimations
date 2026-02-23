@@ -1,14 +1,17 @@
 // src/config/domains.ts
 
 // Admin panel SADECE bu hostlarda açılsın.
-// - localhost / 127.0.0.1: local admin geliştirme
-// - admin.autodrop.co: prod admin domain
-//
-// NOT: vercel.app / autodrop.co / www.autodrop.co BURAYA GİRMEZ.
-// Onlar storefront (tema) görmeli.
-
 export const ADMIN_HOSTS = new Set<string>([
   "localhost",
   "127.0.0.1",
   "admin.autodrop.co",
 ]);
+
+// Storefront domain -> theme/store map
+export const STOREFRONT_DOMAINS: Record<string, { store: string }> = {
+  "www.autodrop.co": { store: "luxe-aura" },
+  "autodrop.co": { store: "luxe-aura" },
+
+  // (opsiyonel) vercel preview/prod fallback (istersen kalsın)
+  "ecomanimations.vercel.app": { store: "luxe-aura" },
+};
