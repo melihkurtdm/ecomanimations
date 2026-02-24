@@ -29,6 +29,27 @@ export function useStoreByDomain() {
         console.log("[STORE_RESOLVE] host:", host, "normalizedHost:", domain);
       }
 
+      // Vercel preview: ecomanimations.vercel.app + ecomanimations-*.vercel.app + *-melihkurtdms-projects.vercel.app
+      const isEcomanimationsVercel =
+        host === "ecomanimations.vercel.app" ||
+        (host.startsWith("ecomanimations-") && host.endsWith(".vercel.app")) ||
+        host.endsWith("-melihkurtdms-projects.vercel.app");
+
+      if (isEcomanimationsVercel) {
+        const mappedStore: StoreRow = {
+          id: `mapped-${host}`,
+          user_id: "mapped",
+          domain: host,
+          selected_theme: "yix",
+          theme_settings: null,
+        };
+        if (DEBUG) console.log("[STORE_RESOLVE] ecomanimations Vercel preview", { host, mappedStore });
+        setStore(mappedStore);
+        setLoading(false);
+        setNotFound(false);
+        return;
+      }
+
       // 1) Önce explicit mapping
       const mapped = STOREFRONT_DOMAINS[host] ?? STOREFRONT_DOMAINS[domain];
 
