@@ -12,10 +12,11 @@ const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>
   modern: lazy(() => import("../themes/modern/ThemeLayout")),
   minimalist: lazy(() => import("../themes/minimalist/ThemeLayout")),
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
+};
 
-  // diamond-luxe: Bu tema klasöründe ThemeLayout.tsx yok gibi görünüyor.
-  // Eğer eklersek aşağıdaki satırı açarız:
-  // "diamond-luxe": lazy(() => import("../themes/diamond-luxe/ThemeLayout")),
+// Eski/uyumsuz id'leri gerçek tema key'lerine map et
+const THEME_KEY_ALIASES: Record<string, string> = {
+  luxury: "luxe-aura",
 };
 
 export default function StorefrontHome() {
@@ -30,7 +31,8 @@ export default function StorefrontHome() {
   if (loading) return null;
   if (notFound) return <Navigate to="/store-not-found" replace />;
 
-  const key = (store?.selected_theme || "luxe-aura").toLowerCase();
+  const rawKey = (store?.selected_theme ?? "luxe-aura").trim().toLowerCase();
+  const key = THEME_KEY_ALIASES[rawKey] ?? rawKey;
   const ThemeLayout = THEMES[key] || THEMES["luxe-aura"];
 
   return (
