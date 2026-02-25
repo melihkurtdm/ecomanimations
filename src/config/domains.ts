@@ -8,8 +8,8 @@ export const STOREFRONT_DOMAINS: Record<string, { store: string }> = {
   "www.autodrop.co": { store: "luxe-aura" },
 
   // vercel prod domain -> yix
-  "ecomanimations.vercel.app": { store: "yix" },
+  "ecomanimations.vercel.app": { store: "diamond-luxe" },
 };
 
 // wildcard / fallback
-export const STOREFRONT_DEFAULT = { store: "yix" } as const;
+export const STOREFRONT_DEFAULT = { store: "diamond-luxe" } as const;

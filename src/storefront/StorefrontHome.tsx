@@ -1,12 +1,13 @@
-// src/storefront/StorefrontHome.tsx
 import React, { Suspense, lazy, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-
 import { useStoreByDomain } from "./useStoreByDomain";
 import { useTheme } from "../contexts/ThemeContext";
 
-// Theme map (ThemeLayout.tsx dosyası olan temalar)
-const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+// Tema map
+const THEMES: Record<
+  string,
+  React.LazyExoticComponent<React.ComponentType<any>>
+> = {
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   modern: lazy(() => import("../themes/modern/ThemeLayout")),
@@ -14,7 +15,7 @@ const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };
 
-// Eski/uyumsuz id'leri gerçek tema key'lerine map et
+// Alias map (eski id'ler için)
 const THEME_KEY_ALIASES: Record<string, string> = {
   luxury: "luxe-aura",
 };
@@ -31,9 +32,15 @@ export default function StorefrontHome() {
   if (loading) return null;
   if (notFound) return <Navigate to="/store-not-found" replace />;
 
-  const rawKey = (store?.selected_theme ?? "luxe-aura").trim().toLowerCase();
+  // ❌ fallback kaldırıldı
+  const rawKey = store?.selected_theme?.trim().toLowerCase();
+
+  if (!rawKey) return null; // production güvenliği
+
   const key = THEME_KEY_ALIASES[rawKey] ?? rawKey;
-  const ThemeLayout = THEMES[key] || THEMES["luxe-aura"];
+  const ThemeLayout = THEMES[key];
+
+  if (!ThemeLayout) return null; // geçersiz tema koruması
 
   return (
     <Suspense fallback={null}>

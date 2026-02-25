@@ -10,6 +10,7 @@ import ThemePublishForm from '@/components/theme/ThemePublishForm';
 import ThemeStatistics from '@/components/theme/ThemeStatistics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ThemeToggle from '@/components/common/ThemeToggle';
+import { fadeInUp, staggerContainer } from "../lib/motionVariants";
 
 const currentTheme = {
   id: "modern",
