@@ -4,10 +4,7 @@ import { useStoreByDomain } from "./useStoreByDomain";
 import { useTheme } from "../contexts/ThemeContext";
 
 // Tema map
-const THEMES: Record<
-  string,
-  React.LazyExoticComponent<React.ComponentType<any>>
-> = {
+const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   modern: lazy(() => import("../themes/modern/ThemeLayout")),
@@ -15,7 +12,7 @@ const THEMES: Record<
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };
 
-// Alias map (eski id'ler için)
+// Alias map (eski id’ler için)
 const THEME_KEY_ALIASES: Record<string, string> = {
   luxury: "luxe-aura",
 };
@@ -24,26 +21,50 @@ export default function StorefrontHome() {
   const { store, loading, notFound } = useStoreByDomain();
   const { setTheme } = useTheme();
 
+  // Debug (prod’da bile en azından console’da görünsün)
+  useEffect(() => {
+    console.log("[StorefrontHome] host:", typeof window !== "undefined" ? window.location.hostname : "ssr");
+    console.log("[StorefrontHome] loading:", loading, "notFound:", notFound, "selected_theme:", store?.selected_theme);
+  }, [loading, notFound, store?.selected_theme]);
+
+  // Tema set (ThemeContext)
   useEffect(() => {
     if (!store?.selected_theme) return;
     setTheme(store.selected_theme);
   }, [store?.selected_theme, setTheme]);
 
-  if (loading) return null;
-  if (notFound) return <Navigate to="/store-not-found" replace />;
+  // ✅ Hızlı iyileştirme: "null" dönme, ekranda teşhis göster
+  if (loading) {
+    return <div className="p-6">Loading store…</div>;
+  }
 
-  // ❌ fallback kaldırıldı
-  const rawKey = store?.selected_theme?.trim().toLowerCase();
+  if (notFound) {
+    return <Navigate to="/store-not-found" replace />;
+  }
 
-  if (!rawKey) return null; // production güvenliği
+  const rawKey = store?.selected_theme?.trim()?.toLowerCase();
+
+  if (!rawKey) {
+    return (
+      <div className="p-6 text-red-500">
+        Store selected_theme boş. (Domain mapping / store kaydı / API yanıtını kontrol et)
+      </div>
+    );
+  }
 
   const key = THEME_KEY_ALIASES[rawKey] ?? rawKey;
   const ThemeLayout = THEMES[key];
 
-  if (!ThemeLayout) return null; // geçersiz tema koruması
+  if (!ThemeLayout) {
+    return (
+      <div className="p-6 text-red-500">
+        Theme bulunamadı: <b>{rawKey}</b> (alias sonrası: <b>{key}</b>)
+      </div>
+    );
+  }
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="p-6">Loading theme…</div>}>
       <ThemeLayout />
     </Suspense>
   );
