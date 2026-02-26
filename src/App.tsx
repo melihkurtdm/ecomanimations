@@ -28,7 +28,7 @@ import AdvertisingManager from "./pages/AdvertisingManager";
 import StoreAnalytics from "./pages/StoreAnalytics";
 import AIContentGenerator from "./pages/AIContentGenerator";
 import VideoCreator from "./pages/VideoCreator";
-
+import BuildBadge from "./components/BuildBadge";
 // Create query client for React Query
 const queryClient = new QueryClient();
 
@@ -137,6 +137,13 @@ function App() {
           </ThemeProvider>
         </LanguageProvider>
       </AuthProvider>
+
+      {/* 🔥 BURAYA EKLE */}
+  <BuildBadge
+    host={typeof window !== "undefined" ? window.location.hostname : "-"}
+    selectedTheme={null}
+  />
+
     </QueryClientProvider>
   );
 }
