@@ -1,69 +1,51 @@
-// src/storefront/StorefrontHome.tsx
-
 import React, { Suspense, lazy, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useStoreByDomain } from "./useStoreByDomain";
 import { useTheme } from "../contexts/ThemeContext";
 
-// THEME registry (DİKKAT: path'ler StorefrontHome.tsx konumuna göre ../themes olmalı)
+// Tema map (SENDE VAR OLAN ThemeLayout dosyalarına göre)
 const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
-  // ✅ diamond-luxe ThemeLayout'in GERÇEK yeri buysa:
-  "diamond-luxe": lazy(() => import("../themes/diamond-luxe/src/ThemeLayout")),
-  // Eğer senin projende ThemeLayout burada değilse, sadece bu satırdaki path'i düzelt.
-
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
-
-  // sende varsa:
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
   modern: lazy(() => import("../themes/modern/ThemeLayout")),
   minimalist: lazy(() => import("../themes/minimalist/ThemeLayout")),
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };
 
-// store_key -> theme_key alias (DB / domain mapping farklı isim kullanıyorsa buraya ekle)
+// DB’den gelen theme key farklıysa burada normalize ediyoruz
 const THEME_KEY_ALIASES: Record<string, string> = {
-  // örnek: store_key econanimations ise ama gerçek tema klasörü diamond-luxe ise:
-  econanimations: "diamond-luxe",
-
-  // eski id’ler vs:
   luxury: "luxe-aura",
+
+  // ✅ senin isteğin: store key "econanimations" gelsin ama render edilecek gerçek tema "modern" olsun
+  econanimations: "modern",
 };
 
 export default function StorefrontHome() {
   const { store, loading, notFound } = useStoreByDomain();
   const { setTheme } = useTheme();
 
-  // debug log (istersen kaldır)
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("[StorefrontHome]", {
-      host: typeof window !== "undefined" ? window.location.hostname : "ssr",
-      loading,
-      notFound,
-      selected_theme: store?.selected_theme,
-      domain: store?.domain,
-    });
-  }, [loading, notFound, store?.selected_theme, store?.domain]);
-
-  // tema set
+  // ThemeContext’e set et
   useEffect(() => {
     if (!store?.selected_theme) return;
-    setTheme(store.selected_theme);
+
+    const raw = String(store.selected_theme).trim().toLowerCase();
+    const normalized = THEME_KEY_ALIASES[raw] ?? raw;
+    setTheme(normalized);
   }, [store?.selected_theme, setTheme]);
 
   if (loading) {
-    return <div className="p-6">Loading store…</div>;
+    return <div className="p-6">Loading store...</div>;
   }
 
   if (notFound) {
     return <Navigate to="/store-not-found" replace />;
   }
 
-  const rawKey = (store?.selected_theme ?? "").trim().toLowerCase();
+  const rawKey = String(store?.selected_theme ?? "").trim().toLowerCase();
   if (!rawKey) {
     return (
       <div className="p-6 text-red-500">
-        Store selected_theme boş. (domain mapping / DB kaydı / API)
+        Store selected_theme boş. (DB kaydı / domain mapping / API)
       </div>
     );
   }
@@ -80,7 +62,7 @@ export default function StorefrontHome() {
   }
 
   return (
-    <Suspense fallback={<div className="p-6">Loading theme…</div>}>
+    <Suspense fallback={<div className="p-6">Loading theme...</div>}>
       <ThemeLayout />
     </Suspense>
   );

@@ -1,22 +1,26 @@
 // src/config/domains.ts
 
-export const DOMAIN_TO_STORE: Record<string, string> = {
-  // local
-  localhost: "luxe-aura",
-  "127.0.0.1": "luxe-aura",
-
-  // custom domain -> store key
-  "autodrop.co": "luxe-aura",
-  "www.autodrop.co": "luxe-aura",
-
-  // vercel prod + www
-  "econanimations.vercel.app": "econanimations",
-  "www.econanimations.vercel.app": "econanimations",
-
-  // gerekirse custom apex
-  // "econanimations.app": "econanimations",
-  // "www.econanimations.app": "econanimations",
+export type StoreMapping = {
+  store: string;
 };
 
-// fallback
-export const DOMAIN_DEFAULT = "econanimations";
+export const DOMAIN_TO_STORE: Record<string, StoreMapping> = {
+  // local
+  localhost: { store: "luxe-aura" },
+  "127.0.0.1": { store: "luxe-aura" },
+
+  // custom domain
+  "autodrop.co": { store: "luxe-aura" },
+  "www.autodrop.co": { store: "luxe-aura" },
+
+  // vercel prod + www
+  "ecomanimations.vercel.app": { store: "ecomanimations" },
+  "www.ecomanimations.vercel.app": { store: "ecomanimations" },
+
+  // gerekiyorsa custom apex
+  // "ecomanimations.app": { store: "ecomanimations" },
+  // "www.ecomanimations.app": { store: "ecomanimations" },
+};
+
+// fallback (domain eşleşmezse)
+export const DOMAIN_DEFAULT: StoreMapping = { store: "ecomanimations" };

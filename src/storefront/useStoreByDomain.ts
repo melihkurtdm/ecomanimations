@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { getHostNow, getHostNowRaw } from "../utils/host";
-import { STOREFRONT_DEFAULT, STOREFRONT_DOMAINS } from "../config/domains";
+import { DOMAIN_DEFAULT as STOREFRONT_DEFAULT, DOMAIN_TO_STORE as STOREFRONT_DOMAINS } from "../config/domains";
 
 type StoreRow = {
   id: string;

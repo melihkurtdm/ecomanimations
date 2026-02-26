@@ -1,16 +1,16 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
-import { motion } from 'framer-motion';
-import ThemeHeader from '@/components/theme/ThemeHeader';
-import ThemePreview from '@/components/theme/ThemePreview';
-import ThemePublishForm from '@/components/theme/ThemePublishForm';
-import ThemeStatistics from '@/components/theme/ThemeStatistics';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ThemeToggle from '@/components/common/ThemeToggle';
-import { fadeInUp, staggerContainer } from "../lib/motionVariants";
+import ThemeHeader from "@/components/theme/ThemeHeader";
+import ThemePreview from "@/components/theme/ThemePreview";
+import ThemePublishForm from "@/components/theme/ThemePublishForm";
+import ThemeStatistics from "@/components/theme/ThemeStatistics";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ThemeToggle from "@/components/common/ThemeToggle";
 
 const currentTheme = {
   id: "modern",
@@ -34,6 +34,30 @@ const currentTheme = {
   borderRadius: "0.5rem",
 };
 
+// ✅ Type-safe animation variants (string ease yok)
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
 const ThemePublish = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -42,17 +66,16 @@ const ThemePublish = () => {
   const [previewAnimation, setPreviewAnimation] = useState(false);
   const [activeTab, setActiveTab] = useState("preview");
 
-  // Ensure dark mode is applied when component mounts
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    
+    document.documentElement.classList.add("dark");
+
     if (!user && !isLoading) {
       toast({
         title: "Oturum açmanız gerekiyor",
         description: "Tema yayınlama için lütfen giriş yapın.",
         variant: "destructive",
       });
-      navigate('/auth');
+      navigate("/auth");
     }
   }, [user, isLoading, navigate]);
 
@@ -74,44 +97,25 @@ const ThemePublish = () => {
 
   const refreshPreview = () => {
     setPreviewAnimation(true);
-    setTimeout(() => {
-      setPreviewAnimation(false);
-    }, 2000);
-  };
-
-  // Animation variants
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+    setTimeout(() => setPreviewAnimation(false), 2000);
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex flex-col items-center"
         >
-          <motion.div 
+          <motion.div
             className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: [0, 0, 1, 1], // linear (string yok)
+            }}
           />
           <p className="mt-4 text-lg">Yükleniyor...</p>
         </motion.div>
@@ -121,15 +125,15 @@ const ThemePublish = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 bg-background text-foreground">
-      <ThemeHeader 
+      <ThemeHeader
         title="Tema Yayınlama"
         description="Mağazanızı yayınlayarak müşterilerinize erişilebilir hale getirin"
-        onBack={() => navigate('/dashboard/theme-customization')}
+        onBack={() => navigate("/dashboard/theme-customization")}
         previewMode={false}
         onTogglePreview={() => {}}
       />
-      
-      <motion.div 
+
+      <motion.div
         className="mt-6"
         variants={staggerContainer}
         initial="hidden"
@@ -141,19 +145,16 @@ const ThemePublish = () => {
             <TabsTrigger value="publish">Yayınlama</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
           </TabsList>
-          
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             <TabsContent value="preview" className="mt-0">
-              <motion.div 
-                variants={fadeInUp}
-                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-              >
+              <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-3">
-                  <ThemePreview 
+                  <ThemePreview
                     themeSettings={themeSettings}
                     previewAnimation={previewAnimation}
                     isSaved={true}
@@ -163,21 +164,18 @@ const ThemePublish = () => {
                 </div>
               </motion.div>
             </TabsContent>
-            
+
             <TabsContent value="publish" className="mt-0">
-              <motion.div 
-                variants={fadeInUp}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
-              >
+              <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
-                  <ThemePublishForm 
+                  <ThemePublishForm
                     isPublished={isPublished}
                     onPublish={handlePublish}
                     onUnpublish={handleUnpublish}
                   />
                 </div>
                 <div className="md:col-span-1">
-                  <ThemePreview 
+                  <ThemePreview
                     themeSettings={themeSettings}
                     previewAnimation={previewAnimation}
                     isSaved={true}
@@ -187,44 +185,36 @@ const ThemePublish = () => {
                 </div>
               </motion.div>
             </TabsContent>
-            
+
             <TabsContent value="stats" className="mt-0">
-              <motion.div 
-                variants={fadeInUp}
-                className="space-y-6"
-              >
+              <motion.div variants={fadeInUp} className="space-y-6">
                 <ThemeStatistics />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <motion.div 
-                    className="md:col-span-2"
-                    variants={fadeInUp}
-                  >
-                    {/* Buraya detaylı analitik grafikler eklenebilir */}
+                  <motion.div className="md:col-span-2" variants={fadeInUp}>
                     <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden relative">
                       <motion.div
                         className="absolute inset-0"
-                        animate={{
-                          backgroundPosition: ['0% 0%', '100% 100%'],
-                        }}
+                        animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
                         transition={{
                           duration: 20,
                           repeat: Infinity,
-                          repeatType: 'reverse',
+                          repeatType: "reverse",
                         }}
                         style={{
-                          backgroundImage: 'linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05))',
-                          backgroundSize: '400% 400%',
+                          backgroundImage:
+                            "linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05))",
+                          backgroundSize: "400% 400%",
                         }}
                       />
-                      <p className="text-gray-500 dark:text-gray-400 relative z-10">Detaylı istatistikler için grafikler burada gösterilecek</p>
+                      <p className="text-gray-500 dark:text-gray-400 relative z-10">
+                        Detaylı istatistikler için grafikler burada gösterilecek
+                      </p>
                     </div>
                   </motion.div>
-                  <motion.div 
-                    className="md:col-span-1"
-                    variants={fadeInUp}
-                  >
-                    <ThemePreview 
+
+                  <motion.div className="md:col-span-1" variants={fadeInUp}>
+                    <ThemePreview
                       themeSettings={themeSettings}
                       previewAnimation={previewAnimation}
                       isSaved={true}
