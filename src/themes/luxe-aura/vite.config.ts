@@ -11,7 +11,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    tempo(),
+    //tempo(),
   ],
   resolve: {
     preserveSymlinks: true,
