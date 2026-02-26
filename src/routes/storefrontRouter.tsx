@@ -14,10 +14,10 @@ const host =
  */
 const isEconAnimations =
   host === "econanimations.vercel.app" ||
-  host === "www.econanimations.vercel.app" ||
-  host === "econanimations.app" ||
-  host === "www.econanimations.app" ||
-  host.endsWith(".vercel.app");
+  host === "www.econanimations.vercel.app";
+// host === "econanimations.app" ||
+// host === "www.econanimations.app" ||
+// host.endsWith(".vercel.app");
 
 export const storefrontRouter = createBrowserRouter([
   {
@@ -28,12 +28,26 @@ export const storefrontRouter = createBrowserRouter([
       <StorefrontHome />
     ),
   },
+
+  // 🔥 Alias: /preview artık çalışır
+  {
+    path: "/preview",
+    element: <StorefrontThemesPreview />,
+  },
+
   {
     path: "/themes-preview",
     element: <StorefrontThemesPreview />,
   },
+
   {
     path: "/store-not-found",
+    element: <StoreNotFound />,
+  },
+
+  // ✅ güvenli wildcard 404
+  {
+    path: "*",
     element: <StoreNotFound />,
   },
 ]);
