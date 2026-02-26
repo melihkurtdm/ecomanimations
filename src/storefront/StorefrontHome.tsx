@@ -3,7 +3,15 @@ import { Navigate } from "react-router-dom";
 import { useStoreByDomain } from "./useStoreByDomain";
 import { useTheme } from "../contexts/ThemeContext";
 
-// Tema map (SENDE VAR OLAN ThemeLayout dosyalarına göre)
+/* ================================
+   🚨 BUILD DEBUG SIGNATURE
+   Bunu her push'ta değiştir!
+================================ */
+const BUILD_ID = "2026-02-26T23:59-DEBUG-1";
+
+/* ================================
+   Theme map
+================================ */
 const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
   "luxe-aura": lazy(() => import("../themes/luxe-aura/ThemeLayout")),
   elegant: lazy(() => import("../themes/elegant/ThemeLayout")),
@@ -12,11 +20,8 @@ const THEMES: Record<string, React.LazyExoticComponent<React.ComponentType<any>>
   "temu-clone": lazy(() => import("../themes/temu-clone/ThemeLayout")),
 };
 
-// DB’den gelen theme key farklıysa burada normalize ediyoruz
 const THEME_KEY_ALIASES: Record<string, string> = {
   luxury: "luxe-aura",
-
-  // ✅ senin isteğin: store key "econanimations" gelsin ama render edilecek gerçek tema "modern" olsun
   econanimations: "modern",
 };
 
@@ -24,7 +29,12 @@ export default function StorefrontHome() {
   const { store, loading, notFound } = useStoreByDomain();
   const { setTheme } = useTheme();
 
-  // ThemeContext’e set et
+  useEffect(() => {
+    console.log("🚀 BUILD_ID:", BUILD_ID);
+    console.log("🌍 HOST:", window.location.hostname);
+    console.log("🏪 STORE:", store);
+  }, [store]);
+
   useEffect(() => {
     if (!store?.selected_theme) return;
 
@@ -34,19 +44,33 @@ export default function StorefrontHome() {
   }, [store?.selected_theme, setTheme]);
 
   if (loading) {
-    return <div className="p-6">Loading store...</div>;
+    return (
+      <div className="p-6">
+        Loading store...
+        <DebugOverlay store={store} />
+      </div>
+    );
   }
 
   if (notFound) {
-    return <Navigate to="/store-not-found" replace />;
+    return (
+      <>
+        <DebugOverlay store={store} />
+        <Navigate to="/store-not-found" replace />
+      </>
+    );
   }
 
   const rawKey = String(store?.selected_theme ?? "").trim().toLowerCase();
+
   if (!rawKey) {
     return (
-      <div className="p-6 text-red-500">
-        Store selected_theme boş. (DB kaydı / domain mapping / API)
-      </div>
+      <>
+        <div className="p-6 text-red-500">
+          Store selected_theme boş. (DB kaydı / domain mapping / API)
+        </div>
+        <DebugOverlay store={store} />
+      </>
     );
   }
 
@@ -55,15 +79,50 @@ export default function StorefrontHome() {
 
   if (!ThemeLayout) {
     return (
-      <div className="p-6 text-red-500">
-        Theme bulunamadı: <b>{rawKey}</b> (alias sonrası: <b>{key}</b>)
-      </div>
+      <>
+        <div className="p-6 text-red-500">
+          Theme bulunamadı: <b>{rawKey}</b> (alias sonrası: <b>{key}</b>)
+        </div>
+        <DebugOverlay store={store} />
+      </>
     );
   }
 
   return (
-    <Suspense fallback={<div className="p-6">Loading theme...</div>}>
-      <ThemeLayout />
-    </Suspense>
+    <>
+      <Suspense fallback={<div className="p-6">Loading theme...</div>}>
+        <ThemeLayout />
+      </Suspense>
+
+      <DebugOverlay store={store} />
+    </>
+  );
+}
+
+/* ================================
+   🔎 DEBUG OVERLAY COMPONENT
+================================ */
+function DebugOverlay({ store }: { store: any }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 10,
+        right: 10,
+        background: "black",
+        color: "lime",
+        padding: "10px 14px",
+        fontSize: 12,
+        zIndex: 99999,
+        borderRadius: 6,
+        opacity: 0.9,
+        fontFamily: "monospace",
+        maxWidth: 320,
+      }}
+    >
+      <div><b>BUILD_ID:</b> {BUILD_ID}</div>
+      <div><b>Host:</b> {window.location.hostname}</div>
+      <div><b>Selected Theme:</b> {store?.selected_theme ?? "null"}</div>
+    </div>
   );
 }
