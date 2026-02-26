@@ -1,17 +1,22 @@
-export const STOREFRONT_DOMAINS: Record<string, { store: string }> = {
-  // Local development
-  "localhost": { store: "luxe-aura" },
-  "127.0.0.1": { store: "luxe-aura" },
+// src/config/domains.ts
 
-  // ===== AUTODROP CUSTOM DOMAIN =====
-  "autodrop.co": { store: "luxe-aura" },
-  "www.autodrop.co": { store: "luxe-aura" },
+export const DOMAIN_TO_STORE: Record<string, string> = {
+  // local
+  localhost: "luxe-aura",
+  "127.0.0.1": "luxe-aura",
 
-  // ===== ECONANIMATIONS VERCEL =====
-  "econanimations.vercel.app": { store: "diamond-luxe" },
-  "www.econanimations.vercel.app": { store: "diamond-luxe" },
+  // custom domain -> store key
+  "autodrop.co": "luxe-aura",
+  "www.autodrop.co": "luxe-aura",
+
+  // vercel prod + www
+  "econanimations.vercel.app": "econanimations",
+  "www.econanimations.vercel.app": "econanimations",
+
+  // gerekirse custom apex
+  // "econanimations.app": "econanimations",
+  // "www.econanimations.app": "econanimations",
 };
 
-export const STOREFRONT_DEFAULT = {
-  store: "diamond-luxe",
-} as const;
+// fallback
+export const DOMAIN_DEFAULT = "econanimations";
