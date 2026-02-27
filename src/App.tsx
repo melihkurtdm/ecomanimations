@@ -31,7 +31,7 @@ import VideoCreator from "./pages/VideoCreator";
 import BuildBadge from "./components/BuildBadge";
 // Create query client for React Query
 const queryClient = new QueryClient();
-
+console.log("GLOBAL HOST:", window.location.hostname);
 // Hide Lovable badge and edit button
 if (typeof document !== "undefined") {
   // Function to remove any Lovable-related elements
