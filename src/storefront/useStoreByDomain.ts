@@ -11,14 +11,18 @@ type StoreRow = {
 
 function normalizeHost(hostname: string) {
   let h = (hostname || "").trim().toLowerCase();
-
-  // bazen tarayıcı "." ile bitirebiliyor, nadir ama temizleyelim
-  h = h.replace(/\.$/, "");
-
-  // www. kırp
+  h = h.replace(/\.$/, "");          // sondaki nokta
   if (h.startsWith("www.")) h = h.slice(4);
-
   return h;
+}
+
+function isPlatformHost(host: string) {
+  // buraya senin platform domainlerin
+  return (
+    host === "localhost" ||
+    host.endsWith(".vercel.app") ||
+    host.endsWith(".netlify.app")
+  );
 }
 
 export function useStoreByDomain() {
@@ -37,10 +41,33 @@ export function useStoreByDomain() {
         setNotFound(false);
 
         const rawHost = window.location.hostname;
-        const domain = normalizeHost(rawHost);
+        const host = normalizeHost(rawHost);
 
-        if (DEBUG) console.log("[STORE_RESOLVE] host/domain", { rawHost, domain });
+        // 1) Normalde domain = host
+        let domain = host;
 
+        // 2) Ama platform host ise domain'i query/localStorage'dan al
+        if (isPlatformHost(host)) {
+          const params = new URLSearchParams(window.location.search);
+          const qDomain = params.get("domain");
+          const lsDomain = localStorage.getItem("active_store_domain");
+
+          domain = normalizeHost(qDomain || lsDomain || "");
+
+          // Eğer query ile geldiyse localStorage'a yaz (preview'da rahat)
+          if (qDomain) localStorage.setItem("active_store_domain", domain);
+        }
+
+        if (DEBUG) console.log("[STORE_RESOLVE] host/domain", { rawHost, host, domain });
+
+        if (!domain) {
+          if (DEBUG) console.warn("[STORE_RESOLVE] domain is empty (platform host, missing ?domain=...)");
+          setStore(null);
+          setNotFound(true);
+          return;
+        }
+
+        // tek sorgu
         const { data, error } = await supabase
           .from("stores")
           .select("*")
