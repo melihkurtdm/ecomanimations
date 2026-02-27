@@ -9,24 +9,20 @@ type StoreRow = {
   theme_settings: any;
 };
 
-function normalizeHost(input: string) {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/\.$/, "") // sonda nokta varsa (nadiren) sil
-    .replace(/^www\./, ""); // www. kırp
+function normalizeHost(hostname: string) {
+  let h = (hostname || "").trim().toLowerCase();
+
+  // bazen tarayıcı "." ile bitirebiliyor, nadir ama temizleyelim
+  h = h.replace(/\.$/, "");
+
+  // www. kırp
+  if (h.startsWith("www.")) h = h.slice(4);
+
+  return h;
 }
 
 export function useStoreByDomain() {
-  const debugFromQuery =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("debugStore");
-
-  // Prod'da da log görmek için: ?debugStore=1
-  const DEBUG =
-    (import.meta as any).env?.DEV ||
-    (import.meta as any).env?.VITE_DEBUG_STORE === "1" ||
-    debugFromQuery;
+  const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG_STORE === "1";
 
   const [store, setStore] = useState<StoreRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,65 +32,37 @@ export function useStoreByDomain() {
     let cancelled = false;
 
     const run = async () => {
-      const rawHost = window.location.hostname; // ör: www.autodrop.co
-      const domain = normalizeHost(rawHost); // ör: autodrop.co
-
-      if (DEBUG) console.log("[STORE_RESOLVE] entry", { rawHost, domain });
-
       try {
         setLoading(true);
         setNotFound(false);
 
-        // 1) normalize edilmiş domain ile dene
-        let { data, error } = await supabase
+        const rawHost = window.location.hostname;
+        const domain = normalizeHost(rawHost);
+
+        if (DEBUG) console.log("[STORE_RESOLVE] host/domain", { rawHost, domain });
+
+        const { data, error } = await supabase
           .from("stores")
           .select("*")
           .eq("domain", domain)
           .maybeSingle();
 
-        if (DEBUG) console.log("[STORE_RESOLVE] supabase(1)", { data, error });
-
-        // 2) fallback: eğer bulunmadıysa, tersini dene (bazı projelerde DB'ye www ile kaydedilmiş olabiliyor)
-        if (!error && !data) {
-          const alt = rawHost.trim().toLowerCase();
-          if (alt !== domain) {
-            const res2 = await supabase
-              .from("stores")
-              .select("*")
-              .eq("domain", alt)
-              .maybeSingle();
-
-            data = res2.data;
-            error = res2.error;
-
-            if (DEBUG) console.log("[STORE_RESOLVE] supabase(2)", {
-              alt,
-              data,
-              error,
-            });
-          }
-        }
+        if (DEBUG) console.log("[STORE_RESOLVE] supabase result", { data, error });
 
         if (cancelled) return;
 
-        if (error || !data) {
-          if (DEBUG)
-            console.log("[STORE_RESOLVE] final -> NOT_FOUND", {
-              error,
-              rawHost,
-              domain,
-            });
+        if (error) {
+          console.error("[STORE_RESOLVE] query error", error);
           setStore(null);
           setNotFound(true);
           return;
         }
 
-        if (DEBUG)
-          console.log("[STORE_RESOLVE] final -> OK", {
-            storeId: data.id,
-            dbDomain: data.domain,
-            selected_theme: data.selected_theme,
-          });
+        if (!data) {
+          setStore(null);
+          setNotFound(true);
+          return;
+        }
 
         setStore(data as StoreRow);
         setNotFound(false);
@@ -110,6 +78,7 @@ export function useStoreByDomain() {
     };
 
     run();
+
     return () => {
       cancelled = true;
     };
