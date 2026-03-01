@@ -7,86 +7,75 @@ export type Store = {
   created_at: string;
 };
 
-console.log("🔥 currentStore.ts LOADED");
-
 function normalizeHost(host: string) {
-  const normalized = host.trim().toLowerCase().replace(/^www\./, "");
-  console.log("🔍 normalizeHost:", { input: host, output: normalized });
-  return normalized;
+  let h = (host || "").trim().toLowerCase();
+  h = h.replace(/\.$/, "");
+  if (h.startsWith("www.")) h = h.slice(4);
+  return h;
+}
+
+function getDomainOverrideFromQuery(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const d = q.get("domain");
+    return d ? normalizeHost(d) : null;
+  } catch {
+    return null;
+  }
 }
 
 function buildDomainCandidates(hostname: string) {
   const h = normalizeHost(hostname);
   const set = new Set<string>([h]);
 
+  // Local dev
   if (h === "localhost") set.add("127.0.0.1");
   if (h === "127.0.0.1") set.add("localhost");
 
-  const arr = Array.from(set);
-  console.log("🧩 buildDomainCandidates:", arr);
-  return arr;
+  return Array.from(set);
 }
 
 export async function resolveCurrentStore(): Promise<Store | null> {
-  console.log("🚀 resolveCurrentStore CALLED");
-
-  if (typeof window === "undefined") {
-    console.log("❌ window undefined (SSR guard hit)");
-    return null;
-  }
-
-  console.log("🌍 LOCATION:", {
-    href: window.location.href,
-    host: window.location.hostname,
-    search: window.location.search,
-  });
-
-  console.log("🔑 ENV CHECK:", {
-    url: import.meta.env.VITE_SUPABASE_URL,
-    anon: import.meta.env.VITE_SUPABASE_ANON_KEY ? "SET" : "MISSING",
-  });
+  if (typeof window === "undefined") return null;
 
   const hostname = window.location.hostname;
-  const candidates = buildDomainCandidates(hostname);
+  const override = getDomainOverrideFromQuery(); // ✅ ?domain=...
+  const base = override ?? hostname;
 
-  try {
-    console.log("📡 Querying Supabase with candidates:", candidates);
+  const candidates = buildDomainCandidates(base);
 
-    const { data, error } = await (supabase as any)
-      .from("stores")
-      .select("*")
-      .in("domain", candidates)
-      .limit(1)
-      .maybeSingle();
+  // ✅ Debug
+  console.log("[RESOLVE] called");
+  console.log("[RESOLVE] hostname:", hostname);
+  console.log("[RESOLVE] override:", override);
+  console.log("[RESOLVE] candidates:", candidates);
 
-    console.log("📦 SUPABASE RESPONSE:", { data, error });
+  const { data, error } = await (supabase as any)
+    .from("stores")
+    .select("*")
+    .in("domain", candidates)
+    .limit(1)
+    .maybeSingle();
 
-    if (error) {
-      console.error("❌ STORE RESOLVE ERROR:", error);
-      return null;
-    }
+  console.log("[RESOLVE] supabase result:", { data, error });
 
-    if (!data) {
-      console.warn("⚠️ No store found for:", hostname);
-      return null;
-    }
-
-    const resolvedName = (data.store_name ?? data.name) as
-      | string
-      | undefined;
-
-    const result: Store = {
-      id: String(data.id),
-      name: resolvedName ?? "Unnamed Store",
-      domain: String(data.domain),
-      created_at: String(data.created_at),
-    };
-
-    console.log("✅ RESOLVED STORE:", result);
-
-    return result;
-  } catch (err) {
-    console.error("💥 FATAL ERROR inside resolveCurrentStore:", err);
+  if (error) {
+    console.error("[RESOLVE] error:", error);
     return null;
   }
+
+  if (!data) {
+    console.warn("[RESOLVE] no store found for:", candidates);
+    return null;
+  }
+
+  const resolvedName = (data.store_name ?? data.name) as string | undefined;
+
+  return {
+    id: String(data.id),
+    name: resolvedName ?? "Unnamed Store",
+    domain: String(data.domain),
+    created_at: String(data.created_at),
+  };
 }

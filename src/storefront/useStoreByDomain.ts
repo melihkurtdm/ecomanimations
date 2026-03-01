@@ -16,18 +16,14 @@ function normalizeHost(hostname: string) {
   return h;
 }
 
-function getDomainFromUrl(): { domain: string; source: "query" | "host" } {
-  const rawHost = window.location.hostname;
-  const host = normalizeHost(rawHost);
-
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get("domain") || params.get("store") || "";
-  const queryDomain = normalizeHost(q);
-
-  // Query param varsa onu kullan (özellikle vercel preview / demo ortamı için)
-  if (queryDomain) return { domain: queryDomain, source: "query" };
-
-  return { domain: host, source: "host" };
+function getDomainOverrideFromQuery(): string | null {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const d = q.get("domain");
+    return d ? normalizeHost(d) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function useStoreByDomain() {
@@ -45,15 +41,14 @@ export function useStoreByDomain() {
         setLoading(true);
         setNotFound(false);
 
-        const { domain, source } = getDomainFromUrl();
+        const rawHost = window.location.hostname;
+        const override = getDomainOverrideFromQuery(); // ✅ ?domain=...
+        const domain = override ?? normalizeHost(rawHost);
 
         if (DEBUG) {
-          console.log("[STORE_RESOLVE] input", {
-            hostname: window.location.hostname,
-            search: window.location.search,
-            domain,
-            source,
-          });
+          console.log("[STORE_RESOLVE] rawHost:", rawHost);
+          console.log("[STORE_RESOLVE] override:", override);
+          console.log("[STORE_RESOLVE] domain used:", domain);
         }
 
         const { data, error } = await supabase
